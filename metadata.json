@@ -1,0 +1,6 @@
+{
+  "name": "Nocturne Fragrances",
+  "description": "Worn after dark. A minimalist, interactive brand exhibition and label personalization experience for Nocturne No. 07.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
