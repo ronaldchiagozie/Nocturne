@@ -1,5 +1,5 @@
 /**
- * Procedural Nocturne soundscape — low sub-bass pad, soft timber crackle, mist hiss.
+ * Procedural Nocturne soundscape: low sub-bass pad, soft timber crackle, mist hiss.
  * No external audio asset required; starts only after a user gesture.
  */
 

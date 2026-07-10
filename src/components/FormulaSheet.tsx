@@ -73,7 +73,7 @@ export function FormulaSheet({ onCheckout }: FormulaSheetProps) {
               onMouseEnter={() => highlightRow(idx)}
             >
               <p className="font-body-italic italic text-sm md:text-base leading-relaxed font-light">
-                {note.name} — {note.weight}, {note.category}.
+                {note.name}: {note.weight}, {note.category}.
               </p>
               <p className="font-mono text-[10px] tabular-nums mt-2">
                 <span className="text-amber-accent">{note.percentage}</span>

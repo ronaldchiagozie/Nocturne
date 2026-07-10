@@ -18,7 +18,7 @@ interface RepeatedLinesScrollProps {
 
 /**
  * Everyday^ device: identical line over three full-bleed photographs.
- * One pinned viewport — image crossfades on scroll, text stays overlaid.
+ * One pinned viewport. Image crossfades on scroll, text stays overlaid.
  * Never stacks image above a separate text band.
  */
 export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
@@ -63,7 +63,7 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   return (
     <section ref={trackRef} className="relative h-[250vh] w-full">
       <div ref={pinRef} className="sticky top-0 h-screen w-screen overflow-hidden">
-        {/* Full-bleed photographs — stacked, crossfade on scroll */}
+        {/* Full-bleed photographs, stacked, crossfade on scroll */}
         {SLIDES.map((slide, idx) => (
           <div
             key={slide.image}
@@ -88,7 +88,7 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
           </div>
         ))}
 
-        {/* Same line, quiet, overlaid — never in a separate band */}
+        {/* Same line, quiet, overlaid, never in a separate band */}
         <div className="absolute inset-0 z-10 flex flex-col justify-end px-6 md:px-12 pb-20 md:pb-28 pointer-events-none">
           <p className="font-serif text-lg md:text-xl text-cream tracking-tight leading-snug max-w-md">
             {line}
@@ -101,11 +101,11 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
 
 export function CloseSection({ line }: { line: string }) {
   return (
-    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 pt-14 pb-[max(7rem,calc(5rem+env(safe-area-inset-bottom)))] md:min-h-[70vh] md:flex md:flex-col md:justify-end md:pt-24 md:pb-32">
+    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 pt-12 pb-28 md:min-h-[70vh] md:flex md:flex-col md:justify-end md:pt-0 md:pb-32">
       <p className="font-serif text-[clamp(1.5rem,3.5vw,2.5rem)] text-canvas tracking-tight leading-snug max-w-lg">
         Nocturne No. 07. Limited batch.
       </p>
-      <p className="font-serif text-base sm:text-lg md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-8 md:mt-24">
+      <p className="font-serif text-base md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-8 md:mt-24">
         {line}
       </p>
     </section>

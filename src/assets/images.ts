@@ -1,4 +1,4 @@
-/** Static assets served from /public — bottles named by formulation number */
+/** Static assets served from /public. Bottles named by formulation number */
 export const images = {
   hero: '/bottle-07-nocturne.png',
   oud: '/oudwoodblock.png',
@@ -7,11 +7,11 @@ export const images = {
   cedar: '/cedarwoodbark.png',
   ambergris: '/golden-brown.png',
   bottle: '/bottle-07-nocturne.png',
-  /** Nocturne No. 07 — flagship amber bottle */
+  /** Nocturne No. 07, flagship amber bottle */
   no07: '/bottle-07-nocturne.png',
-  /** Nocturne No. 05 — Pepper & Cedar */
+  /** Nocturne No. 05, Pepper & Cedar */
   no05: '/bottle-05-pepper-cedar.png',
-  /** Nocturne No. 03 — Oud Resin */
+  /** Nocturne No. 03, Oud Resin */
   no03: '/bottle-03-oud-resin.png',
   bottle03DustRose: '/bottle-03-dust-rose.png',
   bottle03OudResin: '/bottle-03-oud-resin.png',

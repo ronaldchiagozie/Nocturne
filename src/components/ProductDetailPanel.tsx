@@ -87,7 +87,7 @@ export function ProductDetailPanel({ productId, onClose, onCheckout }: ProductDe
 
                 {/* Split grid */}
                 <div className="grid md:grid-cols-[2fr_3fr] flex-1 min-h-0">
-                  {/* Left — bottle & tech log */}
+                  {/* Left: bottle & tech log */}
                   <div className="flex flex-col items-center justify-center px-6 md:px-8 py-8 md:py-12 border-b md:border-b-0 md:border-r border-canvas/15">
                     <div className="relative w-full max-w-[260px] md:max-w-[300px] flex items-center justify-center flex-1">
                       <img
@@ -115,7 +115,7 @@ export function ProductDetailPanel({ productId, onClose, onCheckout }: ProductDe
                     </div>
                   </div>
 
-                  {/* Right — spec sheet */}
+                  {/* Right: spec sheet */}
                   <div className="flex flex-col px-5 md:px-8 py-6 md:py-8">
                     <div className="flex items-baseline justify-between gap-4 md:hidden mb-6">
                       <p className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted">
@@ -181,7 +181,7 @@ export function ProductDetailPanel({ productId, onClose, onCheckout }: ProductDe
                 {/* Bottom action bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 px-5 md:px-8 py-5 md:py-6 border-t border-canvas/15 bg-cream">
                   <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-canvas">
-                    {product.price} / $120 — 50ml
+                    {product.price} / $120, 50ml
                   </p>
                   <button
                     type="button"

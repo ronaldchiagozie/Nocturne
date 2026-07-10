@@ -139,7 +139,7 @@ export function CheckoutDrawer({
           <div className="flex-1 overflow-y-auto min-h-0">
             <div className="checkout-ledger-frame h-full min-h-[calc(100vh-4rem)] max-w-6xl mx-auto">
               <div className="grid lg:grid-cols-[45fr_55fr] min-h-[calc(100vh-4rem)]">
-                {/* Left — personalization log */}
+                {/* Left: personalization log */}
                 <div className="px-6 md:px-10 lg:px-12 py-10 md:py-12 lg:border-r border-canvas/15 flex flex-col">
                   {confirmed ? (
                     <div className="flex-1 flex flex-col justify-center max-w-md">
@@ -147,7 +147,7 @@ export function CheckoutDrawer({
                         Secured.
                       </p>
                       <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mt-6">
-                        {override?.formulationLabel ?? `${displayLabel} ${displayTitle}`} — allocated
+                        {override?.formulationLabel ?? `${displayLabel} ${displayTitle}`}, allocated
                         to {displayName} in {displayLocation}.
                       </p>
                       <button
@@ -215,7 +215,7 @@ export function CheckoutDrawer({
                       </div>
 
                       <p className="font-mono text-[11px] tabular-nums text-canvas mt-10">
-                        Price: {product.price} / $120 — 50ml
+                        Price: {product.price} / $120, 50ml
                       </p>
 
                       <button
@@ -235,7 +235,7 @@ export function CheckoutDrawer({
                   )}
                 </div>
 
-                {/* Right — live batch ledger certificate */}
+                {/* Right: live batch ledger certificate */}
                 <div className="px-6 md:px-10 lg:px-12 py-10 md:py-12 bg-canvas/[0.03] flex flex-col min-h-[420px] lg:min-h-0">
                   <div className="checkout-certificate relative h-full min-h-[420px] lg:min-h-0 flex-1 border border-dashed border-canvas/20 bg-cream px-5 md:px-8 py-7 md:py-8 flex flex-col">
                     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-taupe-muted">

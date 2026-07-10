@@ -59,7 +59,7 @@ export function SiteFooter({
               type="button"
               onClick={() => scrollToTop()}
               className="inline-flex items-center gap-2.5 sm:gap-3 group cursor-pointer min-h-[44px]"
-              aria-label="Nocturne — scroll to top"
+              aria-label="Nocturne. Scroll to top"
             >
               <img
                 src="/logo-mark.svg"
@@ -82,7 +82,7 @@ export function SiteFooter({
             </p>
           </div>
 
-          {/* Columns — 2-up on phone, 3-up from sm, flex right on desktop */}
+          {/* Columns: 2-up on phone, 3-up from sm, flex right on desktop */}
           <div className="w-full lg:flex-1 lg:min-w-0">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10 sm:gap-x-10 sm:gap-y-10 md:gap-12 lg:gap-10 xl:gap-16">
               {COLUMNS.map((col) => (
@@ -150,7 +150,7 @@ export function SiteFooter({
         </div>
       </div>
 
-      {/* Watermark — quieter on small screens */}
+      {/* Watermark. Quieter on small screens */}
       <div className="relative z-0 flex items-end justify-center overflow-hidden pt-4 sm:pt-6 pb-0 min-h-[4.5rem] sm:min-h-[7rem] md:min-h-[9rem]">
         <p
           aria-hidden

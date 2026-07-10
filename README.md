@@ -1,6 +1,6 @@
 # Nocturne
 
-Luxury extrait de parfum storefront — scroll-driven hero, product vault, formulation distiller, and apothecary spec sheets.
+Luxury extrait de parfum storefront. Scroll-driven hero, product vault, formulation distiller, and apothecary spec sheets.
 
 ## Stack
 

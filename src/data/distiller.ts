@@ -109,9 +109,9 @@ export function distillMatch(answers: DistillerAnswers): DistillerResult {
   const formulationLabel = `No. ${formulationNumber} ${formulationName}`;
 
   const log = [
-    `Parameter 01 — Hour: ${HOUR_LABELS[answers.hour]}`,
-    `Parameter 02 — Environment: ${ENV_LABELS[answers.environment]}`,
-    `Parameter 03 — Intent: ${INTENT_LABELS[answers.intent]}`,
+    `Parameter 01. Hour: ${HOUR_LABELS[answers.hour]}`,
+    `Parameter 02. Environment: ${ENV_LABELS[answers.environment]}`,
+    `Parameter 03. Intent: ${INTENT_LABELS[answers.intent]}`,
     `Allocation: ${formulationLabel}`,
     'Batch compound: extrait · 50ml · compounded to order',
   ];

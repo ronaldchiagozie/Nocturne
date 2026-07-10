@@ -30,13 +30,13 @@ export function Navigation({
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 px-4 py-4 sm:px-6 sm:py-5 md:px-12 md:py-6 flex justify-between items-baseline pointer-events-none bg-cream-plate border-b border-canvas/[0.06] safe-pt">
-        <div className="pointer-events-auto">
+      <nav className="fixed top-0 left-0 w-full z-50 px-4 py-4 sm:px-6 sm:py-5 md:px-12 md:py-6 flex justify-between items-center pointer-events-none bg-cream-plate border-b border-canvas/[0.06] safe-pt">
+        <div className="pointer-events-auto flex items-center">
           <button
             type="button"
             onClick={() => scrollToTop()}
-            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group"
-            aria-label="Nocturne — scroll to top"
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group leading-none"
+            aria-label="Nocturne. Scroll to top"
           >
             <img
               src="/logo-mark.svg"
@@ -44,18 +44,18 @@ export function Navigation({
               className="h-6 w-6 sm:h-7 sm:w-7 shrink-0 rounded-[8px] group-hover:opacity-85 transition-opacity"
               aria-hidden
             />
-            <p className="font-serif text-[11px] sm:text-[13px] md:text-[15px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-canvas font-normal group-hover:text-canvas/70 transition-colors">
+            <span className="font-serif text-[11px] sm:text-[13px] md:text-[15px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-canvas font-normal leading-none group-hover:text-canvas/70 transition-colors">
               Nocturne
-            </p>
+            </span>
           </button>
         </div>
 
-        <div className="pointer-events-auto flex items-baseline gap-5 sm:gap-7">
+        <div className="pointer-events-auto flex items-center gap-5 sm:gap-7">
           {isActive && (
             <button
               type="button"
               onClick={toggleMute}
-              className="font-mono text-[9px] uppercase tracking-[0.22em] text-canvas/45 hover:text-canvas/80 transition-colors duration-300 cursor-pointer"
+              className="font-mono text-[9px] uppercase tracking-[0.22em] leading-none text-canvas/45 hover:text-canvas/80 transition-colors duration-300 cursor-pointer"
               aria-label={isAudible ? 'Mute soundscape' : 'Unmute soundscape'}
             >
               {isAudible ? 'Sound' : 'Muted'}
@@ -64,7 +64,7 @@ export function Navigation({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="font-sans text-[10px] uppercase tracking-[0.28em] text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+            className="font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
             aria-label="Open menu"
           >
             Menu

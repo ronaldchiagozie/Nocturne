@@ -152,7 +152,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
         },
       });
 
-      // Phase 1 — 0→20%: oud, bottle scales +5%
+      // Phase 1, 0→20%: oud, bottle scales +5%
       tl.to(bottleRef.current, { scale: 1.05, ease: 'none', duration: 0.2 }, 0);
       tl.to(
         glowRef.current,
@@ -164,7 +164,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
         0,
       );
 
-      // Phase 2 — 20→50%: bitter orange, citrus glow
+      // Phase 2, 20→50%: bitter orange, citrus glow
       tl.to(
         glowRef.current,
         {
@@ -175,7 +175,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
         0.2,
       );
 
-      // Phase 3 — 50→100%: pepper, cedarwood, ambergris
+      // Phase 3, 50→100%: pepper, cedarwood, ambergris
       tl.to(
         glowRef.current,
         {
@@ -252,7 +252,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
         className="sticky top-0 h-screen w-screen overflow-hidden bg-canvas"
       >
         <div className="absolute inset-0 flex flex-row">
-          {/* Left — batch analysis sheet + scroll-driven ingredient list */}
+          {/* Left: batch analysis sheet + scroll-driven ingredient list */}
           <div className="relative w-1/2 h-full flex flex-col justify-center px-8 md:px-12 lg:px-16 overflow-hidden">
             <div className="shrink-0 mb-8 md:mb-12">
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-3">
@@ -315,7 +315,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
             )}
           </div>
 
-          {/* Right — bottle pinned as constant anchor */}
+          {/* Right: bottle pinned as constant anchor */}
           <div className="relative w-1/2 h-full flex items-center justify-center overflow-hidden">
             <div
               ref={glowRef}

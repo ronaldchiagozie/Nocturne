@@ -31,7 +31,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const loadedRef = useRef(false);
 
-  // ~3.5s intro — video plays alongside, counter finishes before it gets boring
+  // ~3.5s intro. Video plays alongside, counter finishes before it gets boring
   useEffect(() => {
     const video = videoRef.current;
     let raf = 0;
@@ -107,7 +107,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
           isShutterOpen ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        {/* Load timer — top right, Canela header weight */}
+        {/* Load timer: top right, Canela header weight */}
         <p
           className="pointer-events-none absolute top-6 right-6 sm:top-8 sm:right-8 md:top-10 md:right-12 z-30 font-serif text-[clamp(3.5rem,9vw,6.5rem)] font-bold tracking-[0.06em] tabular-nums text-[#ECE6D8]/90 leading-none"
           aria-live="polite"
@@ -115,13 +115,13 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
           {label}%
         </p>
 
-        {/* Hero lens — bottle sharp; only left/right frame edges dissolve */}
+        {/* Hero lens. Bottle sharp; only left/right frame edges dissolve */}
         <div
           className="relative overflow-hidden"
           style={{
             width: 'min(40vw, 440px)',
             height: 'min(68vh, 600px)',
-            // Horizontal feather only — keeps full bottle height
+            // Horizontal feather only. Keeps full bottle height
             WebkitMaskImage:
               'linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%)',
             maskImage:
@@ -139,7 +139,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
             preload="auto"
             aria-hidden
           />
-          {/* Side curtains — kill the sharp vertical clip frame */}
+          {/* Side curtains. Kill the sharp vertical clip frame */}
           <div
             className="pointer-events-none absolute inset-y-0 left-0 w-[18%]"
             style={{
@@ -162,7 +162,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
             style={{ background: 'linear-gradient(to bottom, #0D0B0A, transparent)' }}
             aria-hidden
           />
-          {/* Bottom veil — softens base + covers Kling AI watermark */}
+          {/* Bottom veil. Softens base + covers Kling AI watermark */}
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 h-[18%]"
             style={{

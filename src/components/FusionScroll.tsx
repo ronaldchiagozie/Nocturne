@@ -145,7 +145,7 @@ export function FusionScrollDesktop({ onCheckout }: { onCheckout?: () => void })
         },
       });
 
-      // ── 0–30% clip 1 ──
+      // 0-30%: clip 1
       tl.fromTo(scrubState, { t1: 0 }, { t1: d1, ease: 'none', duration: 0.3 }, 0);
       tl.fromTo(v1, { opacity: 1 }, { opacity: 1, duration: 0.3 }, 0);
       tl.set(v2, { opacity: 0 }, 0);
@@ -153,21 +153,21 @@ export function FusionScrollDesktop({ onCheckout }: { onCheckout?: () => void })
       tl.fromTo(label1Ref.current, { opacity: 1 }, { opacity: 1, duration: 0.28 }, 0);
       tl.to(label1Ref.current, { opacity: 0, duration: 0.04 }, 0.28);
 
-      // ── 30–60% clip 2 crossfade ──
+      // 30-60%: clip 2 crossfade
       tl.fromTo(scrubState, { t2: 0 }, { t2: d2, ease: 'none', duration: 0.3 }, 0.3);
       tl.to(v1, { opacity: 0, duration: 0.08, ease: 'power1.inOut' }, 0.3);
       tl.fromTo(v2, { opacity: 0 }, { opacity: 1, duration: 0.08, ease: 'power1.inOut' }, 0.3);
       tl.fromTo(label2Ref.current, { opacity: 0 }, { opacity: 1, duration: 0.06 }, 0.32);
       tl.to(label2Ref.current, { opacity: 0, duration: 0.04 }, 0.58);
 
-      // ── 60–85% clip 3 crossfade ──
+      // 60-85%: clip 3 crossfade
       tl.fromTo(scrubState, { t3: 0 }, { t3: d3, ease: 'none', duration: 0.25 }, 0.6);
       tl.to(v2, { opacity: 0, duration: 0.08, ease: 'power1.inOut' }, 0.6);
       tl.fromTo(v3, { opacity: 0 }, { opacity: 1, duration: 0.08, ease: 'power1.inOut' }, 0.6);
       tl.fromTo(label3Ref.current, { opacity: 0 }, { opacity: 1, duration: 0.06 }, 0.62);
       tl.to(label3Ref.current, { opacity: 0, duration: 0.04 }, 0.82);
 
-      // ── 85–100% bottle finale ──
+      // 85-100%: bottle finale
       tl.to(videoStackRef.current, { opacity: 0, duration: 0.12, ease: 'power2.inOut' }, 0.85);
       tl.to(finaleRef.current, { opacity: 1, duration: 0.12, ease: 'power2.inOut' }, 0.85);
       tl.fromTo(

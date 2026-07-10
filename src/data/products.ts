@@ -77,7 +77,7 @@ export const PRODUCTS = {
       base: 'Aged oud resin, warm amber',
     },
     character: 'Dark, textured, quietly dangerous. The flagship formulation.',
-    wear: 'Worn after dark. No florals, no compliments — just presence.',
+    wear: 'Worn after dark. No florals, no compliments. Just presence.',
     specs: {
       formulaNo: 'n-07',
       concentration: '28% extrait',

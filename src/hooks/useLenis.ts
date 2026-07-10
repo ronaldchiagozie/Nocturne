@@ -22,7 +22,7 @@ function initNativeScroll() {
     ignoreMobileResize: true,
     autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
   });
-  // Avoid normalizeScroll — it fights sticky/pin and causes card jitter on iOS
+  // Avoid normalizeScroll. It fights sticky/pin and causes card jitter on iOS
   ScrollTrigger.normalizeScroll(false);
   ScrollTrigger.defaults({ pinType: 'fixed' });
   ScrollTrigger.refresh();
@@ -36,7 +36,7 @@ function teardownNativeScroll() {
   nativeScroll = false;
 }
 
-/** Init Lenis + ScrollTrigger sync (desktop). Native scroll on touch — avoids pin jitter. */
+/** Init Lenis + ScrollTrigger sync (desktop). Native scroll on touch. Avoids pin jitter. */
 export function initLenisScroll() {
   if (lenis || nativeScroll) return lenis;
 
@@ -156,7 +156,7 @@ export function useLenis() {
   }, []);
 }
 
-/** Throttled video seek — avoids frame-by-frame decode jitter */
+/** Throttled video seek. Avoids frame-by-frame decode jitter */
 export function seekVideo(video: HTMLVideoElement, time: number) {
   const duration = video.duration;
   if (!duration || !Number.isFinite(duration)) return;

@@ -155,27 +155,17 @@ body {
     -webkit-transform: translateZ(0);
   }
 
-  /* Desktop sticky choreography must never paint or stick on mobile */
-  [data-hero-desktop-cards] {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    position: static !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  /* Cards scroll in normal flow. No compositor thrash */
+  .hero-cards-grid {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    contain: layout paint;
   }
 
-  .hero-mobile-cards {
-    position: relative;
-    z-index: 20;
-  }
-
-  .hero-mobile-cards article {
-    display: flex;
-    flex-direction: column;
+  .hero-cards-grid article {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
 
@@ -200,22 +190,6 @@ video,
 .hero-bottle-layer {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-}
-
-@keyframes scroll-distil {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(8px);
-  }
-}
-
-.hero-scroll-line {
-  animation: scroll-distil 2.4s ease-in-out infinite;
 }
 
 ::selection {

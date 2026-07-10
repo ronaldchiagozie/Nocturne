@@ -129,7 +129,7 @@ interface VaultTabProps {
   onOpen: () => void;
 }
 
-/** Quiet bottom tab — only visible when the user has secured bottles */
+/** Quiet bottom tab. Only visible when the user has secured bottles */
 export function VaultTab({ count, isHidden, onOpen }: VaultTabProps) {
   if (count === 0 || isHidden) return null;
 

@@ -1,4 +1,4 @@
-/** Nine color-shift bottles — image paths match formulation number + name */
+/** Nine color-shift bottles. Image paths match formulation number + name */
 export const BOTTLE_VARIANTS = [
   {
     id: 'v01',
