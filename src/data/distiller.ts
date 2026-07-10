@@ -62,30 +62,6 @@ export const DISTILLER_QUESTIONS = [
   },
 ] as const;
 
-const FORMULATION_NUMBERS: Record<BottleVariantId, string> = {
-  v01: '07',
-  v02: '11',
-  v03: '05',
-  v04: '03',
-  v05: '12',
-  v06: '14',
-  v07: '09',
-  v08: '17',
-  v09: '19',
-};
-
-const VARIANT_TO_PRODUCT: Record<BottleVariantId, ProductId> = {
-  v01: 'no07',
-  v02: 'no07',
-  v03: 'no05',
-  v04: 'no03',
-  v05: 'no07',
-  v06: 'no03',
-  v07: 'no05',
-  v08: 'no07',
-  v09: 'no07',
-};
-
 const ANSWER_INDEX: Record<string, number> = {
   sunset: 0,
   midnight: 1,
@@ -128,7 +104,7 @@ export function distillMatch(answers: DistillerAnswers): DistillerResult {
 
   const score = hour * w1 + environment * w2 + intent * w3;
   const variant = BOTTLE_VARIANTS[score % BOTTLE_VARIANTS.length];
-  const formulationNumber = FORMULATION_NUMBERS[variant.id];
+  const formulationNumber = variant.formulationNumber;
   const formulationName = variant.name;
   const formulationLabel = `No. ${formulationNumber} ${formulationName}`;
 
@@ -141,15 +117,15 @@ export function distillMatch(answers: DistillerAnswers): DistillerResult {
   ];
 
   const summaries: Record<BottleVariantId, string> = {
-    v01: 'Flagship amber resin. Warm, dark, worn after hours.',
-    v02: 'Oud-forward warmth. Aged resin with golden depth.',
-    v03: 'Smoked cedar anchor. Spice and dry timber throughout.',
-    v04: 'Deep resinous oud. Quiet, heavy, slow to unfold.',
-    v05: 'Golden hour in a bottle. Radiant amber and soft heat.',
-    v06: 'Midnight oud. Cool opening, resinous midnight dry-down.',
-    v07: 'Burnished spice. Pepper up front, wood underneath.',
-    v08: 'Violet noir. Elusive, mineral, dangerously close to the skin.',
-    v09: 'Pale ember. Light resin, dawn air, clean projection.',
+    v01: 'Flagship amber extrait. Warm, dark, worn after hours.',
+    v02: 'Mauve-rose compound. Soft dusk on the skin.',
+    v03: 'Ruby spice and cedar. Heat up front, timber underneath.',
+    v04: 'Pale violet oud. Quiet resin, slow to unfold.',
+    v05: 'Straw-gold amber. Sunset warmth in a bottle.',
+    v06: 'Deep violet extrait. Midnight, mineral, close to the skin.',
+    v07: 'Emerald depth. Cool forest air after dark.',
+    v08: 'Rose-amber twilight. Elusive, warm, hard to place.',
+    v09: 'Pale gold dawn. Light resin, clean first light.',
   };
 
   return {
@@ -157,7 +133,7 @@ export function distillMatch(answers: DistillerAnswers): DistillerResult {
     formulationNumber,
     formulationName,
     formulationLabel,
-    productId: VARIANT_TO_PRODUCT[variant.id],
+    productId: variant.productId,
     log,
     summary: summaries[variant.id],
   };

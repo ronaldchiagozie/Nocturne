@@ -6,8 +6,9 @@ import { SiteFooter } from './components/SiteFooter';
 import { CheckoutDrawer } from './components/CheckoutDrawer';
 import { ScentVault, VaultTab } from './components/ScentVault';
 import { Distiller } from './components/Distiller';
+import { CollectionsPanel } from './components/CollectionsPanel';
 import { ProductDetailPanel } from './components/ProductDetailPanel';
-import { useLenis } from './hooks/useLenis';
+import { useLenis, setScrollLocked } from './hooks/useLenis';
 import { DistillerResult } from './data/distiller';
 import { DEFAULT_PRODUCT_ID, ProductId } from './data/products';
 import { normalizeOrder } from './data/orders';
@@ -20,6 +21,7 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [vaultOpen, setVaultOpen] = useState(false);
   const [distillerOpen, setDistillerOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [checkoutProductId, setCheckoutProductId] = useState<ProductId>(DEFAULT_PRODUCT_ID);
   const [checkoutOverride, setCheckoutOverride] = useState<CheckoutOverride | undefined>();
   const [orders, setOrders] = useState<SimulatedOrder[]>([]);
@@ -40,6 +42,18 @@ export default function App() {
       /* ignore */
     }
   }, []);
+
+  const scrollLocked =
+    menuOpen ||
+    drawerOpen ||
+    vaultOpen ||
+    distillerOpen ||
+    collectionsOpen ||
+    detailProductId !== null;
+
+  useEffect(() => {
+    setScrollLocked(scrollLocked);
+  }, [scrollLocked]);
 
   const openCheckout = (
     productId: ProductId = DEFAULT_PRODUCT_ID,
@@ -76,6 +90,7 @@ export default function App() {
         onCheckout={() => openCheckout()}
         onOpenVault={() => setVaultOpen(true)}
         onOpenDistiller={() => setDistillerOpen(true)}
+        onOpenCollections={() => setCollectionsOpen(true)}
         onMenuChange={setMenuOpen}
       />
 
@@ -92,12 +107,22 @@ export default function App() {
         onCheckout={() => openCheckout()}
         onOpenDistiller={() => setDistillerOpen(true)}
         onOpenVault={() => setVaultOpen(true)}
+        onOpenCollections={() => setCollectionsOpen(true)}
       />
 
       <VaultTab
         count={orders.length}
-        isHidden={vaultOpen || distillerOpen || menuOpen}
+        isHidden={
+          vaultOpen || distillerOpen || collectionsOpen || menuOpen || detailProductId !== null
+        }
         onOpen={() => setVaultOpen(true)}
+      />
+
+      <CollectionsPanel
+        isOpen={collectionsOpen}
+        onClose={() => setCollectionsOpen(false)}
+        onSelectProduct={setDetailProductId}
+        onOpenDistiller={() => setDistillerOpen(true)}
       />
 
       <Distiller
@@ -110,7 +135,12 @@ export default function App() {
       <ProductDetailPanel
         productId={detailProductId}
         onClose={() => setDetailProductId(null)}
-        onCheckout={(productId) => openCheckout(productId)}
+        onCheckout={(productId) => {
+          setDetailProductId(null);
+          setCollectionsOpen(false);
+          setDistillerOpen(false);
+          openCheckout(productId);
+        }}
       />
 
       <CheckoutDrawer

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { NavDrawer } from './NavDrawer';
+import { scrollToTop } from '../hooks/useLenis';
 
 interface NavigationProps {
   orderCount: number;
   onCheckout: () => void;
   onOpenVault: () => void;
   onOpenDistiller: () => void;
+  onOpenCollections: () => void;
   onMenuChange?: (open: boolean) => void;
 }
 
@@ -14,6 +16,7 @@ export function Navigation({
   onCheckout,
   onOpenVault,
   onOpenDistiller,
+  onOpenCollections,
   onMenuChange,
 }: NavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,21 +28,21 @@ export function Navigation({
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-baseline pointer-events-none bg-cream-plate border-b border-canvas/[0.06]">
+      <nav className="fixed top-0 left-0 w-full z-50 px-4 py-4 sm:px-6 sm:py-5 md:px-12 md:py-6 flex justify-between items-baseline pointer-events-none bg-cream-plate border-b border-canvas/[0.06] safe-pt">
         <div className="pointer-events-auto">
           <button
             type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => scrollToTop()}
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group"
             aria-label="Nocturne — scroll to top"
           >
             <img
               src="/logo-mark.svg"
               alt=""
-              className="h-7 w-7 shrink-0 rounded-[8px] group-hover:opacity-85 transition-opacity"
+              className="h-6 w-6 sm:h-7 sm:w-7 shrink-0 rounded-[8px] group-hover:opacity-85 transition-opacity"
               aria-hidden
             />
-            <p className="font-serif text-[13px] md:text-[15px] tracking-[0.3em] uppercase text-canvas font-normal group-hover:text-canvas/70 transition-colors">
+            <p className="font-serif text-[11px] sm:text-[13px] md:text-[15px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-canvas font-normal group-hover:text-canvas/70 transition-colors">
               Nocturne
             </p>
           </button>
@@ -62,6 +65,7 @@ export function Navigation({
         onCheckout={onCheckout}
         onOpenVault={onOpenVault}
         onOpenDistiller={onOpenDistiller}
+        onOpenCollections={onOpenCollections}
       />
     </>
   );

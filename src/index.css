@@ -131,6 +131,28 @@ body {
   font-family: var(--font-sans);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+.safe-pt {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+@media (max-width: 768px) {
+  .hero-bottle-pin {
+    perspective: none;
+  }
+
+  .hero-bottle-layer {
+    transform-style: flat;
+  }
+}
+
+@media (min-width: 769px) {
+  .hero-bottle-layer {
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
 }
 
 /* GPU layer for pinned scroll sections */

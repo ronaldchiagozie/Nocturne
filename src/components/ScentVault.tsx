@@ -137,7 +137,7 @@ export function VaultTab({ count, isHidden, onOpen }: VaultTabProps) {
     <button
       type="button"
       onClick={onOpen}
-      className="vault-tab fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-auto cursor-pointer"
+      className="vault-tab fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 pointer-events-auto cursor-pointer"
       aria-label={`Open My Vault, ${count} bottle${count === 1 ? '' : 's'}`}
     >
       <span className="font-sans text-[9px] uppercase tracking-[0.28em] text-cream/70">

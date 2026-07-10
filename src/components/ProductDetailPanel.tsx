@@ -56,7 +56,7 @@ export function ProductDetailPanel({ productId, onClose, onCheckout }: ProductDe
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             onClick={onClose}
-            className="fixed inset-0 z-[160] bg-canvas/40 backdrop-blur-[2px] cursor-pointer"
+            className="fixed inset-0 z-[215] bg-canvas/40 backdrop-blur-[2px] cursor-pointer"
           />
 
           <motion.aside
@@ -64,13 +64,13 @@ export function ProductDetailPanel({ productId, onClose, onCheckout }: ProductDe
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0.95 }}
             transition={{ type: 'tween', duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 bottom-0 z-[170] h-[min(94vh,880px)] bg-cream text-canvas shadow-[0_-24px_80px_rgba(13,11,10,0.14)] flex flex-col"
+            className="fixed inset-x-0 bottom-0 z-[220] h-[min(94dvh,880px)] bg-cream text-canvas shadow-[0_-24px_80px_rgba(13,11,10,0.14)] flex flex-col pb-[env(safe-area-inset-bottom)]"
             data-lenis-prevent
             role="dialog"
             aria-label={`${product.label} ${product.title} spec sheet`}
           >
             <div className="flex-1 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 md:py-8 min-h-0">
-              <div className="spec-sheet-frame mx-auto max-w-5xl h-full min-h-[calc(94vh-3rem)] border border-canvas/15 bg-cream flex flex-col">
+              <div className="spec-sheet-frame mx-auto max-w-5xl h-full min-h-0 md:min-h-[calc(94dvh-3rem)] border border-canvas/15 bg-cream flex flex-col">
                 {/* Top bar */}
                 <div className="flex items-baseline justify-between px-5 md:px-8 py-5 border-b border-canvas/15">
                   <p className="font-sans text-[10px] uppercase tracking-[0.28em] text-taupe-muted">

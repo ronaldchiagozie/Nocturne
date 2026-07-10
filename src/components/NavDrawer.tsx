@@ -8,11 +8,13 @@ interface NavDrawerProps {
   onCheckout: () => void;
   onOpenVault: () => void;
   onOpenDistiller: () => void;
+  onOpenCollections: () => void;
 }
 
 const LINKS = [
-  { id: 'secure', label: 'Secure a bottle', action: 'checkout' as const },
+  { id: 'collections', label: 'Collections', action: 'collections' as const },
   { id: 'distill', label: 'The Distiller', action: 'distill' as const },
+  { id: 'secure', label: 'Secure a bottle', action: 'checkout' as const },
   { id: 'vault', label: 'My Vault', action: 'vault' as const },
 ];
 
@@ -23,6 +25,7 @@ export function NavDrawer({
   onCheckout,
   onOpenVault,
   onOpenDistiller,
+  onOpenCollections,
 }: NavDrawerProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -36,6 +39,7 @@ export function NavDrawer({
   const handleAction = (action: (typeof LINKS)[number]['action']) => {
     onClose();
     setTimeout(() => {
+      if (action === 'collections') onOpenCollections();
       if (action === 'checkout') onCheckout();
       if (action === 'distill') onOpenDistiller();
       if (action === 'vault') onOpenVault();

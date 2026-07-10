@@ -1,11 +1,15 @@
+import { scrollToTop } from '../hooks/useLenis';
+
 interface SiteFooterProps {
   orderCount?: number;
   onCheckout?: () => void;
   onOpenDistiller?: () => void;
   onOpenVault?: () => void;
+  onOpenCollections?: () => void;
 }
 
 const FOOTER_LINKS = [
+  { id: 'collections', label: 'Collections' },
   { id: 'distill', label: 'The Distiller' },
   { id: 'secure', label: 'Secure a bottle' },
   { id: 'vault', label: 'My Vault' },
@@ -16,12 +20,12 @@ export function SiteFooter({
   onCheckout,
   onOpenDistiller,
   onOpenVault,
+  onOpenCollections,
 }: SiteFooterProps) {
-  const scrollTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const scrollTop = () => scrollToTop();
 
   const handleLink = (id: (typeof FOOTER_LINKS)[number]['id']) => {
+    if (id === 'collections') onOpenCollections?.();
     if (id === 'distill') onOpenDistiller?.();
     if (id === 'secure') onCheckout?.();
     if (id === 'vault') onOpenVault?.();

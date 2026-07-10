@@ -205,10 +205,7 @@ export function Distiller({ isOpen, onClose, onSecure, onViewSpec }: DistillerPr
                       <div className="flex flex-col sm:flex-row sm:flex-wrap items-start gap-4 mt-10">
                         <button
                           type="button"
-                          onClick={() => {
-                            onViewSpec?.(result);
-                            handleClose();
-                          }}
+                          onClick={() => onViewSpec?.(result)}
                           className="font-sans text-[10px] uppercase tracking-[0.22em] border border-canvas/20 text-canvas px-6 py-3 rounded-full hover:bg-cream transition-colors cursor-pointer"
                         >
                           View spec sheet

@@ -170,6 +170,8 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       };
       refreshMetrics();
 
+      const mobileMq = window.matchMedia('(max-width: 768px)');
+
       gsap.set(bottleAnimRef.current, {
         x: 0,
         y: 0,
@@ -178,8 +180,8 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         rotation: 0,
         rotateY: 0,
         transformOrigin: '50% 90%',
-        force3D: true,
-        transformPerspective: 1200,
+        force3D: !mobileMq.matches,
+        transformPerspective: mobileMq.matches ? 0 : 1200,
       });
       gsap.set([leftCardRef.current, rightCardRef.current], { xPercent: 0, opacity: 0 });
       gsap.set(centerCardRef.current, { opacity: 0 });
@@ -290,27 +292,26 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
 
       mm.add('(max-width: 768px)', () => {
         refreshMetrics();
+        gsap.set(bottleAnimRef.current, { rotateY: 0, rotation: 0, transformPerspective: 0 });
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 1.1,
+            scrub: 1.25,
             pin: bottleRef.current,
             pinSpacing: false,
             invalidateOnRefresh: true,
-            anticipatePin: 1,
+            anticipatePin: 0,
             onRefresh: refreshMetrics,
           },
         });
 
-        tl.to(bottleAnimRef.current, { x: 0, y: 0, scale: 1, rotation: 0, rotateY: 0, ease: 'none', duration: 0.9 })
+        tl.to(bottleAnimRef.current, { x: 0, y: 0, scale: 1, ease: 'none', duration: 0.9 })
           .to(bottleAnimRef.current, {
             x: driftX,
-            scale: 0.92,
-            rotation: 7,
-            rotateY: -10,
+            scale: 0.9,
             ease: 'none',
             duration: 0.5,
           })
@@ -318,8 +319,6 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             x: 0,
             y: 0,
             scale: 1,
-            rotation: 0,
-            rotateY: 0,
             transformOrigin: '50% 50%',
             ease: 'none',
             duration: 0.12,
@@ -333,8 +332,6 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
               x: () => landing.x,
               y: () => landing.y,
               scale: () => landing.scale,
-              rotation: 0,
-              rotateY: 0,
               transformOrigin: '50% 50%',
               ease: 'none',
               duration: 0.42,
@@ -388,13 +385,11 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       <div
         ref={bottleRef}
         data-hero-object
-        className="absolute top-0 left-0 z-30 flex h-screen w-full items-center justify-center pointer-events-none hero-bottle-pin"
-        style={{ perspective: '1200px' }}
+        className="absolute top-0 left-0 z-30 flex h-screen w-full items-center justify-center pointer-events-none hero-bottle-pin md:[perspective:1200px]"
       >
         <div
           ref={bottleAnimRef}
-          className="relative will-change-transform hero-bottle-layer"
-          style={{ transformStyle: 'preserve-3d' }}
+          className="relative hero-bottle-layer md:will-change-transform"
         >
           <div
             className="hero-bottle-shadow absolute bottom-[6%] left-1/2 -translate-x-1/2 w-56 h-8 rounded-full blur-2xl opacity-35"
@@ -404,7 +399,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             ref={bottleImgRef}
             src={images.hero}
             alt={CARDS[1].imageAlt}
-            className="hero-bottle-image relative z-30 block h-[min(520px,62vh)] w-auto object-contain"
+            className="hero-bottle-image relative z-30 block h-[min(400px,52vh)] sm:h-[min(460px,58vh)] md:h-[min(520px,62vh)] w-auto object-contain"
           />
         </div>
       </div>
@@ -436,18 +431,13 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         </div>
 
         <div className="absolute inset-0 z-[25] pointer-events-none select-none">
-          <p className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] rotate-180">
+          <p className="absolute left-4 sm:left-6 md:left-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] rotate-180 hidden sm:block">
             BATCH // 001-NG
           </p>
-          <p className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl]">
+          <p className="absolute right-4 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] hidden sm:block">
             EXTRAIT DE PARFUM // 50ML
           </p>
 
-          <HeroEditorial
-            title="One scent."
-            body="Three compounds on the ledger. Nine color-shift formulations — each batch compounded to order, never mass-produced."
-            className="absolute left-6 md:left-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
-          />
           <HeroEditorial
             title="After dark."
             body="Cracked pepper up front, smoked cedar through the heart, aged oud in the dry-down. Built for presence, not compliments."
@@ -467,9 +457,9 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       {/* Chapter 2 — worn after dark copy */}
       <section
         data-hero-chapter="2"
-        className="relative min-h-screen w-full bg-cream-plate flex flex-col justify-end px-6 md:px-12 pb-28 md:pb-36"
+        className="relative min-h-screen w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pb-24 sm:pb-28 md:pb-36"
       >
-        <p className="pointer-events-none select-none absolute right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20]">
+        <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
           EXTRAIT DE PARFUM // 50ML
         </p>
 
@@ -492,7 +482,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       </section>
 
       {/* Chapter 3 — 3-column card landing */}
-      <section data-hero-chapter="3" className="relative min-h-[200vh] w-full bg-cream-plate">
+      <section data-hero-chapter="3" className="relative min-h-[170vh] md:min-h-[200vh] w-full bg-cream-plate">
         <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center px-4 md:px-8 lg:px-12">
           <BatchLedger className="mb-6 md:mb-8 lg:hidden text-center" />
           <div

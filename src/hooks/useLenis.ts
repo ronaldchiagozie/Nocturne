@@ -11,28 +11,31 @@ let tickerFn: ((time: number) => void) | null = null;
 let onLoad: (() => void) | null = null;
 let onRefresh: (() => void) | null = null;
 
-/** Init Lenis + ScrollTrigger sync — call before React render so ST sees scroll proxy */
+const isTouchDevice = () =>
+  typeof window !== 'undefined' &&
+  ('ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches);
+
+/** Init Lenis + ScrollTrigger sync */
 export function initLenisScroll() {
   if (lenis) return lenis;
 
   const root = document.documentElement;
+  const touch = isTouchDevice();
 
-  ScrollTrigger.defaults({
-    pinType: 'transform',
-  });
+  ScrollTrigger.config({ ignoreMobileResize: true });
+  ScrollTrigger.defaults({ pinType: 'transform' });
 
   lenis = new Lenis({
     autoRaf: false,
-    duration: 1.1,
+    duration: touch ? 1.05 : 1.1,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smoothWheel: true,
     wheelMultiplier: 0.9,
-    touchMultiplier: 1.1,
-    syncTouch: true,
-    lerp: 0.085,
+    touchMultiplier: touch ? 1 : 1.1,
+    syncTouch: false,
+    lerp: touch ? 0.1 : 0.085,
   });
 
-  // CRITICAL: connect Lenis scroll to ScrollTrigger
   lenis.on('scroll', ScrollTrigger.update);
 
   tickerFn = (time: number) => {
@@ -68,6 +71,25 @@ export function initLenisScroll() {
   ScrollTrigger.refresh();
 
   return lenis;
+}
+
+/** Pause background scroll while modals are open — prevents jitter and scroll bleed */
+export function setScrollLocked(locked: boolean) {
+  if (!lenis) return;
+  if (locked) {
+    lenis.stop();
+  } else {
+    lenis.start();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  }
+}
+
+export function scrollToTop() {
+  if (lenis) {
+    lenis.scrollTo(0, { duration: 1.1 });
+    return;
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 export function destroyLenisScroll() {
