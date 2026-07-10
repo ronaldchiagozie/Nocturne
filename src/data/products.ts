@@ -43,7 +43,7 @@ export const PRODUCTS = {
     detail: 'Nocturne No. 03. Extrait de parfum. 50ml. Compounded to order.',
     price: '₦180,000',
     variantId: 'v04' satisfies BottleVariantId,
-    image: '/bottle-cream4.png',
+    image: '/bottle-03-oud-resin.png',
     notes: {
       top: 'Cracked black pepper, bitter orange rind',
       heart: 'Smoked cedarwood, dry timber',
@@ -70,7 +70,7 @@ export const PRODUCTS = {
     detail: 'Nocturne No. 07. Extrait de parfum. 50ml. Compounded to order.',
     price: '₦180,000',
     variantId: 'v01' satisfies BottleVariantId,
-    image: '/bottle-cream.png',
+    image: '/bottle-07-nocturne.png',
     notes: {
       top: 'Cracked black pepper',
       heart: 'Smoked cedarwood',
@@ -97,7 +97,7 @@ export const PRODUCTS = {
     detail: 'Nocturne No. 05. Extrait de parfum. 50ml. Cracked spice, cedarwood bark.',
     price: '₦180,000',
     variantId: 'v03' satisfies BottleVariantId,
-    image: '/bottle-cream3.png',
+    image: '/bottle-05-pepper-cedar.png',
     notes: {
       top: 'Cracked black pepper, pink peppercorn',
       heart: 'Cedarwood bark, dry vetiver',

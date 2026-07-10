@@ -1,8 +1,8 @@
 /** Above-the-fold hero bottles — preload before scroll animation needs them */
 const CRITICAL_IMAGES = [
-  '/bottle-cream.png',
-  '/bottle-cream3.png',
-  '/bottle-cream4.png',
+  '/bottle-07-nocturne.png',
+  '/bottle-05-pepper-cedar.png',
+  '/bottle-03-oud-resin.png',
 ] as const;
 
 const deferred = new Set<string>();

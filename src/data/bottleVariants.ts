@@ -1,8 +1,8 @@
-/** Nine color-shift bottles — numbers and names match the label on each render */
+/** Nine color-shift bottles — image paths match formulation number + name */
 export const BOTTLE_VARIANTS = [
   {
     id: 'v01',
-    image: '/bottle-cream.png',
+    image: '/bottle-07-nocturne.png',
     formulationNumber: '07',
     name: 'Nocturne',
     glow: 'rgba(212, 163, 115, 0.55)',
@@ -10,7 +10,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v02',
-    image: '/bottle-cream2.png',
+    image: '/bottle-03-dust-rose.png',
     formulationNumber: '03',
     name: 'Dust Rose',
     glow: 'rgba(180, 140, 130, 0.5)',
@@ -18,7 +18,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v03',
-    image: '/bottle-cream3.png',
+    image: '/bottle-05-pepper-cedar.png',
     formulationNumber: '05',
     name: 'Pepper & Cedar',
     glow: 'rgba(160, 80, 70, 0.52)',
@@ -26,7 +26,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v04',
-    image: '/bottle-cream4.png',
+    image: '/bottle-03-oud-resin.png',
     formulationNumber: '03',
     name: 'Oud Resin',
     glow: 'rgba(140, 120, 150, 0.48)',
@@ -34,7 +34,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v05',
-    image: '/bottle-cream5.png',
+    image: '/bottle-11-golden-hour.png',
     formulationNumber: '11',
     name: 'Golden Hour',
     glow: 'rgba(190, 150, 110, 0.5)',
@@ -42,7 +42,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v06',
-    image: '/bottle-cream6.png',
+    image: '/bottle-17-violet-noir.png',
     formulationNumber: '17',
     name: 'Violet Noir',
     glow: 'rgba(100, 70, 120, 0.48)',
@@ -50,7 +50,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v07',
-    image: '/bottle-cream7.png',
+    image: '/bottle-19-emerald-night.png',
     formulationNumber: '19',
     name: 'Emerald Night',
     glow: 'rgba(80, 120, 90, 0.5)',
@@ -58,7 +58,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v08',
-    image: '/bottle-cream8.png',
+    image: '/bottle-22-rose-dusk.png',
     formulationNumber: '22',
     name: 'Rose Dusk',
     glow: 'rgba(170, 120, 110, 0.48)',
@@ -66,7 +66,7 @@ export const BOTTLE_VARIANTS = [
   },
   {
     id: 'v09',
-    image: '/bottle-cream9.png',
+    image: '/bottle-08-pale-dawn.png',
     formulationNumber: '08',
     name: 'Pale Dawn',
     glow: 'rgba(200, 180, 130, 0.52)',

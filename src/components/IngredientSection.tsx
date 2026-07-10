@@ -328,7 +328,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
               style={{ transformStyle: 'preserve-3d' }}
             >
               <img
-                src="/bottle-cream.png"
+                src="/bottle-07-nocturne.png"
                 alt="Nocturne No. 07"
                 className="w-[min(240px,30vw)] h-auto object-contain select-none"
                 draggable={false}

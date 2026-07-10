@@ -1,26 +1,27 @@
-/** Static assets served from /public */
+/** Static assets served from /public — bottles named by formulation number */
 export const images = {
-  hero: '/bottle-cream.png',
+  hero: '/bottle-07-nocturne.png',
   oud: '/oudwoodblock.png',
   citrus: '/bergamotcitrus.png',
   pepper: '/blackpepper.png',
   cedar: '/cedarwoodbark.png',
   ambergris: '/golden-brown.png',
-  bottle: '/bottle-cream.png',
+  bottle: '/bottle-07-nocturne.png',
   /** Nocturne No. 07 — flagship amber bottle */
-  no07: '/bottle-cream.png',
+  no07: '/bottle-07-nocturne.png',
   /** Nocturne No. 05 — Pepper & Cedar */
-  no05: '/bottle-cream3.png',
-  /** Nocturne No. 03 */
-  no03: '/bottle-cream4.png',
-  bottleCream2: '/bottle-cream2.png',
-  bottleCream3: '/bottle-cream3.png',
-  bottleCream4: '/bottle-cream4.png',
-  bottleCream5: '/bottle-cream5.png',
-  bottleCream6: '/bottle-cream6.png',
-  bottleCream7: '/bottle-cream7.png',
-  bottleCream8: '/bottle-cream8.png',
-  bottleCream9: '/bottle-cream9.png',
+  no05: '/bottle-05-pepper-cedar.png',
+  /** Nocturne No. 03 — Oud Resin */
+  no03: '/bottle-03-oud-resin.png',
+  bottle03DustRose: '/bottle-03-dust-rose.png',
+  bottle03OudResin: '/bottle-03-oud-resin.png',
+  bottle05PepperCedar: '/bottle-05-pepper-cedar.png',
+  bottle07Nocturne: '/bottle-07-nocturne.png',
+  bottle08PaleDawn: '/bottle-08-pale-dawn.png',
+  bottle11GoldenHour: '/bottle-11-golden-hour.png',
+  bottle17VioletNoir: '/bottle-17-violet-noir.png',
+  bottle19EmeraldNight: '/bottle-19-emerald-night.png',
+  bottle22RoseDusk: '/bottle-22-rose-dusk.png',
 } as const;
 
 export type ImageKey = keyof typeof images;
