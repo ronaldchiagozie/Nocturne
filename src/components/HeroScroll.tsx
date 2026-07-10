@@ -30,6 +30,28 @@ const CARDS = CARD_ORDER.map((id) => {
   };
 });
 
+/** Extra formulations — mobile home shows 5 total (3 flagship + 2) */
+const MOBILE_EXTRA_CARDS = [
+  {
+    productId: 'no07' as ProductId,
+    label: 'No. 11',
+    title: 'Golden Hour',
+    detail: 'Nocturne No. 11. Extrait de parfum. 50ml. Compounded to order.',
+    image: images.bottle11GoldenHour,
+    imageAlt: 'Nocturne No. 11 Golden Hour extrait de parfum bottle',
+    price: PRODUCTS.no07.price,
+  },
+  {
+    productId: 'no07' as ProductId,
+    label: 'No. 17',
+    title: 'Violet Noir',
+    detail: 'Nocturne No. 17. Extrait de parfum. 50ml. Compounded to order.',
+    image: images.bottle17VioletNoir,
+    imageAlt: 'Nocturne No. 17 Violet Noir extrait de parfum bottle',
+    price: PRODUCTS.no07.price,
+  },
+] as const;
+
 function BottleSlot({
   imageSrc,
   imageAlt,
@@ -191,7 +213,8 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         rotation: 0,
         rotateY: 0,
         transformOrigin: '50% 90%',
-        force3D: true,
+        force3D: !mobileMq.matches,
+        autoRound: true,
         transformPerspective: mobileMq.matches ? 0 : 1200,
       });
 
@@ -200,6 +223,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         gsap.set(centerCardRef.current, { opacity: 0 });
         gsap.set(centerBottleImgRef.current, { opacity: 0 });
       } else {
+        // Mobile: cards always visible — no landing choreography
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
           opacity: 1,
           clearProps: 'xPercent',
@@ -311,13 +335,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       });
 
       mm.add('(max-width: 768px)', () => {
-        // Mobile: cards sit in normal document flow (no sticky fight).
-        // Bottle pins through ch1–ch2 only, then fades — no slot landing math.
-        gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
-          opacity: 1,
-          clearProps: 'xPercent',
-        });
-        gsap.set(centerBottleImgRef.current, { opacity: 1 });
+        // Mobile: pin bottle through hero only. At Batch ledger → fade out, then normal scroll.
         gsap.set(bottleAnimRef.current, {
           rotateY: 0,
           rotation: 0,
@@ -328,15 +346,19 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
           scale: 1,
           opacity: 1,
         });
+        gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
+          opacity: 1,
+          clearProps: 'xPercent',
+        });
+        gsap.set(centerBottleImgRef.current, { opacity: 1 });
 
-        const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
+        const chapter1 = containerRef.current?.querySelector('[data-hero-chapter="1"]');
 
         const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: containerRef.current,
+            trigger: chapter1 || containerRef.current,
             start: 'top top',
-            endTrigger: chapter2 || containerRef.current,
-            end: 'bottom top+=20%',
+            end: 'bottom top',
             scrub: true,
             pin: bottleRef.current,
             pinSpacing: false,
@@ -347,14 +369,16 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
           },
         });
 
+        // Hold through hero, then fade as Batch ledger leaves / next section enters
         tl.to(bottleAnimRef.current, {
-          scale: 0.94,
+          scale: 1,
           ease: 'none',
-          duration: 0.75,
+          duration: 0.65,
         }).to(bottleAnimRef.current, {
           opacity: 0,
+          scale: 0.94,
           ease: 'none',
-          duration: 0.25,
+          duration: 0.35,
         });
       });
 
@@ -372,7 +396,11 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
 
       window.addEventListener('resize', onResize);
 
-      const heroImages = [images.hero, ...CARDS.map((card) => card.image)];
+      const heroImages = [
+        images.hero,
+        ...CARDS.map((card) => card.image),
+        ...MOBILE_EXTRA_CARDS.map((card) => card.image),
+      ];
       preloadImages(heroImages).then(() => {
         refreshMetrics();
         ScrollTrigger.refresh();
@@ -405,7 +433,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       <div
         ref={bottleRef}
         data-hero-object
-        className="absolute top-0 left-0 z-30 flex h-[100svh] w-full items-center justify-center pointer-events-none hero-bottle-pin md:h-screen md:[perspective:1200px]"
+        className="absolute top-0 left-0 z-30 flex h-[100dvh] w-full items-center justify-center pointer-events-none hero-bottle-pin md:[perspective:1200px] max-md:z-10"
       >
         <div ref={bottleAnimRef} className="relative hero-bottle-layer md:will-change-transform">
           <div
@@ -416,7 +444,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             ref={bottleImgRef}
             src={images.hero}
             alt={CARDS[1].imageAlt}
-            className="hero-bottle-image relative z-30 block h-[min(400px,52svh)] sm:h-[min(460px,58svh)] md:h-[min(520px,62vh)] w-auto object-contain"
+            className="hero-bottle-image relative z-30 block h-[min(400px,52dvh)] sm:h-[min(460px,58dvh)] md:h-[min(520px,62vh)] w-auto object-contain"
             loading="eager"
             decoding="async"
             fetchPriority="high"
@@ -425,7 +453,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       </div>
 
       {/* Chapter 1 — hero */}
-      <section data-hero-chapter="1" className="relative min-h-[100svh] w-full bg-cream-plate md:min-h-screen">
+      <section data-hero-chapter="1" className="relative min-h-[100dvh] w-full bg-cream-plate">
         <div className="absolute inset-0 z-0 overflow-hidden bg-cream-plate" />
 
         <p
@@ -465,7 +493,8 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             className="absolute right-6 md:right-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
           />
 
-          <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
+          <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 px-4">
+            <BatchLedger className="md:hidden text-center mb-1" />
             <span className="hero-scroll-line block h-8 w-px bg-neutral-400/70" aria-hidden />
             <p className="font-mono text-[10px] tracking-[0.2em] text-neutral-400">
               [ SCROLL TO DISTIL ]
@@ -477,7 +506,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       {/* Chapter 2 — worn after dark copy */}
       <section
         data-hero-chapter="2"
-        className="relative min-h-[100svh] w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pb-24 sm:pb-28 md:pb-36 md:min-h-screen"
+        className="relative min-h-[70dvh] md:min-h-[100dvh] w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pb-16 sm:pb-24 md:pb-36"
       >
         <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
           EXTRAIT DE PARFUM // 50ML
@@ -501,18 +530,24 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         </div>
       </section>
 
-      {/* Chapter 3 — 3-column card landing (sticky pin on desktop only) */}
-      <section data-hero-chapter="3" className="relative min-h-0 md:min-h-[200vh] w-full bg-cream-plate">
-        <div className="flex w-full flex-col items-center justify-center px-4 py-16 sm:py-20 md:sticky md:top-0 md:h-screen md:py-0 md:px-8 lg:px-12">
-          <BatchLedger className="mb-6 md:mb-8 lg:hidden text-center" />
+      {/* Chapter 3 — desktop: sticky 3-col landing · mobile: normal scroll (no sticky) */}
+      <section
+        data-hero-chapter="3"
+        className="relative w-full bg-cream-plate md:min-h-[200vh]"
+      >
+        {/* Desktop sticky choreography — forced hidden on mobile via CSS */}
+        <div
+          data-hero-desktop-cards
+          className="max-md:hidden md:sticky md:top-0 md:flex md:h-screen md:w-full md:flex-col md:items-center md:justify-center md:px-8 lg:px-12"
+        >
           <div
             ref={cardsGridRef}
-            className="relative w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 border border-neutral-300/80 bg-cream-plate z-20 hero-cards-grid"
+            className="relative w-full max-w-6xl grid grid-cols-3 border border-neutral-300/80 bg-cream-plate z-20"
           >
             <article
               ref={leftCardRef}
               onClick={() => onOpenProductDetail?.(CARDS[0].productId)}
-              className="border-b md:border-b-0 md:border-r border-neutral-300/80 p-5 md:p-6 lg:p-8 flex flex-col md:opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
+              className="border-r border-neutral-300/80 p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
                 {CARDS[0].label}
@@ -535,7 +570,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             <article
               ref={centerCardRef}
               onClick={() => onOpenProductDetail?.(CARDS[1].productId)}
-              className="border-b md:border-b-0 md:border-r border-neutral-300/80 p-5 md:p-6 lg:p-8 flex flex-col md:opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
+              className="border-r border-neutral-300/80 p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
                 {CARDS[1].label}
@@ -543,7 +578,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
               <BottleSlot
                 imageSrc={CARDS[1].image}
                 imageAlt={CARDS[1].imageAlt}
-                imageClassName={`${BOTTLE_SLOT_CLASS} md:opacity-0`}
+                imageClassName={`${BOTTLE_SLOT_CLASS} opacity-0`}
                 imgRef={centerBottleImgRef}
                 slotRef={centerSlotRef}
                 priority
@@ -560,7 +595,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             <article
               ref={rightCardRef}
               onClick={() => onOpenProductDetail?.(CARDS[2].productId)}
-              className="p-5 md:p-6 lg:p-8 flex flex-col md:opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
+              className="p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
                 {CARDS[2].label}
@@ -582,7 +617,53 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
           </div>
 
           {onOpenDistiller && (
-            <div className="pointer-events-auto mt-10 md:mt-12 w-full max-w-6xl text-center z-20">
+            <div className="pointer-events-auto mt-12 w-full max-w-6xl text-center z-20">
+              <button
+                type="button"
+                onClick={onOpenDistiller}
+                className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors duration-300 cursor-pointer"
+              >
+                Nine formulations exist. Discover yours →
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile — spaced stack, normal document flow */}
+        <div className="hero-mobile-cards md:hidden relative w-full px-4 pt-6 pb-[max(6rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto flex w-full max-w-lg flex-col gap-5">
+            {[...CARDS, ...MOBILE_EXTRA_CARDS].map((card, index) => (
+              <article
+                key={`${card.label}-${card.title}`}
+                onClick={() => onOpenProductDetail?.(card.productId)}
+                className="flex flex-col border border-neutral-300/80 bg-cream-plate px-5 py-8 cursor-pointer active:bg-cream/60"
+              >
+                <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-5">
+                  {card.label}
+                </p>
+                <BottleSlot
+                  imageSrc={card.image}
+                  imageAlt={card.imageAlt}
+                  imageClassName={BOTTLE_SLOT_CLASS}
+                  priority={index < 2}
+                />
+                <h3 className="font-serif text-xl text-canvas tracking-tight leading-snug mb-3">
+                  {card.title}
+                </h3>
+                <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mb-8">
+                  {card.detail}
+                </p>
+                <CardFooter
+                  price={card.price}
+                  productId={card.productId}
+                  onCheckout={onCheckout}
+                />
+              </article>
+            ))}
+          </div>
+
+          {onOpenDistiller && (
+            <div className="pointer-events-auto mt-12 mb-4 w-full border-t border-neutral-300/80 pt-10 text-center">
               <button
                 type="button"
                 onClick={onOpenDistiller}

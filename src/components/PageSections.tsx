@@ -101,11 +101,11 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
 
 export function CloseSection({ line }: { line: string }) {
   return (
-    <section className="min-h-screen w-full bg-cream flex flex-col justify-end px-6 md:px-12 pb-24 md:pb-32">
+    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 pt-14 pb-[max(7rem,calc(5rem+env(safe-area-inset-bottom)))] md:min-h-[70vh] md:flex md:flex-col md:justify-end md:pt-24 md:pb-32">
       <p className="font-serif text-[clamp(1.5rem,3.5vw,2.5rem)] text-canvas tracking-tight leading-snug max-w-lg">
         Nocturne No. 07. Limited batch.
       </p>
-      <p className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-24">
+      <p className="font-serif text-base sm:text-lg md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-8 md:mt-24">
         {line}
       </p>
     </section>

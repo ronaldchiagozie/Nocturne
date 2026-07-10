@@ -155,17 +155,27 @@ body {
     -webkit-transform: translateZ(0);
   }
 
-  /* Cards scroll in normal flow — no compositor thrash */
-  .hero-cards-grid {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    contain: layout paint;
+  /* Desktop sticky choreography must never paint or stick on mobile */
+  [data-hero-desktop-cards] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: static !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .hero-cards-grid article {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
+  .hero-mobile-cards {
+    position: relative;
+    z-index: 20;
+  }
+
+  .hero-mobile-cards article {
+    display: flex;
+    flex-direction: column;
   }
 }
 
