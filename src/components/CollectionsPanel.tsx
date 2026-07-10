@@ -30,20 +30,20 @@ export function CollectionsPanel({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35 }}
-          className="fixed inset-0 z-[205] bg-cream-plate text-canvas flex flex-col"
+          className="fixed inset-0 z-[205] bg-cream-plate text-canvas flex flex-col overflow-hidden"
           data-lenis-prevent
           role="dialog"
           aria-label="Collections"
         >
-          <div className="flex shrink-0 justify-between items-start gap-6 px-6 md:px-12 pt-7 md:pt-8 pb-6 border-b border-neutral-300/60">
-            <div>
+          <div className="flex shrink-0 justify-between items-start gap-4 px-4 sm:px-6 md:px-12 pt-[max(1.25rem,env(safe-area-inset-top))] md:pt-8 pb-5 sm:pb-6 border-b border-neutral-300/60">
+            <div className="min-w-0 flex-1">
               <p className="font-mono text-[9px] tracking-[0.28em] uppercase text-taupe-muted">
                 Collections
               </p>
-              <p className="font-serif text-[clamp(1.25rem,2.5vw,1.75rem)] text-canvas tracking-tight leading-snug mt-3">
+              <p className="font-serif text-[clamp(1.15rem,5vw,1.75rem)] text-canvas tracking-tight leading-snug mt-2 sm:mt-3">
                 {COLLECTION_TAGLINE}
               </p>
-              <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 max-w-md leading-relaxed">
+              <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-2 sm:mt-3 max-w-md leading-relaxed">
                 Nine color-shift extrait compounds on the ledger. Compounded to order.
               </p>
             </div>
@@ -56,7 +56,10 @@ export function CollectionsPanel({
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 md:px-12 py-6 sm:py-8 md:py-10 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <div
+            className="modal-scroll flex-1 min-h-0 px-4 sm:px-6 md:px-12 py-6 sm:py-8 md:py-10 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            data-modal-scroll
+          >
             <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-px bg-neutral-300/80 border border-neutral-300/80">
               {COLLECTION_ITEMS.map((item) => (
                 <button

@@ -66,12 +66,13 @@ export function NavDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="nav-drawer fixed top-0 right-0 z-[195] h-full w-[min(100vw,340px)] bg-cream text-canvas border-l border-canvas/10 flex flex-col"
+            className="nav-drawer fixed top-0 right-0 z-[195] h-full w-[min(100vw,340px)] bg-cream text-canvas border-l border-canvas/10 flex flex-col overflow-hidden"
             data-lenis-prevent
+            data-modal-scroll
             role="dialog"
             aria-label="Menu"
           >
-            <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-canvas/10">
+            <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-canvas/10 shrink-0">
               <span className="font-serif text-[11px] tracking-[0.3em] uppercase text-canvas/90">
                 Menu
               </span>
@@ -85,7 +86,7 @@ export function NavDrawer({
               </button>
             </div>
 
-            <nav className="flex-1 px-8 py-12 flex flex-col">
+            <nav className="modal-scroll flex-1 min-h-0 px-8 py-12 flex flex-col" data-modal-scroll>
               <ul className="space-y-10">
                 {LINKS.map((link) => {
                   if (link.action === 'vault' && orderCount === 0) return null;

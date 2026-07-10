@@ -335,7 +335,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       });
 
       mm.add('(max-width: 768px)', () => {
-        // Mobile: pin bottle through hero only. At Batch ledger → fade out, then normal scroll.
+        // Mobile: pin through hero, fully fade out before "Worn after dark" enters.
         gsap.set(bottleAnimRef.current, {
           rotateY: 0,
           rotation: 0,
@@ -353,12 +353,14 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
 
         const chapter1 = containerRef.current?.querySelector('[data-hero-chapter="1"]');
+        const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: chapter1 || containerRef.current,
             start: 'top top',
-            end: 'bottom top',
+            // End while ch1 bottom is still at viewport bottom — before ch2 text
+            end: 'bottom bottom',
             scrub: true,
             pin: bottleRef.current,
             pinSpacing: false,
@@ -369,24 +371,31 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
           },
         });
 
-        // Hold most of the runway, then a longer fade before copy/cards
+        // Hold, fade early, then stay invisible before Worn after dark
         tl.to(bottleAnimRef.current, {
           scale: 1,
           ease: 'none',
-          duration: 0.55,
-        }).to(bottleAnimRef.current, {
-          opacity: 0,
-          scale: 0.92,
-          ease: 'none',
-          duration: 0.45,
-        });
+          duration: 0.35,
+        })
+          .to(bottleAnimRef.current, {
+            opacity: 0,
+            scale: 0.9,
+            ease: 'none',
+            duration: 0.45,
+          })
+          .to(bottleAnimRef.current, {
+            opacity: 0,
+            ease: 'none',
+            duration: 0.2,
+          });
 
-        // Keep faded bottle out of the paint/hit path once hero is done
+        // Hard-hide before chapter 2 copy reaches the screen
         ScrollTrigger.create({
-          trigger: chapter1 || containerRef.current,
-          start: 'bottom top',
+          trigger: chapter2 || chapter1 || containerRef.current,
+          start: 'top 85%',
           onEnter: () => {
             if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
+            if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
           },
           onLeaveBack: () => {
             if (bottleRef.current) bottleRef.current.style.visibility = 'visible';

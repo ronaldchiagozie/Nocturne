@@ -17,27 +17,27 @@ function VaultBottle({ order, index }: { order: SimulatedOrder; index: number })
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.12 + index * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="vault-bottle-slot relative flex flex-col items-center"
+      className="vault-bottle-slot relative flex w-[42vw] max-w-[160px] sm:w-[140px] sm:max-w-none shrink-0 flex-col items-center"
     >
       <div
         className="vault-bottle-glow absolute bottom-[18%] left-1/2 -translate-x-1/2 w-[72%] h-10 rounded-full blur-2xl"
         style={{ background: variant.glow }}
       />
-      <div className="relative z-10 h-[min(140px,22vw)] w-full flex items-end justify-center">
+      <div className="relative z-10 h-[min(150px,28vw)] sm:h-[160px] w-full flex items-end justify-center">
         <img
           src={variant.image}
           alt={`${order.productLabel} ${order.productTitle}`}
           className="vault-bottle-image h-full w-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]"
         />
       </div>
-      <div className="mt-4 text-center space-y-1">
+      <div className="mt-4 text-center space-y-1 w-full min-w-0 px-1">
         <p className="font-sans text-[8px] uppercase tracking-[0.22em] text-cream/50">
           {order.formulationLabel ? 'Distilled' : order.productLabel}
         </p>
-        <p className="font-serif text-sm text-cream/90 tracking-tight">
+        <p className="font-serif text-sm text-cream/90 tracking-tight truncate">
           {order.formulationLabel ?? order.productTitle}
         </p>
-        <p className="font-body-italic italic text-[11px] text-cream/40 font-light">
+        <p className="font-body-italic italic text-[11px] text-cream/40 font-light truncate">
           For {order.personalization.name} · {order.personalization.location}
         </p>
       </div>
@@ -66,13 +66,13 @@ export function ScentVault({ isOpen, orders, onClose }: ScentVaultProps) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'tween', duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 bottom-0 z-[190] vault-panel text-cream"
+            className="fixed inset-x-0 bottom-0 z-[190] vault-panel text-cream overflow-hidden"
             data-lenis-prevent
             role="dialog"
             aria-label="My Vault"
           >
             <div className="vault-panel-inner relative max-h-[min(78vh,640px)] flex flex-col overflow-hidden">
-              <div className="flex items-baseline justify-between px-6 md:px-12 pt-6 md:pt-8 pb-4">
+              <div className="flex items-baseline justify-between px-6 md:px-12 pt-6 md:pt-8 pb-4 shrink-0">
                 <div>
                   <p className="font-serif text-[13px] tracking-[0.3em] uppercase text-cream/90">
                     My Vault
@@ -90,27 +90,32 @@ export function ScentVault({ isOpen, orders, onClose }: ScentVaultProps) {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-6 md:px-12 pb-8">
+              <div className="flex-1 min-h-0 pb-8 overflow-hidden">
                 {orders.length === 0 ? (
-                  <p className="font-body-italic italic text-sm text-cream/45 font-light py-12">
+                  <p className="font-body-italic italic text-sm text-cream/45 font-light py-12 px-6 md:px-12">
                     No allocations yet. Secure a bottle to begin your vault.
                   </p>
                 ) : (
-                  <div className="relative mt-4">
-                    <div className="vault-shelf-glass absolute inset-x-0 bottom-[52px] h-3 rounded-sm" />
-                    <div className="vault-shelf-edge absolute inset-x-0 bottom-[48px] h-px bg-cream/10" />
-                    <div
-                      className="vault-shelf-surface absolute inset-x-[-8%] bottom-0 h-14 rounded-t-sm"
-                      style={{
-                        background:
-                          'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, transparent 100%)',
-                      }}
-                    />
+                  <div
+                    className="relative mt-2 overflow-x-auto overflow-y-hidden overscroll-x-contain [-webkit-overflow-scrolling:touch] [touch-action:pan-x] px-6 md:px-12"
+                    data-modal-scroll
+                  >
+                    <div className="relative inline-flex min-w-full">
+                      <div className="vault-shelf-glass absolute left-0 right-0 bottom-[52px] h-3 rounded-sm pointer-events-none" />
+                      <div className="vault-shelf-edge absolute left-0 right-0 bottom-[48px] h-px bg-cream/10 pointer-events-none" />
+                      <div
+                        className="vault-shelf-surface absolute left-[-4%] right-[-4%] bottom-0 h-14 rounded-t-sm pointer-events-none"
+                        style={{
+                          background:
+                            'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, transparent 100%)',
+                        }}
+                      />
 
-                    <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-8 pb-16">
-                      {orders.map((order, index) => (
-                        <VaultBottle key={order.id} order={order} index={index} />
-                      ))}
+                      <div className="relative flex flex-nowrap items-end gap-6 sm:gap-8 md:gap-10 pb-16 pr-4">
+                        {orders.map((order, index) => (
+                          <VaultBottle key={order.id} order={order} index={index} />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}

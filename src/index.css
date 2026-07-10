@@ -134,6 +134,26 @@ body {
   touch-action: manipulation;
 }
 
+/* Body lock while modals/drawers are open — stops background scroll on iOS */
+html.scroll-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.scroll-locked body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+/* Modal / drawer inner scrollers only */
+.modal-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
 .safe-pt {
   padding-top: max(1rem, env(safe-area-inset-top));
 }

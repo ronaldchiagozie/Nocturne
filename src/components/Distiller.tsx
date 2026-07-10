@@ -72,27 +72,30 @@ export function Distiller({ isOpen, onClose, onSecure, onViewSpec }: DistillerPr
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="fixed inset-0 z-[210] distiller-panel text-canvas flex flex-col bg-cream-plate"
+          className="fixed inset-0 z-[210] distiller-panel text-canvas flex flex-col bg-cream-plate overflow-hidden"
           data-lenis-prevent
           role="dialog"
           aria-label="The Distiller"
         >
-          <div className="flex shrink-0 justify-between items-baseline px-6 md:px-10 lg:px-12 pt-7 md:pt-8 border-b border-neutral-300/60">
+          <div className="flex shrink-0 justify-between items-baseline px-4 sm:px-6 md:px-10 lg:px-12 pt-[max(1.25rem,env(safe-area-inset-top))] md:pt-8 border-b border-neutral-300/60">
             <p className="font-mono text-[9px] tracking-[0.28em] uppercase text-taupe-muted">
               The Distiller
             </p>
             <button
               type="button"
               onClick={handleClose}
-              className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer"
+              className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer py-3"
             >
               Close
             </button>
           </div>
 
-          <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
-            <div className="lg:w-[40%] flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-neutral-300/60">
-              <div className="flex-1 overflow-y-auto px-6 md:px-10 lg:px-12 py-10 md:py-12 lg:py-14 flex flex-col justify-center">
+          <div className="flex flex-1 min-h-0 flex-col lg:flex-row w-full max-w-[100vw]">
+            <div className="lg:w-[40%] flex flex-col min-h-0 min-w-0 border-b lg:border-b-0 lg:border-r border-neutral-300/60">
+              <div
+                className="modal-scroll flex-1 min-h-0 px-4 sm:px-6 md:px-10 lg:px-12 py-8 sm:py-10 md:py-12 lg:py-14 flex flex-col justify-center"
+                data-modal-scroll
+              >
                 <AnimatePresence mode="wait">
                   {step === 'intro' && (
                     <motion.div

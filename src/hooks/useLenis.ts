@@ -11,10 +11,69 @@ let tickerFn: ((time: number) => void) | null = null;
 let onLoad: (() => void) | null = null;
 let onRefresh: (() => void) | null = null;
 let nativeScroll = false;
+let bodyLocked = false;
+let lockedScrollY = 0;
+let touchMoveBlock: ((e: TouchEvent) => void) | null = null;
 
 export const isTouchDevice = () =>
   typeof window !== 'undefined' &&
   ('ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches);
+
+function allowModalTouch(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false;
+  return Boolean(target.closest('[data-modal-scroll]'));
+}
+
+function lockBodyScroll() {
+  if (bodyLocked) return;
+  bodyLocked = true;
+  lockedScrollY = window.scrollY || window.pageYOffset || 0;
+
+  const html = document.documentElement;
+  const { body } = document;
+
+  html.classList.add('scroll-locked');
+  html.style.overflow = 'hidden';
+  body.style.overflow = 'hidden';
+  body.style.position = 'fixed';
+  body.style.top = `-${lockedScrollY}px`;
+  body.style.left = '0';
+  body.style.right = '0';
+  body.style.width = '100%';
+  body.style.overscrollBehavior = 'none';
+
+  // iOS: block background rubber-band unless the touch is inside a modal scroller
+  touchMoveBlock = (e: TouchEvent) => {
+    if (allowModalTouch(e.target)) return;
+    e.preventDefault();
+  };
+  document.addEventListener('touchmove', touchMoveBlock, { passive: false });
+}
+
+function unlockBodyScroll() {
+  if (!bodyLocked) return;
+  bodyLocked = false;
+
+  if (touchMoveBlock) {
+    document.removeEventListener('touchmove', touchMoveBlock);
+    touchMoveBlock = null;
+  }
+
+  const html = document.documentElement;
+  const { body } = document;
+
+  html.classList.remove('scroll-locked');
+  html.style.overflow = '';
+  body.style.overflow = '';
+  body.style.position = '';
+  body.style.top = '';
+  body.style.left = '';
+  body.style.right = '';
+  body.style.width = '';
+  body.style.overscrollBehavior = '';
+
+  window.scrollTo(0, lockedScrollY);
+}
 
 function initNativeScroll() {
   nativeScroll = true;
@@ -31,8 +90,7 @@ function initNativeScroll() {
 function teardownNativeScroll() {
   if (!nativeScroll) return;
   ScrollTrigger.normalizeScroll(false);
-  document.documentElement.style.overflow = '';
-  document.body.style.overflow = '';
+  unlockBodyScroll();
   nativeScroll = false;
 }
 
@@ -101,8 +159,11 @@ export function initLenisScroll() {
 /** Pause background scroll while modals are open */
 export function setScrollLocked(locked: boolean) {
   if (lenis) {
-    if (locked) lenis.stop();
-    else {
+    if (locked) {
+      lenis.stop();
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
       lenis.start();
       requestAnimationFrame(() => ScrollTrigger.refresh());
     }
@@ -110,11 +171,9 @@ export function setScrollLocked(locked: boolean) {
   }
 
   if (locked) {
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
   } else {
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
+    unlockBodyScroll();
     requestAnimationFrame(() => ScrollTrigger.refresh());
   }
 }
