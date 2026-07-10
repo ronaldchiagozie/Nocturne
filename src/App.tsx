@@ -8,7 +8,7 @@ import { ScentVault, VaultTab } from './components/ScentVault';
 import { Distiller } from './components/Distiller';
 import { CollectionsPanel } from './components/CollectionsPanel';
 import { ProductDetailPanel } from './components/ProductDetailPanel';
-// import { ApertureIntro } from './components/ApertureIntro';
+import { ApertureIntro } from './components/ApertureIntro';
 import { SoundscapeProvider } from './context/SoundscapeContext';
 import { useLenis, setScrollLocked } from './hooks/useLenis';
 import { DistillerResult } from './data/distiller';
@@ -28,8 +28,7 @@ export default function App() {
   const [checkoutOverride, setCheckoutOverride] = useState<CheckoutOverride | undefined>();
   const [orders, setOrders] = useState<SimulatedOrder[]>([]);
   const [detailProductId, setDetailProductId] = useState<ProductId | null>(null);
-  // Preview intro disabled for now — set false + uncomment ApertureIntro to restore
-  const [introRevealed] = useState(true);
+  const [introRevealed, setIntroRevealed] = useState(false);
 
   useLenis();
 
@@ -90,7 +89,7 @@ export default function App() {
   return (
     <SoundscapeProvider>
       <div className="relative bg-cream text-canvas min-h-screen">
-        {/* {!introRevealed && <ApertureIntro onRevealed={() => setIntroRevealed(true)} />} */}
+        {!introRevealed && <ApertureIntro onRevealed={() => setIntroRevealed(true)} />}
 
         <Navigation
           orderCount={orders.length}

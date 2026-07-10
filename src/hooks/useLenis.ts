@@ -18,8 +18,12 @@ export const isTouchDevice = () =>
 
 function initNativeScroll() {
   nativeScroll = true;
-  ScrollTrigger.config({ ignoreMobileResize: true });
-  ScrollTrigger.normalizeScroll(true);
+  ScrollTrigger.config({
+    ignoreMobileResize: true,
+    autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
+  });
+  // Avoid normalizeScroll — it fights sticky/pin and causes card jitter on iOS
+  ScrollTrigger.normalizeScroll(false);
   ScrollTrigger.defaults({ pinType: 'fixed' });
   ScrollTrigger.refresh();
 }

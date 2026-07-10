@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
-const LOAD_MS = 2800;
+const INTRO_MS = 2000;
 const SHUTTER_MS = 1200;
 const FLASH_MS = 400;
 const EASE_SHUTTER = 'cubic-bezier(0.85, 0, 0.15, 1)';
 
 interface ApertureIntroProps {
   onRevealed?: () => void;
-}
-
-/** Logarithmic ease — quick early ticks, decelerates into 100% */
-function logProgress(t: number): number {
-  const clamped = Math.min(1, Math.max(0, t));
-  return Math.log1p(clamped * 9) / Math.log(10);
 }
 
 function Crosshair() {
@@ -35,24 +29,42 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
   const [isRevealed, setIsRevealed] = useState(false);
   const enteringRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const loadedRef = useRef(false);
 
+  // ~3.5s intro — video plays alongside, counter finishes before it gets boring
   useEffect(() => {
+    const video = videoRef.current;
     let raf = 0;
+    loadedRef.current = false;
     const start = performance.now();
 
-    const tick = (now: number) => {
-      const t = (now - start) / LOAD_MS;
-      const next = Math.min(100, Math.max(1, Math.round(logProgress(t) * 99) + 1));
-      setProgress(next);
-
-      if (t < 1) {
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-
+    const finish = () => {
+      if (loadedRef.current) return;
+      loadedRef.current = true;
       setProgress(100);
       setIsLoaded(true);
+      cancelAnimationFrame(raf);
     };
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / INTRO_MS);
+      const next = Math.min(100, Math.max(1, Math.round(t * 100)));
+      setProgress(next);
+
+      if (t >= 1) {
+        finish();
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    if (video) {
+      video.loop = true;
+      video.playbackRate = 1;
+      video.play().catch(() => {
+        /* muted autoplay usually allowed */
+      });
+    }
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -71,20 +83,14 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
         setIsRevealed(true);
         onRevealed?.();
       }, SHUTTER_MS + 80);
-    }, 420);
+    }, 320);
 
     return () => clearTimeout(hold);
   }, [isLoaded, isRevealed, onRevealed]);
 
-  useEffect(() => {
-    videoRef.current?.play().catch(() => {
-      /* muted autoplay is usually allowed */
-    });
-  }, []);
-
   if (isRevealed) return null;
 
-  const pad = String(progress).padStart(2, '0');
+  const label = progress >= 100 ? '100' : String(progress).padStart(2, '0');
 
   return (
     <div
@@ -101,21 +107,31 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
           isShutterOpen ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        {/* Balanced hero lens — bottle fully exposed, breathing room around */}
+        {/* Load timer — top right, Canela header weight */}
+        <p
+          className="pointer-events-none absolute top-6 right-6 sm:top-8 sm:right-8 md:top-10 md:right-12 z-30 font-serif text-[clamp(3.5rem,9vw,6.5rem)] font-bold tracking-[0.06em] tabular-nums text-[#ECE6D8]/90 leading-none"
+          aria-live="polite"
+        >
+          {label}%
+        </p>
+
+        {/* Hero lens — bottle sharp; only left/right frame edges dissolve */}
         <div
           className="relative overflow-hidden"
           style={{
-            width: 'min(56vw, 780px)',
-            height: 'min(58vh, 560px)',
+            width: 'min(40vw, 440px)',
+            height: 'min(68vh, 600px)',
+            // Horizontal feather only — keeps full bottle height
             WebkitMaskImage:
-              'radial-gradient(ellipse 88% 84% at 50% 48%, #000 52%, transparent 80%)',
-            maskImage: 'radial-gradient(ellipse 88% 84% at 50% 48%, #000 52%, transparent 80%)',
+              'linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%)',
+            maskImage:
+              'linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%)',
           }}
         >
           <video
             ref={videoRef}
-            src="/clip4.mp4"
-            className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center brightness-[1.1] contrast-[1.05]"
+            src="/clip5.mp4"
+            className="absolute inset-0 h-full w-full scale-x-[1.06] object-contain object-center brightness-[1.1] contrast-[1.05]"
             autoPlay
             muted
             loop
@@ -123,28 +139,48 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
             preload="auto"
             aria-hidden
           />
+          {/* Side curtains — kill the sharp vertical clip frame */}
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-y-0 left-0 w-[18%]"
             style={{
-              boxShadow:
-                'inset 0 0 36px 20px #0D0B0A, inset 0 0 64px 36px rgba(13,11,10,0.75)',
+              background:
+                'linear-gradient(to right, #0D0B0A 0%, #0D0B0A 45%, rgba(13,11,10,0.65) 70%, transparent 100%)',
             }}
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-0 mix-blend-soft-light"
-            style={{ backgroundColor: 'rgba(212, 163, 115, 0.05)' }}
+            className="pointer-events-none absolute inset-y-0 right-0 w-[18%]"
+            style={{
+              background:
+                'linear-gradient(to left, #0D0B0A 0%, #0D0B0A 45%, rgba(13,11,10,0.65) 70%, transparent 100%)',
+            }}
+            aria-hidden
+          />
+          {/* Tiny top kiss */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-[5%]"
+            style={{ background: 'linear-gradient(to bottom, #0D0B0A, transparent)' }}
+            aria-hidden
+          />
+          {/* Bottom veil — softens base + covers Kling AI watermark */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[18%]"
+            style={{
+              background:
+                'linear-gradient(to top, #0D0B0A 0%, #0D0B0A 35%, rgba(13,11,10,0.75) 60%, transparent 100%)',
+            }}
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-x-[8%] bottom-0 h-[14%] backdrop-blur-[6px]"
+            style={{
+              maskImage: 'linear-gradient(to top, #000 0%, #000 40%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to top, #000 0%, #000 40%, transparent 100%)',
+            }}
             aria-hidden
           />
           <Crosshair />
         </div>
-
-        <p
-          className="mt-8 font-mono text-[9px] tracking-[0.25em] text-[#ECE6D8]/55 uppercase"
-          aria-live="polite"
-        >
-          Compiling Profile Matrix // [{pad}]%
-        </p>
       </div>
 
       <div

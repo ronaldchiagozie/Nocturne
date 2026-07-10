@@ -141,16 +141,31 @@ body {
 @media (max-width: 768px) {
   .hero-bottle-pin {
     perspective: none;
-    transform: translateZ(0);
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
   }
 
   .hero-bottle-layer {
     transform-style: flat;
-    will-change: auto;
+    will-change: transform, opacity;
   }
 
   .hero-bottle-image {
     transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+
+  /* Cards scroll in normal flow — no compositor thrash */
+  .hero-cards-grid {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    contain: layout paint;
+  }
+
+  .hero-cards-grid article {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
 
@@ -251,18 +266,6 @@ video,
 /* ── Site footer ── */
 .site-footer {
   position: relative;
-}
-
-.site-footer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 70% 50% at 50% 100%,
-    rgba(13, 11, 10, 0.025),
-    transparent 65%
-  );
 }
 
 /* ── The Distiller ── */
