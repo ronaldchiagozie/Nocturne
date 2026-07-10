@@ -8,6 +8,8 @@ import { ScentVault, VaultTab } from './components/ScentVault';
 import { Distiller } from './components/Distiller';
 import { CollectionsPanel } from './components/CollectionsPanel';
 import { ProductDetailPanel } from './components/ProductDetailPanel';
+// import { ApertureIntro } from './components/ApertureIntro';
+import { SoundscapeProvider } from './context/SoundscapeContext';
 import { useLenis, setScrollLocked } from './hooks/useLenis';
 import { DistillerResult } from './data/distiller';
 import { DEFAULT_PRODUCT_ID, ProductId } from './data/products';
@@ -26,6 +28,8 @@ export default function App() {
   const [checkoutOverride, setCheckoutOverride] = useState<CheckoutOverride | undefined>();
   const [orders, setOrders] = useState<SimulatedOrder[]>([]);
   const [detailProductId, setDetailProductId] = useState<ProductId | null>(null);
+  // Preview intro disabled for now — set false + uncomment ApertureIntro to restore
+  const [introRevealed] = useState(true);
 
   useLenis();
 
@@ -44,6 +48,7 @@ export default function App() {
   }, []);
 
   const scrollLocked =
+    !introRevealed ||
     menuOpen ||
     drawerOpen ||
     vaultOpen ||
@@ -54,7 +59,6 @@ export default function App() {
   useEffect(() => {
     setScrollLocked(scrollLocked);
   }, [scrollLocked]);
-
   const openCheckout = (
     productId: ProductId = DEFAULT_PRODUCT_ID,
     override?: CheckoutOverride,
@@ -84,78 +88,87 @@ export default function App() {
   };
 
   return (
-    <div className="relative bg-cream text-canvas min-h-screen">
-      <Navigation
-        orderCount={orders.length}
-        onCheckout={() => openCheckout()}
-        onOpenVault={() => setVaultOpen(true)}
-        onOpenDistiller={() => setDistillerOpen(true)}
-        onOpenCollections={() => setCollectionsOpen(true)}
-        onMenuChange={setMenuOpen}
-      />
+    <SoundscapeProvider>
+      <div className="relative bg-cream text-canvas min-h-screen">
+        {/* {!introRevealed && <ApertureIntro onRevealed={() => setIntroRevealed(true)} />} */}
 
-      <HeroScroll
-        onCheckout={openCheckout}
-        onOpenDistiller={() => setDistillerOpen(true)}
-        onOpenProductDetail={setDetailProductId}
-      />
+        <Navigation
+          orderCount={orders.length}
+          onCheckout={() => openCheckout()}
+          onOpenVault={() => setVaultOpen(true)}
+          onOpenDistiller={() => setDistillerOpen(true)}
+          onOpenCollections={() => setCollectionsOpen(true)}
+          onMenuChange={setMenuOpen}
+        />
 
-      <CloseSection line={REPEATED_LINE} />
+        <HeroScroll
+          onCheckout={openCheckout}
+          onOpenDistiller={() => setDistillerOpen(true)}
+          onOpenProductDetail={setDetailProductId}
+        />
 
-      <SiteFooter
-        orderCount={orders.length}
-        onCheckout={() => openCheckout()}
-        onOpenDistiller={() => setDistillerOpen(true)}
-        onOpenVault={() => setVaultOpen(true)}
-        onOpenCollections={() => setCollectionsOpen(true)}
-      />
+        <CloseSection line={REPEATED_LINE} />
 
-      <VaultTab
-        count={orders.length}
-        isHidden={
-          vaultOpen || distillerOpen || collectionsOpen || menuOpen || detailProductId !== null
-        }
-        onOpen={() => setVaultOpen(true)}
-      />
+        <SiteFooter
+          orderCount={orders.length}
+          onCheckout={() => openCheckout()}
+          onOpenDistiller={() => setDistillerOpen(true)}
+          onOpenVault={() => setVaultOpen(true)}
+          onOpenCollections={() => setCollectionsOpen(true)}
+        />
 
-      <CollectionsPanel
-        isOpen={collectionsOpen}
-        onClose={() => setCollectionsOpen(false)}
-        onSelectProduct={setDetailProductId}
-        onOpenDistiller={() => setDistillerOpen(true)}
-      />
+        <VaultTab
+          count={orders.length}
+          isHidden={
+            !introRevealed ||
+            vaultOpen ||
+            distillerOpen ||
+            collectionsOpen ||
+            menuOpen ||
+            detailProductId !== null
+          }
+          onOpen={() => setVaultOpen(true)}
+        />
 
-      <Distiller
-        isOpen={distillerOpen}
-        onClose={() => setDistillerOpen(false)}
-        onSecure={handleDistillerSecure}
-        onViewSpec={(result) => setDetailProductId(result.productId)}
-      />
+        <CollectionsPanel
+          isOpen={collectionsOpen}
+          onClose={() => setCollectionsOpen(false)}
+          onSelectProduct={setDetailProductId}
+          onOpenDistiller={() => setDistillerOpen(true)}
+        />
 
-      <ProductDetailPanel
-        productId={detailProductId}
-        onClose={() => setDetailProductId(null)}
-        onCheckout={(productId) => {
-          setDetailProductId(null);
-          setCollectionsOpen(false);
-          setDistillerOpen(false);
-          openCheckout(productId);
-        }}
-      />
+        <Distiller
+          isOpen={distillerOpen}
+          onClose={() => setDistillerOpen(false)}
+          onSecure={handleDistillerSecure}
+          onViewSpec={(result) => setDetailProductId(result.productId)}
+        />
 
-      <CheckoutDrawer
-        isOpen={drawerOpen}
-        productId={checkoutProductId}
-        override={checkoutOverride}
-        onClose={() => {
-          setDrawerOpen(false);
-          setCheckoutOverride(undefined);
-        }}
-        onOrderCreated={handleOrderCreated}
-        onSecuredClose={() => setTimeout(() => setVaultOpen(true), 450)}
-      />
+        <ProductDetailPanel
+          productId={detailProductId}
+          onClose={() => setDetailProductId(null)}
+          onCheckout={(productId) => {
+            setDetailProductId(null);
+            setCollectionsOpen(false);
+            setDistillerOpen(false);
+            openCheckout(productId);
+          }}
+        />
 
-      <ScentVault isOpen={vaultOpen} orders={orders} onClose={() => setVaultOpen(false)} />
-    </div>
+        <CheckoutDrawer
+          isOpen={drawerOpen}
+          productId={checkoutProductId}
+          override={checkoutOverride}
+          onClose={() => {
+            setDrawerOpen(false);
+            setCheckoutOverride(undefined);
+          }}
+          onOrderCreated={handleOrderCreated}
+          onSecuredClose={() => setTimeout(() => setVaultOpen(true), 450)}
+        />
+
+        <ScentVault isOpen={vaultOpen} orders={orders} onClose={() => setVaultOpen(false)} />
+      </div>
+    </SoundscapeProvider>
   );
 }

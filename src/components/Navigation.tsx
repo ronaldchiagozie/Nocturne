@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavDrawer } from './NavDrawer';
+import { useSoundscape } from '../context/SoundscapeContext';
 import { scrollToTop } from '../hooks/useLenis';
 
 interface NavigationProps {
@@ -20,6 +21,7 @@ export function Navigation({
   onMenuChange,
 }: NavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isActive, isAudible, toggleMute } = useSoundscape();
 
   const setOpen = (open: boolean) => {
     setMenuOpen(open);
@@ -48,14 +50,26 @@ export function Navigation({
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="pointer-events-auto font-sans text-[10px] uppercase tracking-[0.28em] text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
-          aria-label="Open menu"
-        >
-          Menu
-        </button>
+        <div className="pointer-events-auto flex items-baseline gap-5 sm:gap-7">
+          {isActive && (
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="font-mono text-[9px] uppercase tracking-[0.22em] text-canvas/45 hover:text-canvas/80 transition-colors duration-300 cursor-pointer"
+              aria-label={isAudible ? 'Mute soundscape' : 'Unmute soundscape'}
+            >
+              {isAudible ? 'Sound' : 'Muted'}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="font-sans text-[10px] uppercase tracking-[0.28em] text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+            aria-label="Open menu"
+          >
+            Menu
+          </button>
+        </div>
       </nav>
 
       <NavDrawer

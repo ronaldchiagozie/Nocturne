@@ -10,7 +10,7 @@ interface CollectionsPanelProps {
 }
 
 const SLOT =
-  'absolute inset-0 w-full h-full object-contain object-center px-3 pt-3 pb-4 md:px-4 md:pt-4 md:pb-5';
+  'absolute inset-0 w-full h-full object-contain object-center px-2 pt-2 pb-3 md:px-3 md:pt-3 md:pb-4';
 
 export function CollectionsPanel({
   isOpen,
@@ -68,7 +68,7 @@ export function CollectionsPanel({
                   <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-4">
                     {item.label}
                   </p>
-                  <div className="relative aspect-[4/5] max-h-[150px] sm:max-h-[200px] w-full mb-3 sm:mb-4 overflow-hidden bg-cream">
+                  <div className="relative aspect-[4/5] max-h-[190px] sm:max-h-[250px] md:max-h-[280px] w-full mb-3 sm:mb-4 overflow-hidden bg-cream">
                     <img src={item.image} alt={item.name} className={SLOT} loading="lazy" />
                   </div>
                   <h3 className="font-serif text-base text-canvas tracking-tight leading-snug group-hover:opacity-80 transition-opacity">

@@ -458,7 +458,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             aria-hidden
           >
             <path
-              fill="#ECE6D8"
+              fill="#EFE9DF"
               fillRule="evenodd"
               d="M 0 0 H 100 V 100 H 0 Z M 50 50 m -22 0 a 22 22 0 1 0 44 0 a 22 22 0 1 0 -44 0"
             />

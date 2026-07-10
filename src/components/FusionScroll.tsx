@@ -7,7 +7,7 @@ import { images } from '../assets/images';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const CANVAS = '#ECE6D8';
+const CANVAS = '#EFE9DF';
 
 interface ProductCardProps {
   index: string;
