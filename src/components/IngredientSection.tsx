@@ -1,140 +1,342 @@
-import React, { useState } from 'react';
+import { useRef, useCallback } from 'react';
+import { useGSAP } from '@gsap/react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Ingredient } from '../types';
-import { motion, AnimatePresence } from 'motion/react';
 
-// Import local generated images securely
-import woodImg from '../assets/images/nocturne_wood_1783603381395.jpg';
-import citrusImg from '../assets/images/nocturne_citrus_1783603396739.jpg';
-import pepperImg from '../assets/images/nocturne_pepper_1783603428459.jpg';
+gsap.registerPlugin(ScrollTrigger);
 
 const INGREDIENTS: Ingredient[] = [
   {
     id: 'oud',
-    name: 'Oud',
+    index: '01',
+    name: 'OUD',
     weight: '250g',
-    category: 'Aged resinous',
-    description: 'A deep, oil-dense agarwood harvested from old mineral forests. It burns slowly, releasing a dense, dark smoke that anchors the formula.',
-    imageUrl: woodImg,
+    category: 'aged resinous',
+    percentage: '40%',
+    glow: 'rgba(138, 90, 46, 0.18)',
   },
   {
     id: 'bitter-orange',
-    name: 'Bitter Orange',
+    index: '02',
+    name: 'BITTER ORANGE',
     weight: '120g',
-    category: 'Cold-pressed rind',
-    description: 'Stripped of typical citrus sweetness. Exposes the bone-dry, citric oil of the orange rind, creating a sharp opening that immediately dissipates.',
-    imageUrl: citrusImg,
+    category: 'cold-pressed rind',
+    percentage: '25%',
+    glow: 'rgba(180, 110, 50, 0.16)',
   },
   {
     id: 'black-pepper',
-    name: 'Black Pepper',
+    index: '03',
+    name: 'BLACK PEPPER',
     weight: '85g',
-    category: 'Cracked spice',
-    description: 'Black pepper crushed under weight. A sharp, hot spice note that breaks the quietness of the wood, introducing a dry texture.',
-    imageUrl: pepperImg,
+    category: 'cracked spice',
+    percentage: '15%',
+    glow: 'rgba(120, 70, 45, 0.14)',
+  },
+  {
+    id: 'cedarwood',
+    index: '04',
+    name: 'CEDARWOOD',
+    weight: '60g',
+    category: 'dry timber',
+    percentage: '12%',
+    glow: 'rgba(90, 80, 60, 0.14)',
+  },
+  {
+    id: 'ambergris',
+    index: '05',
+    name: 'AMBERGRIS',
+    weight: '35g',
+    category: 'mineral salt',
+    percentage: '8%',
+    glow: 'rgba(160, 130, 80, 0.15)',
   },
 ];
 
-export const IngredientSection: React.FC = () => {
-  const [selectedIdx, setSelectedIdx] = useState<number>(0);
+const CREAM = '#EFE9DF';
+const TAUPE = '#6B655C';
+
+/** Scroll progress breakpoints: phase 1 ends 20%, phase 2 ends 50%, phase 3 splits remainder */
+const PHASE_ENDS = [0.2, 0.5, 0.675, 0.825, 1.0];
+
+function progressToIndex(progress: number): number {
+  if (progress < PHASE_ENDS[0]) return 0;
+  if (progress < PHASE_ENDS[1]) return 1;
+  if (progress < PHASE_ENDS[2]) return 2;
+  if (progress < PHASE_ENDS[3]) return 3;
+  return 4;
+}
+
+interface IngredientSectionProps {
+  onCheckout?: () => void;
+}
+
+export function IngredientSection({ onCheckout }: IngredientSectionProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const bottleRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const hoverLockRef = useRef(false);
+  const scrollActiveRef = useRef(0);
+
+  const setActiveLine = useCallback((idx: number) => {
+    lineRefs.current.forEach((line, i) => {
+      if (!line) return;
+      gsap.to(line, {
+        color: i === idx ? CREAM : TAUPE,
+        duration: 0.35,
+        ease: 'power2.out',
+        overwrite: 'auto',
+      });
+    });
+  }, []);
+
+  const scrollListToIndex = useCallback((idx: number) => {
+    if (!listRef.current) return;
+    const item = lineRefs.current[idx];
+    if (!item) return;
+
+    const list = listRef.current;
+    const offset = item.offsetTop - list.clientHeight / 2 + item.clientHeight / 2;
+
+    gsap.to(list, {
+      y: -Math.max(0, offset),
+      duration: 0.55,
+      ease: 'power2.inOut',
+      overwrite: 'auto',
+    });
+  }, []);
+
+  const applyScrollState = useCallback(
+    (idx: number) => {
+      if (hoverLockRef.current) return;
+      if (scrollActiveRef.current === idx) return;
+      scrollActiveRef.current = idx;
+      setActiveLine(idx);
+      scrollListToIndex(idx);
+    },
+    [setActiveLine, scrollListToIndex],
+  );
+
+  useGSAP(
+    () => {
+      if (
+        !trackRef.current ||
+        !pinRef.current ||
+        !bottleRef.current ||
+        !glowRef.current
+      ) {
+        return;
+      }
+
+      gsap.set(bottleRef.current, { scale: 1, force3D: true, transformOrigin: '50% 50%' });
+      gsap.set(glowRef.current, {
+        background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[0].glow} 0%, transparent 72%)`,
+      });
+      setActiveLine(0);
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: trackRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.8,
+          pin: pinRef.current,
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            applyScrollState(progressToIndex(self.progress));
+          },
+        },
+      });
+
+      // Phase 1 — 0→20%: oud, bottle scales +5%
+      tl.to(bottleRef.current, { scale: 1.05, ease: 'none', duration: 0.2 }, 0);
+      tl.to(
+        glowRef.current,
+        {
+          background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[0].glow} 0%, transparent 72%)`,
+          ease: 'none',
+          duration: 0.2,
+        },
+        0,
+      );
+
+      // Phase 2 — 20→50%: bitter orange, citrus glow
+      tl.to(
+        glowRef.current,
+        {
+          background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[1].glow} 0%, transparent 72%)`,
+          ease: 'none',
+          duration: 0.3,
+        },
+        0.2,
+      );
+
+      // Phase 3 — 50→100%: pepper, cedarwood, ambergris
+      tl.to(
+        glowRef.current,
+        {
+          background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[2].glow} 0%, transparent 72%)`,
+          ease: 'none',
+          duration: 0.175,
+        },
+        0.5,
+      );
+      tl.to(
+        glowRef.current,
+        {
+          background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[3].glow} 0%, transparent 72%)`,
+          ease: 'none',
+          duration: 0.175,
+        },
+        0.675,
+      );
+      tl.to(bottleRef.current, { scale: 1.03, ease: 'none', duration: 0.15 }, 0.825);
+      tl.to(
+        glowRef.current,
+        {
+          background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[4].glow} 0%, transparent 72%)`,
+          ease: 'none',
+          duration: 0.175,
+        },
+        0.825,
+      );
+    },
+    { scope: trackRef, dependencies: [setActiveLine, applyScrollState] },
+  );
+
+  const handleHover = (idx: number) => {
+    hoverLockRef.current = true;
+    setActiveLine(idx);
+    scrollListToIndex(idx);
+
+    gsap.to(glowRef.current, {
+      background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[idx].glow} 0%, transparent 72%)`,
+      duration: 0.35,
+      ease: 'power2.out',
+    });
+
+    gsap.to(bottleRef.current, {
+      scale: idx <= 1 ? 1.05 : idx === 4 ? 1.03 : 1.04,
+      duration: 0.35,
+      ease: 'power2.out',
+    });
+  };
+
+  const handleHoverEnd = () => {
+    hoverLockRef.current = false;
+    const idx = scrollActiveRef.current;
+    setActiveLine(idx);
+    scrollListToIndex(idx);
+
+    gsap.to(glowRef.current, {
+      background: `radial-gradient(ellipse 70% 60% at 50% 55%, ${INGREDIENTS[idx].glow} 0%, transparent 72%)`,
+      duration: 0.35,
+      ease: 'power2.out',
+    });
+
+    gsap.to(bottleRef.current, {
+      scale: idx <= 1 ? 1.05 : idx === 4 ? 1.03 : 1.04,
+      duration: 0.35,
+      ease: 'power2.out',
+    });
+  };
 
   return (
-    <section className="w-full min-screen py-32 px-6 md:px-12 flex flex-col justify-center select-none bg-canvas border-t border-cream/5">
-      <div className="max-w-5xl mx-auto w-full">
-        {/* Section Label */}
-        <div className="mb-12 flex justify-between items-baseline">
-          <span className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted">
-            Section 02 // Ingredients
-          </span>
-          <span className="font-mono text-[10px] text-taupe-muted">
-            [03 Raw Elements]
-          </span>
-        </div>
-
-        {/* Big quiet heading */}
-        <h2 className="font-serif text-3xl md:text-5xl text-cream tracking-tight mb-20 max-w-xl">
-          Five notes. One shape you’ll recognize on yourself before anyone else does.
-        </h2>
-
-        {/* Master layout: Left side images, right side description switcher */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
-          
-          {/* Left: The plain product macro photo representation */}
-          <div className="relative aspect-square w-full bg-[#12100E] border border-cream/5 overflow-hidden flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={selectedIdx}
-                src={INGREDIENTS[selectedIdx].imageUrl}
-                alt={INGREDIENTS[selectedIdx].name}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover filter brightness-[0.8] contrast-[1.1] grayscale hover:grayscale-0 transition-all duration-700"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.6 }}
-              />
-            </AnimatePresence>
-            
-            {/* Minimal overlay labels on image */}
-            <div className="absolute bottom-4 left-4 font-mono text-[10px] tracking-wider text-cream/70 bg-canvas/60 px-2 py-1 backdrop-blur-xs">
-              {INGREDIENTS[selectedIdx].name} // {INGREDIENTS[selectedIdx].weight}
+    <section ref={trackRef} className="relative h-[300vh] w-full bg-canvas">
+      <div
+        ref={pinRef}
+        className="sticky top-0 h-screen w-screen overflow-hidden bg-canvas"
+      >
+        <div className="absolute inset-0 flex flex-row">
+          {/* Left — batch analysis sheet + scroll-driven ingredient list */}
+          <div className="relative w-1/2 h-full flex flex-col justify-center px-8 md:px-12 lg:px-16 overflow-hidden">
+            <div className="shrink-0 mb-8 md:mb-12">
+              <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-3">
+                Batch analysis sheet
+              </p>
+              <p className="font-serif text-lg md:text-xl text-cream tracking-tight leading-snug">
+                Nocturne formula no. 07
+              </p>
+              <p className="font-body-italic italic text-xs text-taupe-muted mt-2 font-light leading-relaxed">
+                Five notes. One shape you&rsquo;ll recognize on yourself before anyone else does.
+              </p>
             </div>
-          </div>
 
-          {/* Right: Detailed interactive list */}
-          <div className="flex flex-col justify-center space-y-8">
-            <div className="flex flex-col space-y-6">
-              {INGREDIENTS.map((item, idx) => {
-                const isActive = idx === selectedIdx;
-                return (
+            <div className="relative flex-1 overflow-hidden mask-fade">
+              <div ref={listRef} className="relative will-change-transform">
+                {INGREDIENTS.map((item, idx) => (
                   <button
                     key={item.id}
-                    onClick={() => setSelectedIdx(idx)}
-                    className="text-left py-4 border-b border-cream/10 focus:outline-none cursor-pointer group flex justify-between items-baseline"
+                    ref={(el) => {
+                      lineRefs.current[idx] = el;
+                    }}
+                    type="button"
+                    onMouseEnter={() => handleHover(idx)}
+                    onMouseLeave={handleHoverEnd}
+                    className="block w-full text-left py-4 md:py-5 cursor-default focus:outline-none"
+                    style={{ color: idx === 0 ? CREAM : TAUPE }}
                   >
-                    <div>
-                      <span className="font-serif text-xl tracking-tight text-cream group-hover:text-amber-accent transition-colors duration-300">
+                    <div className="flex items-baseline gap-3 md:gap-5">
+                      <span className="font-mono text-[10px] tabular-nums shrink-0">
+                        {item.index}.
+                      </span>
+                      <span className="font-sans text-[10px] md:text-[11px] uppercase tracking-[0.2em]">
                         {item.name}
                       </span>
-                      <span className="ml-3 font-mono text-[9px] uppercase tracking-widest text-taupe-muted">
-                        {item.category}
-                      </span>
                     </div>
-                    <span className={`font-mono text-[10px] transition-colors duration-300 ${isActive ? 'text-amber-accent' : 'text-taupe-muted group-hover:text-cream'}`}>
-                      {isActive ? '● active' : `0${idx + 1}`}
-                    </span>
+                    <p className="font-body-italic italic text-xs md:text-sm font-light mt-2 pl-7 md:pl-9 leading-relaxed">
+                      {item.weight}, {item.category}.
+                    </p>
+                    <p className="font-mono text-[10px] tabular-nums mt-1 pl-7 md:pl-9">
+                      <span className="text-amber-accent">{item.percentage}</span>
+                    </p>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
-            {/* Quiet italicized description box */}
-            <div className="min-h-[120px] pt-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={selectedIdx}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-4"
-                >
-                  <p className="font-body-italic text-lg text-cream/90 italic leading-relaxed font-light">
-                    “{INGREDIENTS[selectedIdx].description}”
-                  </p>
-                  <div className="flex space-x-6 text-[10px] uppercase tracking-[0.2em] text-taupe-muted font-sans">
-                    <div>
-                      Weight: <span className="text-cream font-mono">{INGREDIENTS[selectedIdx].weight}</span>
-                    </div>
-                    <div>
-                      Extraction: <span className="text-cream">{INGREDIENTS[selectedIdx].category}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+            {onCheckout && (
+              <button
+                type="button"
+                onClick={onCheckout}
+                className="shrink-0 mt-6 text-left group cursor-pointer focus:outline-none"
+              >
+                <span className="block font-sans text-[10px] uppercase tracking-[0.25em] text-cream group-hover:text-cream/80 transition-colors">
+                  [ secure a bottle from batch no. 07 ]
+                </span>
+                <span className="block font-mono text-[11px] tabular-nums text-cream mt-3 group-hover:text-cream/80 transition-colors">
+                  ₦180,000 / $120 →
+                </span>
+              </button>
+            )}
+          </div>
+
+          {/* Right — bottle pinned as constant anchor */}
+          <div className="relative w-1/2 h-full flex items-center justify-center overflow-hidden">
+            <div
+              ref={glowRef}
+              className="absolute inset-0 pointer-events-none will-change-[background]"
+              aria-hidden
+            />
+            <div
+              ref={bottleRef}
+              className="relative will-change-transform"
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              <img
+                src="/bottle-cream.png"
+                alt="Nocturne No. 07"
+                className="w-[min(240px,30vw)] h-auto object-contain select-none"
+                draggable={false}
+              />
             </div>
           </div>
         </div>
       </div>
     </section>
   );
-};
+}

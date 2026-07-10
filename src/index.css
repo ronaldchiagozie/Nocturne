@@ -1,37 +1,161 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=EB+Garamond:ital,wght@1,400..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Bodoni Moda", serif;
-  --font-body-italic: "EB Garamond", serif;
-  --font-mono: "JetBrains Mono", monospace;
-  
-  --color-canvas: #0D0B0A;
-  --color-cream: #EFE9DF;
-  --color-amber-accent: #8A5A2E;
-  --color-taupe-muted: #6B655C;
+/* ── Display headings: Canela ── */
+@font-face {
+  font-family: "Canela";
+  src: url("../assets/fonts/canela/canela-Light-TRIAL.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("../assets/fonts/canela/canela-Regular-TRIAL.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("../assets/fonts/canela/canela-Bold-TRIAL.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Custom baseline styling to enforce neatness and mood */
+/* ── Body serif: GT Sectra Fine ── */
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Book.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Book-Italic.ttf") format("truetype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Regular-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Medium-Italic.ttf") format("truetype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Bold-Italic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT Sectra";
+  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Black-Italic.ttf") format("truetype");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@theme {
+  --font-serif: "Canela", "Georgia", serif;
+  --font-body-italic: "GT Sectra", "Georgia", serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+
+  --color-canvas: #0d0b0a;
+  --color-cream: #ece6d8;
+  --color-cream-plate: #ece6d8;
+  --color-amber-accent: #8a5a2e;
+  --color-taupe-muted: #6b655c;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 body {
-  background-color: var(--color-canvas);
-  color: var(--color-cream);
+  background-color: var(--color-cream);
+  color: var(--color-canvas);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar matching the minimal palette */
-::-webkit-scrollbar {
-  width: 6px;
+/* GPU layer for pinned scroll sections */
+video,
+.hero-bottle-image {
+  backface-visibility: hidden;
 }
-::-webkit-scrollbar-track {
-  background: var(--color-canvas);
+
+@keyframes scroll-distil {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(8px);
+  }
 }
-::-webkit-scrollbar-thumb {
-  background: var(--color-taupe-muted);
-  border-radius: 3px;
+
+.hero-scroll-line {
+  animation: scroll-distil 2.4s ease-in-out infinite;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-amber-accent);
+
+::selection {
+  background-color: var(--color-amber-accent);
+  color: var(--color-cream);
 }

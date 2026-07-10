@@ -1,0 +1,117 @@
+import { useEffect } from 'react';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+let lenis: Lenis | null = null;
+let tickerFn: ((time: number) => void) | null = null;
+let onLoad: (() => void) | null = null;
+let onRefresh: (() => void) | null = null;
+
+/** Init Lenis + ScrollTrigger sync — call before React render so ST sees scroll proxy */
+export function initLenisScroll() {
+  if (lenis) return lenis;
+
+  const root = document.documentElement;
+
+  ScrollTrigger.defaults({
+    pinType: 'transform',
+  });
+
+  lenis = new Lenis({
+    autoRaf: false,
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+    wheelMultiplier: 0.85,
+    touchMultiplier: 1.2,
+    syncTouch: true,
+  });
+
+  // CRITICAL: connect Lenis scroll to ScrollTrigger
+  lenis.on('scroll', ScrollTrigger.update);
+
+  tickerFn = (time: number) => {
+    lenis!.raf(time * 1000);
+  };
+  gsap.ticker.add(tickerFn);
+  gsap.ticker.lagSmoothing(0);
+
+  ScrollTrigger.scrollerProxy(root, {
+    scrollTop(value) {
+      if (arguments.length) {
+        lenis!.scrollTo(value, { immediate: true });
+      }
+      return lenis!.scroll;
+    },
+    getBoundingClientRect() {
+      return {
+        top: 0,
+        left: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+    },
+    pinType: 'transform',
+  });
+
+  onRefresh = () => lenis!.resize();
+  ScrollTrigger.addEventListener('refresh', onRefresh);
+
+  onLoad = () => ScrollTrigger.refresh();
+  window.addEventListener('load', onLoad);
+
+  ScrollTrigger.refresh();
+
+  return lenis;
+}
+
+export function destroyLenisScroll() {
+  if (onLoad) {
+    window.removeEventListener('load', onLoad);
+    onLoad = null;
+  }
+  if (onRefresh) {
+    ScrollTrigger.removeEventListener('refresh', onRefresh);
+    onRefresh = null;
+  }
+  if (tickerFn) {
+    gsap.ticker.remove(tickerFn);
+    tickerFn = null;
+  }
+  if (lenis) {
+    lenis.destroy();
+    lenis = null;
+  }
+  ScrollTrigger.scrollerProxy(document.documentElement, {});
+  ScrollTrigger.clearScrollMemory();
+}
+
+export function useLenis() {
+  useEffect(() => {
+    initLenisScroll();
+    return () => destroyLenisScroll();
+  }, []);
+}
+
+/** Throttled video seek — avoids frame-by-frame decode jitter */
+export function seekVideo(video: HTMLVideoElement, time: number) {
+  const duration = video.duration;
+  if (!duration || !Number.isFinite(duration)) return;
+
+  const target = Math.max(0, Math.min(time, duration - 0.04));
+  if (Math.abs(video.currentTime - target) < 0.045) return;
+
+  if ('fastSeek' in video && typeof video.fastSeek === 'function') {
+    try {
+      video.fastSeek(target);
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  video.currentTime = target;
+}
