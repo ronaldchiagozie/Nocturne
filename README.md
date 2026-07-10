@@ -1,20 +1,25 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Nocturne
 
-# Run and deploy your AI Studio app
+Luxury extrait de parfum storefront — scroll-driven hero, product vault, formulation distiller, and apothecary spec sheets.
 
-This contains everything you need to run your app locally.
+## Stack
 
-View your app in AI Studio: https://ai.studio/apps/b2e5546e-c06d-4c06-9f4d-3fcdbf8f8804
+- React 19 + TypeScript + Vite
+- GSAP ScrollTrigger + Lenis smooth scroll
+- Tailwind CSS v4
 
-## Run Locally
+## Run locally
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev
+```
 
+Open [http://localhost:3000](http://localhost:3000).
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Build
+
+```bash
+npm run build
+npm run preview
+```

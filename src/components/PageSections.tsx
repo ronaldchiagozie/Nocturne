@@ -111,16 +111,3 @@ export function CloseSection({ line }: { line: string }) {
     </section>
   );
 }
-
-export function SiteFooter() {
-  return (
-    <footer className="px-6 md:px-12 py-12 flex justify-between items-baseline bg-cream">
-      <span className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted">
-        &copy; 2026 Nocturne
-      </span>
-      <span className="font-mono text-[9px] tabular-nums text-taupe-muted">
-        Batch 07
-      </span>
-    </footer>
-  );
-}

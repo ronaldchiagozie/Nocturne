@@ -139,6 +139,16 @@ video,
   backface-visibility: hidden;
 }
 
+.hero-bottle-pin {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.hero-bottle-layer {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 @keyframes scroll-distil {
   0%,
   100% {
@@ -158,4 +168,114 @@ video,
 ::selection {
   background-color: var(--color-amber-accent);
   color: var(--color-cream);
+}
+
+/* ── Scent Vault ── */
+.vault-panel {
+  background: linear-gradient(180deg, #14110f 0%, #0a0908 100%);
+  border-top: 1px solid rgba(236, 230, 216, 0.08);
+  box-shadow: 0 -24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.vault-panel-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(212, 163, 115, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.vault-shelf-glass {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12) 20%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.12) 80%,
+    transparent
+  );
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.vault-bottle-image {
+  filter: drop-shadow(0 0 12px rgba(212, 163, 115, 0.15));
+}
+
+.vault-tab {
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: rgba(13, 11, 10, 0.82);
+  border: 1px solid rgba(236, 230, 216, 0.1);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.vault-tab:hover {
+  border-color: rgba(236, 230, 216, 0.22);
+  background: rgba(13, 11, 10, 0.92);
+}
+
+/* ── Batch scarcity ledger ── */
+.batch-ledger {
+  letter-spacing: 0.14em;
+}
+
+/* ── Site footer ── */
+.site-footer {
+  position: relative;
+}
+
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 70% 50% at 50% 100%,
+    rgba(13, 11, 10, 0.025),
+    transparent 65%
+  );
+}
+
+/* ── The Distiller ── */
+.distiller-panel {
+  background: var(--color-cream-plate);
+}
+
+.distiller-bottle-reveal {
+  filter: drop-shadow(0 20px 40px rgba(13, 11, 10, 0.15));
+}
+
+.distiller-option:focus-visible {
+  outline: 1px solid rgba(13, 11, 10, 0.25);
+  outline-offset: 2px;
+}
+
+/* ── Apothecary spec sheet ── */
+.spec-sheet-bottle {
+  filter: drop-shadow(0 20px 40px rgba(13, 11, 10, 0.18));
+}
+
+.spec-metric-indicator {
+  box-shadow: 0 0 0 1px rgba(13, 11, 10, 0.08);
+}
+
+/* ── Checkout allocation ledger ── */
+.checkout-bottle-hero {
+  filter: drop-shadow(0 20px 40px rgba(13, 11, 10, 0.2));
+}
+
+.checkout-stamp-mark {
+  transform: rotate(-12deg);
+  background: rgba(236, 230, 216, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(127, 29, 29, 0.08);
+}
+
+.checkout-signature-input {
+  caret-color: #8a5a2e;
+}
+
+/* ── Nav drawer ── */
+.nav-drawer {
+  box-shadow: -16px 0 48px rgba(13, 11, 10, 0.08);
 }

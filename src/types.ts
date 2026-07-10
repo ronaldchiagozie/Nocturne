@@ -1,3 +1,6 @@
+import type { BottleVariantId } from './data/bottleVariants';
+import type { ProductId } from './data/products';
+
 export interface PersonalizationConfig {
   name: string;
   location: string;
@@ -26,8 +29,21 @@ export interface Ingredient {
 
 export interface SimulatedOrder {
   id: string;
+  productId: ProductId;
+  productLabel: string;
+  productTitle: string;
+  variantId: BottleVariantId;
+  /** Set when matched via The Distiller — e.g. "No. 17 Violet Noir" */
+  formulationLabel?: string;
   personalization: PersonalizationConfig;
   qty: number;
   timestamp: string;
   status: 'Received' | 'Compounding' | 'Dispatched';
+}
+
+export interface CheckoutOverride {
+  variantId?: BottleVariantId;
+  formulationLabel?: string;
+  productLabel?: string;
+  productTitle?: string;
 }

@@ -23,12 +23,13 @@ export function initLenisScroll() {
 
   lenis = new Lenis({
     autoRaf: false,
-    duration: 1.2,
+    duration: 1.1,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smoothWheel: true,
-    wheelMultiplier: 0.85,
-    touchMultiplier: 1.2,
+    wheelMultiplier: 0.9,
+    touchMultiplier: 1.1,
     syncTouch: true,
+    lerp: 0.085,
   });
 
   // CRITICAL: connect Lenis scroll to ScrollTrigger

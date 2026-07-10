@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 44" fill="none" role="img" aria-label="Nocturne">
+  <rect x="1" y="5" width="34" height="34" rx="9" fill="#ECE6D8" stroke="#0D0B0A" stroke-width="1.25" />
+  <text
+    x="18"
+    y="27.5"
+    text-anchor="middle"
+    fill="#0D0B0A"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="16"
+    letter-spacing="0.06em"
+  >
+    N
+  </text>
+  <line x1="11" y1="31" x2="25" y2="31" stroke="#0D0B0A" stroke-width="1.1" stroke-linecap="round" />
+  <text
+    x="48"
+    y="29"
+    fill="#0D0B0A"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="15"
+    letter-spacing="0.32em"
+  >
+    NOCTURNE
+  </text>
+</svg>

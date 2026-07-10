@@ -1,43 +1,111 @@
-import { useRef } from 'react';
+import { useRef, type Ref } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images } from '../assets/images';
+import { PRODUCTS, ProductId } from '../data/products';
+import { BatchLedger } from './BatchLedger';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface HeroScrollProps {
-  onCheckout?: () => void;
+  onCheckout?: (productId: ProductId) => void;
+  onOpenDistiller?: () => void;
+  onOpenProductDetail?: (productId: ProductId) => void;
 }
 
-const CARDS = [
-  {
-    label: 'No. 04',
-    title: 'The base oud',
-    detail: '250g, aged resinous. The heavyweight anchor of No. 07.',
-    image: images.bottleCream4,
-    price: null,
-  },
-  {
-    label: 'No. 07',
-    title: 'Nocturne',
-    detail: 'Extrait de parfum. 50ml. Compounded to order.',
-    image: images.hero,
-    price: '₦180,000',
-  },
-  {
-    label: 'Pepper & Cedar',
-    title: 'Cracked pepper & cedar',
-    detail: '85g cracked spice, cedarwood bark. Heat and structure in the dry-down.',
-    image: images.bottleCream3,
-    price: null,
-  },
-] as const;
+const CARD_ORDER: ProductId[] = ['no03', 'no07', 'no05'];
+
+const CARDS = CARD_ORDER.map((id) => {
+  const product = PRODUCTS[id];
+  return {
+    productId: id,
+    label: product.label,
+    title: product.title,
+    detail: product.detail,
+    image: images[id === 'no03' ? 'no03' : id === 'no05' ? 'no05' : 'no07'],
+    imageAlt: `Nocturne ${product.label} ${product.title} extrait de parfum bottle`,
+    price: product.price,
+  };
+});
+
+function BottleSlot({
+  imageSrc,
+  imageAlt,
+  imageClassName,
+  imgRef,
+  slotRef,
+}: {
+  imageSrc: string;
+  imageAlt: string;
+  imageClassName: string;
+  imgRef?: Ref<HTMLImageElement>;
+  slotRef?: Ref<HTMLDivElement>;
+}) {
+  return (
+    <div ref={slotRef} className="relative aspect-[4/5] overflow-hidden bg-cream mb-6 md:mb-8">
+      <img ref={imgRef} src={imageSrc} alt={imageAlt} className={imageClassName} />
+    </div>
+  );
+}
+
+function CardFooter({
+  price,
+  productId,
+  onCheckout,
+}: {
+  price: string;
+  productId: ProductId;
+  onCheckout?: (productId: ProductId) => void;
+}) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <p className="font-mono text-[11px] tabular-nums text-canvas">{price}</p>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onCheckout?.(productId);
+        }}
+        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity cursor-pointer"
+      >
+        Add
+      </button>
+    </div>
+  );
+}
 
 const BOTTLE_SLOT_CLASS =
   'absolute inset-0 w-full h-full object-contain object-center px-4 pt-4 pb-6 md:px-6 md:pt-6 md:pb-8';
 
-export function HeroScroll({ onCheckout }: HeroScrollProps) {
+function HeroEditorial({
+  title,
+  body,
+  align = 'left',
+  className = '',
+}: {
+  title: string;
+  body: string;
+  align?: 'left' | 'right';
+  className?: string;
+}) {
+  return (
+    <div
+      className={`max-w-sm md:max-w-md pointer-events-none select-none ${
+        align === 'right' ? 'text-right ml-auto' : 'text-left'
+      } ${className}`}
+    >
+      <h2 className="font-serif text-[clamp(1.35rem,3vw,2rem)] text-canvas tracking-tight leading-snug">
+        {title}
+      </h2>
+      <p className="font-body-italic italic text-sm md:text-base text-taupe-muted leading-relaxed font-light mt-6 md:mt-8">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }: HeroScrollProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottleRef = useRef<HTMLDivElement>(null);
   const bottleAnimRef = useRef<HTMLDivElement>(null);
@@ -56,13 +124,12 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
       const measureDriftRight = () => {
         const img = bottleImgRef.current;
         const vw = window.innerWidth;
-        if (!img) return Math.round(vw * 0.2);
+        if (!img) return vw * 0.2;
 
         const margin = vw >= 768 ? 56 : 28;
         const bottleW = img.offsetWidth;
-        // Dock in the right lane — fully visible, aligned to the margin
         const targetCenterX = vw - margin - bottleW * 0.38;
-        return Math.round(targetCenterX - vw / 2);
+        return targetCenterX - vw / 2;
       };
 
       const measureLanding = () => {
@@ -70,21 +137,17 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
         const grid = cardsGridRef.current;
         const sticky = grid?.parentElement;
         const img = bottleImgRef.current;
-        if (!slot || !grid || !sticky || !img) return { x: 0, y: 0, scale: 0.55 };
+        if (!slot || !grid || !sticky || !img || grid.offsetWidth === 0) {
+          return { x: 0, y: 0, scale: 0.55 };
+        }
 
-        const vh = window.innerHeight;
         const vw = window.innerWidth;
+        const vh = window.innerHeight;
         const pad = vw >= 768 ? 24 : 16;
-        const gridH = grid.offsetHeight;
-        const gridW = grid.offsetWidth;
-        const stickyRect = sticky.getBoundingClientRect();
 
-        // Project where the sticky grid sits when chapter 3 is active (vertically centered)
-        const gridTop = Math.max(0, (vh - gridH) / 2);
-        const gridLeft = stickyRect.left + (stickyRect.width - gridW) / 2;
-
-        const targetX = gridLeft + slot.offsetLeft + slot.offsetWidth / 2;
-        const targetY = gridTop + slot.offsetTop + slot.offsetHeight / 2;
+        // offsetTop within the sticky flex container — stable, no getBoundingClientRect during scroll
+        const slotCenterX = grid.offsetLeft + slot.offsetLeft + slot.offsetWidth / 2;
+        const slotCenterY = grid.offsetTop + slot.offsetTop + slot.offsetHeight / 2;
 
         const innerW = slot.offsetWidth - pad * 2;
         const innerH = slot.offsetHeight - pad * 2;
@@ -92,8 +155,8 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
         const baseH = img.offsetHeight;
 
         return {
-          x: Math.round(targetX - vw / 2),
-          y: Math.round(targetY - vh / 2),
+          x: slotCenterX - vw / 2,
+          y: slotCenterY - vh / 2,
           scale: Math.min(innerW / baseW, innerH / baseH, 1),
         };
       };
@@ -116,6 +179,7 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
         rotateY: 0,
         transformOrigin: '50% 90%',
         force3D: true,
+        transformPerspective: 1200,
       });
       gsap.set([leftCardRef.current, rightCardRef.current], { xPercent: 0, opacity: 0 });
       gsap.set(centerCardRef.current, { opacity: 0 });
@@ -147,7 +211,7 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
           },
         });
 
-        // Ch1 (25%) — hero hold, slight turn at end
+        // Ch1 — hero hold, slight turn at end
         tl.to(bottleAnimRef.current, {
           x: 0,
           y: 0,
@@ -163,7 +227,7 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
           duration: 0.2,
         });
 
-        // Ch2 (25%) — dock right lane + rotate
+        // Ch2 — dock right lane + rotate
         tl.to(bottleAnimRef.current, {
           x: driftX,
           y: 0,
@@ -174,7 +238,7 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
           duration: 1,
         });
 
-        // Ch3 — snap back fast
+        // Ch3 — return to center before rising into slot
         tl.to(bottleAnimRef.current, {
           x: 0,
           y: 0,
@@ -200,10 +264,8 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
           2.1,
         );
 
-        // Re-measure right before landing so values match the sticky grid
         tl.call(refreshMetrics, [], 2.2);
 
-        // Smooth settle into slot — function values pick up fresh metrics on refresh/scrub
         tl.to(
           bottleAnimRef.current,
           {
@@ -213,23 +275,16 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
             rotation: 0,
             rotateY: 0,
             transformOrigin: '50% 50%',
-            ease: 'power2.out',
+            ease: 'none',
             duration: 0.55,
             roundProps: 'x,y',
           },
           2.22,
         );
 
-        // Hold settled — then instant handoff (no crossfade jitter)
         tl.to(bottleAnimRef.current, { ease: 'none', duration: 0.45 });
-        tl.call(
-          () => {
-            gsap.set(bottleAnimRef.current, { opacity: 0 });
-            gsap.set(centerBottleImgRef.current, { opacity: 1 });
-          },
-          [],
-          3.42,
-        );
+        tl.to(bottleAnimRef.current, { opacity: 0, ease: 'none', duration: 0.08 }, 3.42);
+        tl.to(centerBottleImgRef.current, { opacity: 1, ease: 'none', duration: 0.08 }, 3.42);
         tl.to(bottleAnimRef.current, { ease: 'none', duration: 0.18 });
       });
 
@@ -281,19 +336,30 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
               rotation: 0,
               rotateY: 0,
               transformOrigin: '50% 50%',
-              ease: 'power2.out',
+              ease: 'none',
               duration: 0.42,
               roundProps: 'x,y',
             },
             1.5,
           )
           .to(bottleAnimRef.current, { ease: 'none', duration: 0.3 })
-          .set(bottleAnimRef.current, { opacity: 0 }, 2.05)
-          .set(centerBottleImgRef.current, { opacity: 1 }, 2.05);
+          .to(bottleAnimRef.current, { opacity: 0, ease: 'none', duration: 0.08 }, 2.05)
+          .to(centerBottleImgRef.current, { opacity: 1, ease: 'none', duration: 0.08 }, 2.05);
       });
 
       const onRefreshInit = () => refreshMetrics();
       ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
+
+      let resizeTimer: ReturnType<typeof setTimeout>;
+      const onResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          refreshMetrics();
+          ScrollTrigger.refresh();
+        }, 150);
+      };
+
+      window.addEventListener('resize', onResize);
 
       requestAnimationFrame(() => {
         refreshMetrics();
@@ -308,6 +374,8 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
 
       return () => {
         window.removeEventListener('load', onLoad);
+        window.removeEventListener('resize', onResize);
+        clearTimeout(resizeTimer);
         ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
         mm.revert();
       };
@@ -320,12 +388,12 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
       <div
         ref={bottleRef}
         data-hero-object
-        className="absolute top-0 left-0 z-30 flex h-screen w-full items-center justify-center pointer-events-none"
+        className="absolute top-0 left-0 z-30 flex h-screen w-full items-center justify-center pointer-events-none hero-bottle-pin"
         style={{ perspective: '1200px' }}
       >
         <div
           ref={bottleAnimRef}
-          className="relative will-change-transform"
+          className="relative will-change-transform hero-bottle-layer"
           style={{ transformStyle: 'preserve-3d' }}
         >
           <div
@@ -335,7 +403,7 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
           <img
             ref={bottleImgRef}
             src={images.hero}
-            alt="Nocturne No. 07"
+            alt={CARDS[1].imageAlt}
             className="hero-bottle-image relative z-30 block h-[min(520px,62vh)] w-auto object-contain"
           />
         </div>
@@ -375,6 +443,18 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
             EXTRAIT DE PARFUM // 50ML
           </p>
 
+          <HeroEditorial
+            title="One scent."
+            body="Three compounds on the ledger. Nine color-shift formulations — each batch compounded to order, never mass-produced."
+            className="absolute left-6 md:left-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
+          />
+          <HeroEditorial
+            title="After dark."
+            body="Cracked pepper up front, smoked cedar through the heart, aged oud in the dry-down. Built for presence, not compliments."
+            align="right"
+            className="absolute right-6 md:right-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
+          />
+
           <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
             <span className="hero-scroll-line block h-8 w-px bg-neutral-400/70" aria-hidden />
             <p className="font-mono text-[10px] tracking-[0.2em] text-neutral-400">
@@ -389,97 +469,116 @@ export function HeroScroll({ onCheckout }: HeroScrollProps) {
         data-hero-chapter="2"
         className="relative min-h-screen w-full bg-cream-plate flex flex-col justify-end px-6 md:px-12 pb-28 md:pb-36"
       >
-        <p className="pointer-events-none select-none absolute right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl]">
+        <p className="pointer-events-none select-none absolute right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20]">
           EXTRAIT DE PARFUM // 50ML
         </p>
 
-        <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] text-canvas tracking-tight leading-snug max-w-xl">
-          Worn after dark.
-        </h1>
-        <p className="font-body-italic italic text-sm md:text-base text-taupe-muted leading-relaxed font-light max-w-md mt-8 md:mt-10">
-          A fragrance for the hours no one else sees. No florals, no compliments — dark, textured,
-          quietly dangerous.
-        </p>
+        <HeroEditorial
+          title="Compounded to order."
+          body="No. 03, 05, and 07 — plus six more on the ledger. Each extrait distilled for a different hour, a different intent."
+          align="right"
+          className="absolute right-6 md:right-12 top-[18%] md:top-[22%] lg:top-[26%] z-[20] hidden md:block"
+        />
+
+        <div className="relative z-[20]">
+          <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] text-canvas tracking-tight leading-snug max-w-xl">
+            Worn after dark.
+          </h1>
+          <p className="font-body-italic italic text-sm md:text-base text-taupe-muted leading-relaxed font-light max-w-md mt-8 md:mt-10">
+            A fragrance for the hours no one else sees. No florals, no compliments — dark, textured,
+            quietly dangerous.
+          </p>
+        </div>
       </section>
 
       {/* Chapter 3 — 3-column card landing */}
       <section data-hero-chapter="3" className="relative min-h-[200vh] w-full bg-cream-plate">
-        <div className="sticky top-0 flex h-screen w-full items-center justify-center px-4 md:px-8 lg:px-12">
+        <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center px-4 md:px-8 lg:px-12">
+          <BatchLedger className="mb-6 md:mb-8 lg:hidden text-center" />
           <div
             ref={cardsGridRef}
             className="relative w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 border border-neutral-300/80 bg-cream-plate z-20"
           >
             <article
               ref={leftCardRef}
-              className="border-b md:border-b-0 md:border-r border-neutral-300/80 p-5 md:p-6 lg:p-8 flex flex-col opacity-0"
+              onClick={() => onOpenProductDetail?.(CARDS[0].productId)}
+              className="border-b md:border-b-0 md:border-r border-neutral-300/80 p-5 md:p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
                 {CARDS[0].label}
               </p>
-              <div className="relative aspect-[4/5] overflow-hidden bg-cream mb-6 md:mb-8">
-                <img src={CARDS[0].image} alt={CARDS[0].title} className={BOTTLE_SLOT_CLASS} />
-              </div>
+              <BottleSlot
+                imageSrc={CARDS[0].image}
+                imageAlt={CARDS[0].imageAlt}
+                imageClassName={BOTTLE_SLOT_CLASS}
+              />
               <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[0].title}
               </h3>
-              <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1">
+              <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[0].detail}
               </p>
+              <CardFooter price={CARDS[0].price} productId={CARDS[0].productId} onCheckout={onCheckout} />
             </article>
 
             <article
               ref={centerCardRef}
-              className="border-b md:border-b-0 md:border-r border-neutral-300/80 p-5 md:p-6 lg:p-8 flex flex-col opacity-0"
+              onClick={() => onOpenProductDetail?.(CARDS[1].productId)}
+              className="border-b md:border-b-0 md:border-r border-neutral-300/80 p-5 md:p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
                 {CARDS[1].label}
               </p>
-              <div
-                ref={centerSlotRef}
-                className="relative aspect-[4/5] overflow-hidden bg-cream mb-6 md:mb-8"
-              >
-                <img
-                  ref={centerBottleImgRef}
-                  src={CARDS[1].image}
-                  alt="Nocturne No. 07"
-                  className={`${BOTTLE_SLOT_CLASS} opacity-0`}
-                />
-              </div>
+              <BottleSlot
+                imageSrc={CARDS[1].image}
+                imageAlt={CARDS[1].imageAlt}
+                imageClassName={`${BOTTLE_SLOT_CLASS} opacity-0`}
+                imgRef={centerBottleImgRef}
+                slotRef={centerSlotRef}
+              />
               <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[1].title}
               </h3>
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[1].detail}
               </p>
-              {CARDS[1].price && (
-                <div className="flex items-end justify-between gap-4">
-                  <p className="font-mono text-[11px] tabular-nums text-canvas">{CARDS[1].price}</p>
-                  <button
-                    type="button"
-                    onClick={onCheckout}
-                    className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity cursor-pointer"
-                  >
-                    Add
-                  </button>
-                </div>
-              )}
+              <CardFooter price={CARDS[1].price} productId={CARDS[1].productId} onCheckout={onCheckout} />
             </article>
 
-            <article ref={rightCardRef} className="p-5 md:p-6 lg:p-8 flex flex-col opacity-0">
+            <article
+              ref={rightCardRef}
+              onClick={() => onOpenProductDetail?.(CARDS[2].productId)}
+              className="p-5 md:p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
+            >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
                 {CARDS[2].label}
               </p>
-              <div className="relative aspect-[4/5] overflow-hidden bg-cream mb-6 md:mb-8">
-                <img src={CARDS[2].image} alt={CARDS[2].title} className={BOTTLE_SLOT_CLASS} />
-              </div>
+              <BottleSlot
+                imageSrc={CARDS[2].image}
+                imageAlt={CARDS[2].imageAlt}
+                imageClassName={BOTTLE_SLOT_CLASS}
+              />
               <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[2].title}
               </h3>
-              <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1">
+              <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[2].detail}
               </p>
+              <CardFooter price={CARDS[2].price} productId={CARDS[2].productId} onCheckout={onCheckout} />
             </article>
           </div>
+
+          {onOpenDistiller && (
+            <div className="pointer-events-auto mt-10 md:mt-12 w-full max-w-6xl text-center z-20">
+              <button
+                type="button"
+                onClick={onOpenDistiller}
+                className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors duration-300 cursor-pointer"
+              >
+                Nine formulations exist. Discover yours →
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </div>
