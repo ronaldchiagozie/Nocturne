@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images } from '../assets/images';
 import { PRODUCTS, ProductId } from '../data/products';
+import { preloadImages } from '../utils/preloadImages';
 import { BatchLedger } from './BatchLedger';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -35,16 +36,26 @@ function BottleSlot({
   imageClassName,
   imgRef,
   slotRef,
+  priority = false,
 }: {
   imageSrc: string;
   imageAlt: string;
   imageClassName: string;
   imgRef?: Ref<HTMLImageElement>;
   slotRef?: Ref<HTMLDivElement>;
+  priority?: boolean;
 }) {
   return (
     <div ref={slotRef} className="relative aspect-[4/5] overflow-hidden bg-cream mb-6 md:mb-8">
-      <img ref={imgRef} src={imageSrc} alt={imageAlt} className={imageClassName} />
+      <img
+        ref={imgRef}
+        src={imageSrc}
+        alt={imageAlt}
+        className={imageClassName}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchPriority={priority ? 'high' : 'auto'}
+      />
     </div>
   );
 }
@@ -181,6 +192,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
         rotateY: 0,
         transformOrigin: '50% 90%',
         force3D: !mobileMq.matches,
+        autoRound: true,
         transformPerspective: mobileMq.matches ? 0 : 1200,
       });
       gsap.set([leftCardRef.current, rightCardRef.current], { xPercent: 0, opacity: 0 });
@@ -292,28 +304,44 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
 
       mm.add('(max-width: 768px)', () => {
         refreshMetrics();
-        gsap.set(bottleAnimRef.current, { rotateY: 0, rotation: 0, transformPerspective: 0 });
+        gsap.set(bottleAnimRef.current, {
+          rotateY: 0,
+          rotation: 0,
+          transformPerspective: 0,
+          force3D: false,
+          autoRound: true,
+        });
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 1.25,
+            scrub: 0.45,
             pin: bottleRef.current,
             pinSpacing: false,
+            pinType: 'fixed',
             invalidateOnRefresh: true,
             anticipatePin: 0,
+            fastScrollEnd: true,
             onRefresh: refreshMetrics,
           },
         });
 
-        tl.to(bottleAnimRef.current, { x: 0, y: 0, scale: 1, ease: 'none', duration: 0.9 })
+        tl.to(bottleAnimRef.current, {
+          x: 0,
+          y: 0,
+          scale: 1,
+          ease: 'none',
+          duration: 0.9,
+          roundProps: 'x,y,scale',
+        })
           .to(bottleAnimRef.current, {
             x: driftX,
             scale: 0.9,
             ease: 'none',
             duration: 0.5,
+            roundProps: 'x,y,scale',
           })
           .to(bottleAnimRef.current, {
             x: 0,
@@ -322,6 +350,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
             transformOrigin: '50% 50%',
             ease: 'none',
             duration: 0.12,
+            roundProps: 'x,y,scale',
           })
           .to(centerCardRef.current, { opacity: 1, duration: 0.25 }, 1.35)
           .to([leftCardRef.current, rightCardRef.current], { opacity: 1, duration: 0.25 }, 1.42)
@@ -335,7 +364,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
               transformOrigin: '50% 50%',
               ease: 'none',
               duration: 0.42,
-              roundProps: 'x,y',
+              roundProps: 'x,y,scale',
             },
             1.5,
           )
@@ -357,6 +386,12 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       };
 
       window.addEventListener('resize', onResize);
+
+      const heroImages = [images.hero, ...CARDS.map((card) => card.image)];
+      preloadImages(heroImages).then(() => {
+        refreshMetrics();
+        ScrollTrigger.refresh();
+      });
 
       requestAnimationFrame(() => {
         refreshMetrics();
@@ -385,27 +420,27 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       <div
         ref={bottleRef}
         data-hero-object
-        className="absolute top-0 left-0 z-30 flex h-screen w-full items-center justify-center pointer-events-none hero-bottle-pin md:[perspective:1200px]"
+        className="absolute top-0 left-0 z-30 flex h-[100dvh] w-full items-center justify-center pointer-events-none hero-bottle-pin md:[perspective:1200px]"
       >
-        <div
-          ref={bottleAnimRef}
-          className="relative hero-bottle-layer md:will-change-transform"
-        >
+        <div ref={bottleAnimRef} className="relative hero-bottle-layer md:will-change-transform">
           <div
-            className="hero-bottle-shadow absolute bottom-[6%] left-1/2 -translate-x-1/2 w-56 h-8 rounded-full blur-2xl opacity-35"
+            className="hero-bottle-shadow absolute bottom-[6%] left-1/2 -translate-x-1/2 w-56 h-8 rounded-full blur-2xl opacity-35 hidden md:block"
             style={{ background: 'rgba(13,11,10,0.3)' }}
           />
           <img
             ref={bottleImgRef}
             src={images.hero}
             alt={CARDS[1].imageAlt}
-            className="hero-bottle-image relative z-30 block h-[min(400px,52vh)] sm:h-[min(460px,58vh)] md:h-[min(520px,62vh)] w-auto object-contain"
+            className="hero-bottle-image relative z-30 block h-[min(400px,52dvh)] sm:h-[min(460px,58dvh)] md:h-[min(520px,62vh)] w-auto object-contain"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
         </div>
       </div>
 
       {/* Chapter 1 — hero */}
-      <section data-hero-chapter="1" className="relative min-h-screen w-full bg-cream-plate">
+      <section data-hero-chapter="1" className="relative min-h-[100dvh] w-full bg-cream-plate">
         <div className="absolute inset-0 z-0 overflow-hidden bg-cream-plate" />
 
         <p
@@ -457,7 +492,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
       {/* Chapter 2 — worn after dark copy */}
       <section
         data-hero-chapter="2"
-        className="relative min-h-screen w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pb-24 sm:pb-28 md:pb-36"
+        className="relative min-h-[100dvh] w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pb-24 sm:pb-28 md:pb-36"
       >
         <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
           EXTRAIT DE PARFUM // 50ML
@@ -483,7 +518,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
 
       {/* Chapter 3 — 3-column card landing */}
       <section data-hero-chapter="3" className="relative min-h-[170vh] md:min-h-[200vh] w-full bg-cream-plate">
-        <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center px-4 md:px-8 lg:px-12">
+        <div className="sticky top-0 flex h-[100dvh] w-full flex-col items-center justify-center px-4 md:px-8 lg:px-12">
           <BatchLedger className="mb-6 md:mb-8 lg:hidden text-center" />
           <div
             ref={cardsGridRef}
@@ -501,6 +536,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
                 imageSrc={CARDS[0].image}
                 imageAlt={CARDS[0].imageAlt}
                 imageClassName={BOTTLE_SLOT_CLASS}
+                priority
               />
               <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[0].title}
@@ -525,6 +561,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
                 imageClassName={`${BOTTLE_SLOT_CLASS} opacity-0`}
                 imgRef={centerBottleImgRef}
                 slotRef={centerSlotRef}
+                priority
               />
               <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[1].title}
@@ -547,6 +584,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
                 imageSrc={CARDS[2].image}
                 imageAlt={CARDS[2].imageAlt}
                 imageClassName={BOTTLE_SLOT_CLASS}
+                priority
               />
               <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[2].title}

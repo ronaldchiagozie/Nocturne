@@ -10,30 +10,51 @@ let lenis: Lenis | null = null;
 let tickerFn: ((time: number) => void) | null = null;
 let onLoad: (() => void) | null = null;
 let onRefresh: (() => void) | null = null;
+let nativeScroll = false;
 
-const isTouchDevice = () =>
+export const isTouchDevice = () =>
   typeof window !== 'undefined' &&
   ('ontouchstart' in window || window.matchMedia('(pointer: coarse)').matches);
 
-/** Init Lenis + ScrollTrigger sync */
+function initNativeScroll() {
+  nativeScroll = true;
+  ScrollTrigger.config({ ignoreMobileResize: true });
+  ScrollTrigger.normalizeScroll(true);
+  ScrollTrigger.defaults({ pinType: 'fixed' });
+  ScrollTrigger.refresh();
+}
+
+function teardownNativeScroll() {
+  if (!nativeScroll) return;
+  ScrollTrigger.normalizeScroll(false);
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
+  nativeScroll = false;
+}
+
+/** Init Lenis + ScrollTrigger sync (desktop). Native scroll on touch — avoids pin jitter. */
 export function initLenisScroll() {
-  if (lenis) return lenis;
+  if (lenis || nativeScroll) return lenis;
+
+  if (isTouchDevice()) {
+    initNativeScroll();
+    return null;
+  }
 
   const root = document.documentElement;
-  const touch = isTouchDevice();
 
   ScrollTrigger.config({ ignoreMobileResize: true });
   ScrollTrigger.defaults({ pinType: 'transform' });
 
   lenis = new Lenis({
     autoRaf: false,
-    duration: touch ? 1.05 : 1.1,
+    duration: 1.1,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smoothWheel: true,
     wheelMultiplier: 0.9,
-    touchMultiplier: touch ? 1 : 1.1,
+    touchMultiplier: 1.1,
     syncTouch: false,
-    lerp: touch ? 0.1 : 0.085,
+    lerp: 0.085,
   });
 
   lenis.on('scroll', ScrollTrigger.update);
@@ -73,13 +94,23 @@ export function initLenisScroll() {
   return lenis;
 }
 
-/** Pause background scroll while modals are open — prevents jitter and scroll bleed */
+/** Pause background scroll while modals are open */
 export function setScrollLocked(locked: boolean) {
-  if (!lenis) return;
+  if (lenis) {
+    if (locked) lenis.stop();
+    else {
+      lenis.start();
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    }
+    return;
+  }
+
   if (locked) {
-    lenis.stop();
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
   } else {
-    lenis.start();
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
     requestAnimationFrame(() => ScrollTrigger.refresh());
   }
 }
@@ -108,8 +139,9 @@ export function destroyLenisScroll() {
   if (lenis) {
     lenis.destroy();
     lenis = null;
+    ScrollTrigger.scrollerProxy(document.documentElement, {});
   }
-  ScrollTrigger.scrollerProxy(document.documentElement, {});
+  teardownNativeScroll();
   ScrollTrigger.clearScrollMemory();
 }
 

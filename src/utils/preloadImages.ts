@@ -1,0 +1,37 @@
+/** Above-the-fold hero bottles — preload before scroll animation needs them */
+const CRITICAL_IMAGES = [
+  '/bottle-cream.png',
+  '/bottle-cream3.png',
+  '/bottle-cream4.png',
+] as const;
+
+const deferred = new Set<string>();
+
+export function preloadCriticalImages(): void {
+  CRITICAL_IMAGES.forEach((src) => {
+    if (deferred.has(src)) return;
+    deferred.add(src);
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+  });
+}
+
+/** Resolve when every URL has loaded (or failed — never block the app) */
+export function preloadImages(urls: string[]): Promise<void> {
+  const unique = [...new Set(urls)].filter(Boolean);
+  if (unique.length === 0) return Promise.resolve();
+
+  return Promise.all(
+    unique.map(
+      (src) =>
+        new Promise<void>((resolve) => {
+          const img = new Image();
+          img.decoding = 'async';
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = src;
+        }),
+    ),
+  ).then(() => undefined);
+}

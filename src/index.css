@@ -141,10 +141,16 @@ body {
 @media (max-width: 768px) {
   .hero-bottle-pin {
     perspective: none;
+    transform: translateZ(0);
   }
 
   .hero-bottle-layer {
     transform-style: flat;
+    will-change: auto;
+  }
+
+  .hero-bottle-image {
+    transform: translateZ(0);
   }
 }
 
