@@ -103,9 +103,8 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
       data-revealed={isRevealed}
     >
       <div
-        className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-opacity duration-500 ${
-          isShutterOpen ? 'opacity-0' : 'opacity-100'
-        }`}
+        className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-opacity duration-500 ${isShutterOpen ? 'opacity-0' : 'opacity-100'
+          }`}
       >
         {/* Load timer: top right, Canela header weight */}
         <p
@@ -203,9 +202,8 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
       />
 
       <div
-        className={`pointer-events-none absolute inset-0 z-40 bg-[#D4A373]/20 blur-2xl mix-blend-screen transition-opacity duration-400 ${
-          showFlash ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`pointer-events-none absolute inset-0 z-40 bg-[#D4A373]/20 blur-2xl mix-blend-screen transition-opacity duration-400 ${showFlash ? 'opacity-100' : 'opacity-0'
+          }`}
         aria-hidden
       />
     </div>

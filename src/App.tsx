@@ -18,6 +18,23 @@ import { CheckoutOverride, SimulatedOrder } from './types';
 
 const REPEATED_LINE = 'One scent. Worn differently by everyone who wears it.';
 
+/** One vault slot per formulation (product + distilled label / variant) */
+function allocationKey(order: Pick<SimulatedOrder, 'productId' | 'variantId' | 'formulationLabel'>) {
+  return `${order.productId}::${order.formulationLabel ?? order.variantId}`;
+}
+
+function dedupeOrders(list: SimulatedOrder[]): SimulatedOrder[] {
+  const seen = new Set<string>();
+  const unique: SimulatedOrder[] = [];
+  for (const order of list) {
+    const key = allocationKey(order);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(order);
+  }
+  return unique;
+}
+
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -40,7 +57,11 @@ export default function App() {
       const normalized = parsed
         .map((item) => normalizeOrder(item))
         .filter((order): order is SimulatedOrder => order !== null);
-      setOrders(normalized);
+      const unique = dedupeOrders(normalized);
+      setOrders(unique);
+      if (unique.length !== normalized.length) {
+        localStorage.setItem('nocturne_batches', JSON.stringify(unique));
+      }
     } catch {
       /* ignore */
     }
@@ -77,7 +98,9 @@ export default function App() {
   };
 
   const handleOrderCreated = (order: SimulatedOrder) => {
-    const updated = [order, ...orders];
+    const key = allocationKey(order);
+    const withoutDupes = orders.filter((existing) => allocationKey(existing) !== key);
+    const updated = [order, ...withoutDupes];
     setOrders(updated);
     try {
       localStorage.setItem('nocturne_batches', JSON.stringify(updated));
