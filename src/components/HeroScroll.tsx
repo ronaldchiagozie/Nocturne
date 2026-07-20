@@ -5,12 +5,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images } from '../assets/images';
 import { PRODUCTS, ProductId } from '../data/products';
 import { preloadImages } from '../utils/preloadImages';
+import { useStore } from '../context/StoreContext';
+import { useAddToCart } from '../hooks/useAddToCart';
 import { BatchLedger } from './BatchLedger';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface HeroScrollProps {
-  onCheckout?: (productId: ProductId) => void;
   onOpenDistiller?: () => void;
   onOpenProductDetail?: (productId: ProductId) => void;
 }
@@ -85,24 +86,36 @@ function BottleSlot({
 function CardFooter({
   price,
   productId,
-  onCheckout,
 }: {
   price: string;
   productId: ProductId;
-  onCheckout?: (productId: ProductId) => void;
 }) {
+  const { add } = useAddToCart();
+  const { getStock } = useStore();
+  const stock = getStock(productId);
+  const left = stock?.stock ?? 0;
+  const soldOut = left === 0;
+
   return (
     <div className="flex items-end justify-between gap-4">
-      <p className="font-mono text-[11px] tabular-nums text-canvas">{price}</p>
+      <div>
+        <p className="font-mono text-[11px] tabular-nums text-canvas">{price}</p>
+        {stock && (
+          <p className="font-mono text-[8px] tracking-[0.1em] text-taupe-muted/80 mt-1 uppercase">
+            {soldOut ? 'Sold out today' : `${left} left`}
+          </p>
+        )}
+      </div>
       <button
         type="button"
+        disabled={soldOut}
         onClick={(e) => {
           e.stopPropagation();
-          onCheckout?.(productId);
+          add(productId);
         }}
-        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity cursor-pointer"
+        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Add
+        {soldOut ? 'Sold out' : 'Add to cart'}
       </button>
     </div>
   );
@@ -138,7 +151,7 @@ function HeroEditorial({
   );
 }
 
-export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }: HeroScrollProps) {
+export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottleRef = useRef<HTMLDivElement>(null);
   const bottleAnimRef = useRef<HTMLDivElement>(null);
@@ -581,7 +594,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[0].detail}
               </p>
-              <CardFooter price={CARDS[0].price} productId={CARDS[0].productId} onCheckout={onCheckout} />
+              <CardFooter price={CARDS[0].price} productId={CARDS[0].productId} />
             </article>
 
             <article
@@ -606,7 +619,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[1].detail}
               </p>
-              <CardFooter price={CARDS[1].price} productId={CARDS[1].productId} onCheckout={onCheckout} />
+              <CardFooter price={CARDS[1].price} productId={CARDS[1].productId} />
             </article>
 
             <article
@@ -629,7 +642,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[2].detail}
               </p>
-              <CardFooter price={CARDS[2].price} productId={CARDS[2].productId} onCheckout={onCheckout} />
+              <CardFooter price={CARDS[2].price} productId={CARDS[2].productId} />
             </article>
           </div>
 
@@ -640,7 +653,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
                 onClick={onOpenDistiller}
                 className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors duration-300 cursor-pointer"
               >
-                Nine formulations exist. Discover yours →
+                Eight formulations exist. Discover yours →
               </button>
             </div>
           )}
@@ -677,7 +690,6 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
                 <CardFooter
                   price={card.price}
                   productId={card.productId}
-                  onCheckout={onCheckout}
                 />
               </article>
             ))}
@@ -690,7 +702,7 @@ export function HeroScroll({ onCheckout, onOpenDistiller, onOpenProductDetail }:
                 onClick={onOpenDistiller}
                 className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors duration-300 cursor-pointer"
               >
-                Nine formulations exist. Discover yours →
+                Eight formulations exist. Discover yours →
               </button>
             </div>
           )}

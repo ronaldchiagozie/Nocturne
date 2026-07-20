@@ -1,11 +1,10 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { COLLECTION_ITEMS, COLLECTION_TAGLINE } from '../data/collection';
-import { ProductId } from '../data/products';
+import { COLLECTION_ITEMS, COLLECTION_TAGLINE, type CollectionItem } from '../data/collection';
 
 interface CollectionsPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectProduct: (productId: ProductId) => void;
+  onSelectProduct: (item: CollectionItem) => void;
   onOpenDistiller?: () => void;
 }
 
@@ -18,8 +17,8 @@ export function CollectionsPanel({
   onSelectProduct,
   onOpenDistiller,
 }: CollectionsPanelProps) {
-  const handleSelect = (productId: ProductId) => {
-    onSelectProduct(productId);
+  const handleSelect = (item: CollectionItem) => {
+    onSelectProduct(item);
   };
 
   return (
@@ -44,7 +43,7 @@ export function CollectionsPanel({
                 {COLLECTION_TAGLINE}
               </p>
               <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-2 sm:mt-3 max-w-md leading-relaxed">
-                Nine color-shift extrait compounds on the ledger. Compounded to order.
+                Eight color-shift extrait compounds on the ledger. Compounded to order.
               </p>
             </div>
             <button
@@ -65,7 +64,7 @@ export function CollectionsPanel({
                 <button
                   key={item.variantId}
                   type="button"
-                  onClick={() => handleSelect(item.productId)}
+                  onClick={() => handleSelect(item)}
                   className="group text-left p-3 sm:p-4 md:p-5 flex flex-col cursor-pointer hover:bg-cream/70 transition-colors bg-cream-plate"
                 >
                   <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-4">

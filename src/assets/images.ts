@@ -13,7 +13,6 @@ export const images = {
   no05: '/bottle-05-pepper-cedar.png',
   /** Nocturne No. 03, Oud Resin */
   no03: '/bottle-03-oud-resin.png',
-  bottle03DustRose: '/bottle-03-dust-rose.png',
   bottle03OudResin: '/bottle-03-oud-resin.png',
   bottle05PepperCedar: '/bottle-05-pepper-cedar.png',
   bottle07Nocturne: '/bottle-07-nocturne.png',

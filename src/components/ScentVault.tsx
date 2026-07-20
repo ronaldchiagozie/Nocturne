@@ -75,10 +75,10 @@ export function ScentVault({ isOpen, orders, onClose }: ScentVaultProps) {
               <div className="flex items-baseline justify-between px-6 md:px-12 pt-6 md:pt-8 pb-4 shrink-0">
                 <div>
                   <p className="font-serif text-[13px] tracking-[0.3em] uppercase text-cream/90">
-                    My Vault
+                    My Orders
                   </p>
                   <p className="font-mono text-[9px] tracking-[0.18em] text-cream/40 mt-2 uppercase">
-                    Vault Allocation: BATCH // 001-NG. Securely aging.
+                    Order history · Shipped from Lagos
                   </p>
                 </div>
                 <button
@@ -93,7 +93,7 @@ export function ScentVault({ isOpen, orders, onClose }: ScentVaultProps) {
               <div className="flex-1 min-h-0 pb-8 overflow-hidden">
                 {orders.length === 0 ? (
                   <p className="font-body-italic italic text-sm text-cream/45 font-light py-12 px-6 md:px-12">
-                    No allocations yet. Secure a bottle to begin your vault.
+                    No orders yet. Add bottles to your cart and checkout to get started.
                   </p>
                 ) : (
                   <div
@@ -134,7 +134,7 @@ interface VaultTabProps {
   onOpen: () => void;
 }
 
-/** Quiet bottom tab. Only visible when the user has secured bottles */
+/** Quiet bottom tab. Visible when the user has placed orders */
 export function VaultTab({ count, isHidden, onOpen }: VaultTabProps) {
   if (count === 0 || isHidden) return null;
 
@@ -143,10 +143,10 @@ export function VaultTab({ count, isHidden, onOpen }: VaultTabProps) {
       type="button"
       onClick={onOpen}
       className="vault-tab fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 pointer-events-auto cursor-pointer"
-      aria-label={`Open My Vault, ${count} bottle${count === 1 ? '' : 's'}`}
+      aria-label={`Open My Orders, ${count} order${count === 1 ? '' : 's'}`}
     >
       <span className="font-sans text-[9px] uppercase tracking-[0.28em] text-cream/70">
-        My Vault
+        My Orders
       </span>
       <span className="font-mono text-[9px] tabular-nums text-cream/40 ml-3">{count}</span>
     </button>

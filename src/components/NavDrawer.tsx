@@ -4,28 +4,33 @@ import { motion, AnimatePresence } from 'motion/react';
 interface NavDrawerProps {
   isOpen: boolean;
   orderCount: number;
+  cartCount: number;
   onClose: () => void;
-  onCheckout: () => void;
+  onOpenCart: () => void;
   onOpenVault: () => void;
   onOpenDistiller: () => void;
   onOpenCollections: () => void;
+  onOpenShop?: () => void;
 }
 
 const LINKS = [
+  { id: 'shop', label: 'Shop', action: 'shop' as const },
   { id: 'collections', label: 'Collections', action: 'collections' as const },
+  { id: 'cart', label: 'Cart', action: 'cart' as const },
   { id: 'distill', label: 'The Distiller', action: 'distill' as const },
-  { id: 'secure', label: 'Secure a bottle', action: 'checkout' as const },
-  { id: 'vault', label: 'My Vault', action: 'vault' as const },
+  { id: 'vault', label: 'My Orders', action: 'vault' as const },
 ];
 
 export function NavDrawer({
   isOpen,
   orderCount,
+  cartCount,
   onClose,
-  onCheckout,
+  onOpenCart,
   onOpenVault,
   onOpenDistiller,
   onOpenCollections,
+  onOpenShop,
 }: NavDrawerProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -39,8 +44,9 @@ export function NavDrawer({
   const handleAction = (action: (typeof LINKS)[number]['action']) => {
     onClose();
     setTimeout(() => {
+      if (action === 'shop') onOpenShop?.();
       if (action === 'collections') onOpenCollections();
-      if (action === 'checkout') onCheckout();
+      if (action === 'cart') onOpenCart();
       if (action === 'distill') onOpenDistiller();
       if (action === 'vault') onOpenVault();
     }, 280);
@@ -103,7 +109,12 @@ export function NavDrawer({
                         </span>
                         {link.action === 'vault' && orderCount > 0 && (
                           <span className="block font-mono text-[10px] tabular-nums text-taupe-muted mt-2">
-                            {orderCount} allocation{orderCount === 1 ? '' : 's'}
+                            {orderCount} order{orderCount === 1 ? '' : 's'}
+                          </span>
+                        )}
+                        {link.action === 'cart' && cartCount > 0 && (
+                          <span className="block font-mono text-[10px] tabular-nums text-taupe-muted mt-2">
+                            {cartCount} item{cartCount === 1 ? '' : 's'}
                           </span>
                         )}
                       </button>
@@ -115,10 +126,10 @@ export function NavDrawer({
 
             <div className="px-8 py-8 border-t border-canvas/10">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted">
-                Batch 07 // Extrait de parfum
+                Nocturne Atelier
               </p>
               <p className="font-body-italic italic text-xs text-taupe-muted font-light mt-3 leading-relaxed">
-                Compounded to order. Worn after dark.
+                Extrait de parfum, compounded to order. Ships from Lagos.
               </p>
             </div>
           </motion.aside>

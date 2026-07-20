@@ -1,208 +1,139 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { getProduct, ProductId, ScentMetric, getMetricDisplayLabel } from '../data/products';
+import { getProduct, ProductId } from '../data/products';
+import { getBottleVariant } from '../data/bottleVariants';
+import { useStore } from '../context/StoreContext';
+import { useAddToCart } from '../hooks/useAddToCart';
+import type { CheckoutOverride } from '../types';
 
 interface ProductDetailPanelProps {
   productId: ProductId | null;
+  override?: CheckoutOverride;
   onClose: () => void;
-  onCheckout: (productId: ProductId) => void;
 }
 
-function ScentMetricBar({
-  name,
-  metric,
-}: {
-  name: string;
-  metric: ScentMetric;
-}) {
-  const position = Math.min(10, Math.max(0, metric.value)) / 10;
-  const displayLabel = getMetricDisplayLabel(metric);
-
-  return (
-    <div className="spec-metric">
-      <div className="flex items-baseline justify-between gap-4 mb-2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-taupe-muted">
-          {name}
-        </span>
-        <span className="font-mono text-[10px] tabular-nums tracking-[0.12em] text-canvas">
-          {displayLabel}
-        </span>
-      </div>
-      <div className="flex justify-between font-mono text-[9px] tracking-[0.1em] text-taupe-muted mb-2">
-        <span>{metric.min}</span>
-        <span>{metric.max}</span>
-      </div>
-      <div className="relative h-px w-full bg-canvas/20">
-        <div
-          className="spec-metric-indicator absolute top-1/2 -translate-y-1/2 h-[3px] w-7 bg-canvas"
-          style={{ left: `calc(${position * 100}% - 14px)` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-export function ProductDetailPanel({ productId, onClose, onCheckout }: ProductDetailPanelProps) {
+export function ProductDetailPanel({ productId, override, onClose }: ProductDetailPanelProps) {
   const product = productId ? getProduct(productId) : null;
+  const { getStock } = useStore();
+  const { add, buyNow } = useAddToCart();
+  const stock = productId ? getStock(productId) : null;
+  const soldOut = stock ? stock.stock === 0 : false;
+
+  const label = override?.productLabel ?? product?.label ?? '';
+  const title = override?.formulationLabel ?? override?.productTitle ?? product?.title ?? '';
+  const image =
+    (override?.variantId ? getBottleVariant(override.variantId)?.image : undefined) ??
+    product?.image ??
+    '';
 
   return (
     <AnimatePresence>
       {product && (
-        <>
+        <div className="fixed inset-0 z-[215]" data-lenis-prevent role="dialog" aria-label={`${label} ${title}`}>
+          {/* Page overlay — see content behind, no solid gray block */}
           <motion.button
             type="button"
             aria-label="Close product details"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.28 }}
             onClick={onClose}
-            className="fixed inset-0 z-[215] bg-canvas/40 backdrop-blur-[2px] cursor-pointer"
+            className="absolute inset-0 bg-canvas/20 backdrop-blur-[3px] cursor-pointer"
           />
 
-          <motion.aside
-            initial={{ y: '100%', opacity: 0.95 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0.95 }}
-            transition={{ type: 'tween', duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 bottom-0 z-[220] w-full max-w-[100vw] h-[min(94dvh,880px)] bg-cream text-canvas shadow-[0_-24px_80px_rgba(13,11,10,0.14)] flex flex-col pb-[env(safe-area-inset-bottom)] overflow-hidden"
-            data-lenis-prevent
-            role="dialog"
-            aria-label={`${product.label} ${product.title} spec sheet`}
+          {/* Hero bottle */}
+          <motion.div
+            initial={{ opacity: 0, y: 36, scale: 0.88, rotate: -3 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, y: 20, scale: 0.94, rotate: -1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 26, mass: 0.9 }}
+            className="pointer-events-none absolute inset-x-0 top-[max(3rem,env(safe-area-inset-top))] bottom-[min(50dvh,440px)] flex items-end justify-center px-6 pb-2"
           >
-            <div
-              className="modal-scroll flex-1 px-3 sm:px-4 md:px-8 lg:px-12 py-4 sm:py-6 md:py-8 min-h-0 w-full"
-              data-modal-scroll
-            >
-              <div className="spec-sheet-frame mx-auto w-full max-w-5xl h-full min-h-0 md:min-h-[calc(94dvh-3rem)] border border-canvas/15 bg-cream flex flex-col min-w-0">
-                {/* Top bar */}
-                <div className="flex items-baseline justify-between gap-3 px-4 sm:px-5 md:px-8 py-4 sm:py-5 border-b border-canvas/15">
-                  <p className="font-sans text-[10px] uppercase tracking-[0.28em] text-taupe-muted">
-                    {product.label}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer shrink-0"
-                  >
-                    Close
-                  </button>
-                </div>
+            <motion.img
+              src={image}
+              alt={title}
+              initial={{ y: 12 }}
+              animate={{ y: 0 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 22, delay: 0.06 }}
+              className="h-full w-auto max-w-[min(88vw,360px)] object-contain object-bottom"
+              fetchPriority="high"
+            />
+          </motion.div>
 
-                {/* Split grid */}
-                <div className="grid md:grid-cols-[2fr_3fr] flex-1 min-h-0 min-w-0">
-                  {/* Left: bottle & tech log */}
-                  <div className="flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 border-b md:border-b-0 md:border-r border-canvas/15 min-w-0">
-                    <div className="relative w-full max-w-[220px] sm:max-w-[260px] md:max-w-[300px] flex items-center justify-center">
-                      <img
-                        src={product.image}
-                        alt={`${product.label} ${product.title}`}
-                        className="w-full h-auto max-h-[min(280px,38vh)] sm:max-h-[min(420px,50vh)] object-contain spec-sheet-bottle"
-                      />
-                    </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-[222] font-mono text-xl text-canvas/60 hover:text-canvas transition-colors cursor-pointer leading-none"
+            aria-label="Close"
+          >
+            ×
+          </button>
 
-                    <div className="w-full mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-canvas/15 min-w-0">
-                      <div className="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-center gap-2 md:gap-x-4 text-center font-mono text-[9px] sm:text-[10px] tracking-[0.12em] sm:tracking-[0.16em] text-canvas lowercase break-words">
-                        <span>formula no: {product.specs.formulaNo}</span>
-                        <span className="hidden md:inline text-canvas/25" aria-hidden>
-                          |
-                        </span>
-                        <span>concentration: {product.specs.concentration}</span>
-                        <span className="hidden md:inline text-canvas/25" aria-hidden>
-                          |
-                        </span>
-                        <span>projection limit: {product.specs.projectionLimit}</span>
-                      </div>
-                      <p className="text-center font-mono text-[9px] sm:text-[10px] tracking-[0.14em] text-taupe-muted lowercase mt-3">
-                        mist volume: {product.specs.mistVolume}
+          {/* Detail sheet — taller cream panel */}
+          <motion.aside
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'tween', duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-0 bottom-0 z-[220] bg-cream text-canvas pb-[env(safe-area-inset-bottom)] min-h-[min(50dvh,480px)]"
+          >
+            <div className="modal-scroll h-full px-5 sm:px-8 md:px-12 py-7 sm:py-8 md:py-9 flex flex-col justify-center" data-modal-scroll>
+              <div className="max-w-2xl mx-auto w-full">
+                <p className="font-mono text-[9px] uppercase tracking-[0.26em] text-taupe-muted">
+                  {label}
+                </p>
+
+                <h2 className="font-serif text-[clamp(1.65rem,5vw,2.35rem)] tracking-tight leading-tight mt-2">
+                  {title}
+                </h2>
+
+                <p className="font-body-italic italic text-sm sm:text-[15px] text-taupe-muted font-light mt-3 sm:mt-4 leading-relaxed max-w-lg">
+                  {product.character}
+                </p>
+
+                <p className="font-mono text-[8px] uppercase tracking-[0.12em] text-taupe-muted mt-5 sm:mt-6 leading-relaxed">
+                  {product.notes.top} · {product.notes.heart} · {product.notes.base}
+                </p>
+
+                <div className="mt-6 sm:mt-8 pt-6 border-t border-canvas/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+                  <div>
+                    <p className="font-mono text-[11px] tabular-nums text-canvas">
+                      {product.price}
+                      <span className="text-taupe-muted ml-2">· 50ml extrait</span>
+                    </p>
+                    {stock && (
+                      <p className="font-mono text-[8px] uppercase tracking-[0.16em] text-taupe-muted mt-1.5">
+                        {soldOut ? 'Sold out today' : `${stock.stock} left today`}
                       </p>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Right: spec sheet */}
-                  <div className="flex flex-col px-4 sm:px-5 md:px-8 py-5 sm:py-6 md:py-8 min-w-0">
-                    <div className="flex items-baseline justify-between gap-4 md:hidden mb-5">
-                      <p className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted">
-                        {product.label}
-                      </p>
-                    </div>
-
-                    <h2 className="font-serif text-[clamp(1.5rem,7vw,2.25rem)] tracking-wide text-canvas leading-tight">
-                      {product.title}
-                    </h2>
-
-                    <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mt-4 sm:mt-5 max-w-lg">
-                      {product.detail}
-                    </p>
-
-                    <p className="font-body-italic italic text-sm text-canvas leading-relaxed font-light mt-3 sm:mt-4 max-w-lg">
-                      {product.character}
-                    </p>
-
-                    {/* Notes — stack on narrow phones */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 mt-8 sm:mt-10 border-y border-canvas/15">
-                      {(
-                        [
-                          ['Top', product.notes.top],
-                          ['Heart', product.notes.heart],
-                          ['Base', product.notes.base],
-                        ] as const
-                      ).map(([heading, value], index) => (
-                        <div
-                          key={heading}
-                          className={`px-3 sm:px-3 md:px-5 py-4 sm:py-5 md:py-6 ${
-                            index < 2
-                              ? 'border-b sm:border-b-0 sm:border-r border-canvas/15'
-                              : ''
-                          }`}
-                        >
-                          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-taupe-muted mb-2 sm:mb-3">
-                            {heading}
-                          </p>
-                          <p className="font-serif text-xs text-canvas leading-relaxed">
-                            {value}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Scent metrics */}
-                    <div className="mt-8 pt-2">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-taupe-muted mb-6">
-                        Scent metrics
-                      </p>
-                      <div className="space-y-6 max-w-md">
-                        <ScentMetricBar name="Sillage" metric={product.metrics.sillage} />
-                        <ScentMetricBar name="Longevity" metric={product.metrics.longevity} />
-                        <ScentMetricBar name="Intensity" metric={product.metrics.intensity} />
-                      </div>
-                    </div>
-
-                    <p className="font-mono text-[10px] text-taupe-muted mt-8 leading-relaxed tracking-[0.06em]">
-                      {product.wear}
-                    </p>
+                  <div className="flex items-center gap-5 sm:gap-6">
+                    <button
+                      type="button"
+                      disabled={soldOut}
+                      onClick={() => add(product.id, { override })}
+                      className="font-sans text-[9px] uppercase tracking-[0.24em] text-canvas hover:text-taupe-muted transition-colors cursor-pointer disabled:opacity-40"
+                    >
+                      Add to cart
+                    </button>
+                    <button
+                      type="button"
+                      disabled={soldOut}
+                      onClick={() => {
+                        buyNow(product.id, { override });
+                        onClose();
+                      }}
+                      className="checkout-btn px-6 py-2.5 disabled:opacity-40"
+                    >
+                      Buy now
+                    </button>
                   </div>
-                </div>
-
-                {/* Bottom action bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 px-5 md:px-8 py-5 md:py-6 border-t border-canvas/15 bg-cream">
-                  <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-canvas">
-                    {product.price} / $120, 50ml
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onCheckout(product.id);
-                      onClose();
-                    }}
-                    className="font-sans text-[9px] uppercase tracking-[0.28em] bg-canvas text-cream px-8 py-3.5 rounded-full hover:opacity-90 transition-opacity cursor-pointer w-full sm:w-auto text-center"
-                  >
-                    Secure this bottle
-                  </button>
                 </div>
               </div>
             </div>
           </motion.aside>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

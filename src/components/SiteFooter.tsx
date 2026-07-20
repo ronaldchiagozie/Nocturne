@@ -2,13 +2,14 @@ import { scrollToTop } from '../hooks/useLenis';
 
 interface SiteFooterProps {
   orderCount?: number;
-  onCheckout?: () => void;
+  onOpenCart?: () => void;
   onOpenDistiller?: () => void;
   onOpenVault?: () => void;
   onOpenCollections?: () => void;
+  onOpenShop?: () => void;
 }
 
-type FooterAction = 'collections' | 'distill' | 'secure' | 'vault' | 'top';
+type FooterAction = 'shop' | 'collections' | 'cart' | 'distill' | 'vault' | 'top';
 
 const COLUMNS: {
   title: string;
@@ -17,9 +18,10 @@ const COLUMNS: {
   {
     title: 'Shop',
     links: [
+      { id: 'shop', label: 'All bottles' },
       { id: 'collections', label: 'Collections' },
-      { id: 'secure', label: 'Secure a bottle' },
-      { id: 'vault', label: 'My Vault', vault: true },
+      { id: 'cart', label: 'Cart' },
+      { id: 'vault', label: 'My Orders', vault: true },
     ],
   },
   {
@@ -27,7 +29,7 @@ const COLUMNS: {
     links: [
       { id: 'distill', label: 'The Distiller' },
       { id: 'top', label: 'The extrait' },
-      { id: 'collections', label: 'Nine formulations' },
+      { id: 'collections', label: 'Eight formulations' },
     ],
   },
 ];
@@ -36,15 +38,17 @@ const ATELIER_LINES = ['Lagos · NG', 'Batch 001-NG', '6.4281° N, 3.4219° E'] 
 
 export function SiteFooter({
   orderCount = 0,
-  onCheckout,
+  onOpenCart,
   onOpenDistiller,
   onOpenVault,
   onOpenCollections,
+  onOpenShop,
 }: SiteFooterProps) {
   const handle = (id: FooterAction) => {
-    if (id === 'collections') onOpenCollections?.();
+    if (id === 'shop') onOpenShop?.();
+    else if (id === 'collections') onOpenCollections?.();
+    else if (id === 'cart') onOpenCart?.();
     else if (id === 'distill') onOpenDistiller?.();
-    else if (id === 'secure') onCheckout?.();
     else if (id === 'vault') onOpenVault?.();
     else scrollToTop();
   };
@@ -53,7 +57,6 @@ export function SiteFooter({
     <footer className="site-footer relative w-full overflow-hidden bg-cream-plate border-t border-neutral-300/70 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div className="relative z-10 w-full px-5 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-24 pt-12 sm:pt-14 md:pt-20 pb-8 sm:pb-10 md:pb-12">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 sm:gap-12 lg:gap-16 xl:gap-24">
-          {/* Brand */}
           <div className="w-full lg:max-w-md xl:max-w-lg shrink-0">
             <button
               type="button"
@@ -73,16 +76,15 @@ export function SiteFooter({
             </button>
 
             <p className="font-body-italic italic text-sm md:text-[15px] text-taupe-muted leading-[1.7] font-light mt-4 sm:mt-5 md:mt-6 max-w-md">
-              Extrait de parfum for the hours no one else sees. Nine formulations. One worn
-              differently by everyone.
+              Extrait de parfum for the hours no one else sees. Eight formulations. Compounded to
+              order from our Lagos atelier.
             </p>
 
             <p className="font-mono text-[9px] tracking-[0.16em] text-taupe-muted/75 uppercase mt-5 sm:mt-6">
-              Extrait · 50ml · Compounded to order
+              Extrait · 50ml · Ships nationwide
             </p>
           </div>
 
-          {/* Columns: 2-up on phone, 3-up from sm, flex right on desktop */}
           <div className="w-full lg:flex-1 lg:min-w-0">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10 sm:gap-x-10 sm:gap-y-10 md:gap-12 lg:gap-10 xl:gap-16">
               {COLUMNS.map((col) => (
@@ -130,7 +132,6 @@ export function SiteFooter({
         </div>
       </div>
 
-      {/* Bottom rail */}
       <div className="relative z-10 w-full border-t border-neutral-300/60">
         <div className="w-full px-5 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-24 py-5 sm:py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-sans text-[11px] sm:text-[12px] text-taupe-muted">
@@ -150,7 +151,6 @@ export function SiteFooter({
         </div>
       </div>
 
-      {/* Watermark. Quieter on small screens */}
       <div className="relative z-0 flex items-end justify-center overflow-hidden pt-4 sm:pt-6 pb-0 min-h-[4.5rem] sm:min-h-[7rem] md:min-h-[9rem]">
         <p
           aria-hidden

@@ -5,9 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Nocturne. Extrait de parfum for the hours no one else sees. Nine formulations, compounded to order."
+      content="Nocturne. Extrait de parfum for the hours no one else sees. Eight formulations, compounded to order."
     />
     <meta name="theme-color" content="#ece6d8" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('nocturne_theme');
+          if (
+            theme === 'dark' ||
+            (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="preload" as="image" href="/bottle-07-nocturne.png" fetchpriority="high" />

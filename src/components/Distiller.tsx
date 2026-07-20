@@ -7,6 +7,7 @@ import {
   distillMatch,
 } from '../data/distiller';
 import { DistillerStep } from '../data/distillerVisuals';
+import { useAddToCart } from '../hooks/useAddToCart';
 import { DistillerViewport } from './DistillerViewport';
 
 type Step = DistillerStep;
@@ -14,17 +15,17 @@ type Step = DistillerStep;
 interface DistillerProps {
   isOpen: boolean;
   onClose: () => void;
-  onSecure: (result: DistillerResult) => void;
   onViewSpec?: (result: DistillerResult) => void;
 }
 
 const EMPTY_ANSWERS: Partial<DistillerAnswers> = {};
 
-export function Distiller({ isOpen, onClose, onSecure, onViewSpec }: DistillerProps) {
+export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
   const [step, setStep] = useState<Step>('intro');
   const [answers, setAnswers] = useState<Partial<DistillerAnswers>>(EMPTY_ANSWERS);
   const [result, setResult] = useState<DistillerResult | null>(null);
   const [hoveredOptionId, setHoveredOptionId] = useState<string | null>(null);
+  const { add } = useAddToCart();
 
   const reset = () => {
     setStep('intro');
@@ -112,7 +113,7 @@ export function Distiller({ isOpen, onClose, onSecure, onViewSpec }: DistillerPr
                         One formulation.
                       </p>
                       <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mt-8 max-w-sm">
-                        Answer three quiet questions. We&apos;ll match you with one of nine
+                        Answer three quiet questions. We&apos;ll match you with one of eight
                         compounds.
                       </p>
                       <button
@@ -216,12 +217,19 @@ export function Distiller({ isOpen, onClose, onSecure, onViewSpec }: DistillerPr
                         <button
                           type="button"
                           onClick={() => {
-                            onSecure(result);
-                            handleClose();
+                            const added = add(result.productId, {
+                              override: {
+                                variantId: result.variantId,
+                                formulationLabel: result.formulationLabel,
+                                productLabel: `No. ${result.formulationNumber}`,
+                                productTitle: result.formulationName,
+                              },
+                            });
+                            if (added.ok) handleClose();
                           }}
                           className="font-sans text-[10px] uppercase tracking-[0.22em] bg-canvas text-cream px-6 py-3 rounded-full hover:opacity-90 transition-opacity cursor-pointer"
                         >
-                          Secure formulation
+                          Add to cart
                         </button>
                         <button
                           type="button"

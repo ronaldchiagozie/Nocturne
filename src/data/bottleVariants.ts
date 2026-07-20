@@ -1,4 +1,4 @@
-/** Nine color-shift bottles. Image paths match formulation number + name */
+/** Eight color-shift bottles. Image paths match formulation number + name */
 export const BOTTLE_VARIANTS = [
   {
     id: 'v01',
@@ -7,14 +7,6 @@ export const BOTTLE_VARIANTS = [
     name: 'Nocturne',
     glow: 'rgba(212, 163, 115, 0.55)',
     productId: 'no07',
-  },
-  {
-    id: 'v02',
-    image: '/bottle-03-dust-rose.png',
-    formulationNumber: '03',
-    name: 'Dust Rose',
-    glow: 'rgba(180, 140, 130, 0.5)',
-    productId: 'no03',
   },
   {
     id: 'v03',

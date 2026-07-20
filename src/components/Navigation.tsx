@@ -1,27 +1,33 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { NavDrawer } from './NavDrawer';
+import { ThemeToggle } from './ThemeToggle';
 import { useSoundscape } from '../context/SoundscapeContext';
+import { useStore } from '../context/StoreContext';
 import { scrollToTop } from '../hooks/useLenis';
 
 interface NavigationProps {
   orderCount: number;
-  onCheckout: () => void;
+  onOpenCart: () => void;
   onOpenVault: () => void;
   onOpenDistiller: () => void;
   onOpenCollections: () => void;
+  onOpenShop?: () => void;
   onMenuChange?: (open: boolean) => void;
 }
 
 export function Navigation({
   orderCount,
-  onCheckout,
+  onOpenCart,
   onOpenVault,
   onOpenDistiller,
   onOpenCollections,
+  onOpenShop,
   onMenuChange,
 }: NavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isActive, isAudible, toggleMute } = useSoundscape();
+  const { cartCount } = useStore();
 
   const setOpen = (open: boolean) => {
     setMenuOpen(open);
@@ -51,6 +57,7 @@ export function Navigation({
         </div>
 
         <div className="pointer-events-auto flex items-center gap-5 sm:gap-7">
+          <ThemeToggle />
           {isActive && (
             <button
               type="button"
@@ -61,6 +68,26 @@ export function Navigation({
               {isAudible ? 'Sound' : 'Muted'}
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => onOpenShop?.()}
+            className="font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+          >
+            Shop
+          </button>
+          <button
+            type="button"
+            onClick={onOpenCart}
+            className="relative font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+            aria-label={`Cart, ${cartCount} items`}
+          >
+            Cart
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-3 font-mono text-[8px] tabular-nums text-taupe-muted">
+                {cartCount}
+              </span>
+            )}
+          </button>
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -75,11 +102,13 @@ export function Navigation({
       <NavDrawer
         isOpen={menuOpen}
         orderCount={orderCount}
+        cartCount={cartCount}
         onClose={() => setOpen(false)}
-        onCheckout={onCheckout}
+        onOpenCart={onOpenCart}
         onOpenVault={onOpenVault}
         onOpenDistiller={onOpenDistiller}
         onOpenCollections={onOpenCollections}
+        onOpenShop={onOpenShop}
       />
     </>
   );

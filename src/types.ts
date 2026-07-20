@@ -47,3 +47,21 @@ export interface CheckoutOverride {
   productLabel?: string;
   productTitle?: string;
 }
+
+export interface CartItem {
+  cartKey: string;
+  productId: ProductId;
+  variantId: BottleVariantId;
+  productLabel: string;
+  productTitle: string;
+  formulationLabel?: string;
+  priceNgn: number;
+  qty: number;
+  image: string;
+}
+
+export interface ShippingInfo {
+  fullName: string;
+  email: string;
+  address: string;
+}

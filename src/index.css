@@ -108,6 +108,13 @@
   --color-taupe-muted: #6b655c;
 }
 
+html.dark {
+  --color-canvas: #ece6d8;
+  --color-cream: #0d0b0a;
+  --color-cream-plate: #14110f;
+  --color-taupe-muted: #8a8278;
+}
+
 html.lenis,
 html.lenis body {
   height: auto;
@@ -295,7 +302,7 @@ video,
   box-shadow: 0 0 0 1px rgba(13, 11, 10, 0.08);
 }
 
-/* ── Checkout allocation ledger ── */
+/* ── Checkout & store ── */
 .checkout-bottle-hero {
   filter: drop-shadow(0 20px 40px rgba(13, 11, 10, 0.2));
 }
@@ -310,7 +317,131 @@ video,
   caret-color: #8a5a2e;
 }
 
+/* ── Checkout split layout ── */
+.checkout-label {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-taupe-muted);
+  margin-bottom: 0.75rem;
+}
+
+.checkout-line {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-canvas) 18%, transparent);
+  padding: 0.5rem 0 0.625rem;
+  font-family: "GT Sectra", Georgia, serif;
+  font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+  font-style: italic;
+  color: var(--color-canvas);
+  caret-color: var(--color-amber-accent);
+  transition: border-color 0.3s ease;
+}
+
+.checkout-line::placeholder {
+  color: color-mix(in srgb, var(--color-taupe-muted) 45%, transparent);
+}
+
+.checkout-line:focus {
+  outline: none;
+  border-bottom-color: rgba(212, 163, 115, 0.65);
+}
+
+.checkout-btn {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  background: var(--color-canvas);
+  color: var(--color-cream);
+  padding: 0.95rem 2rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.25s ease, transform 0.2s ease;
+  text-decoration: none;
+}
+
+.checkout-btn-ghost {
+  background: transparent;
+  color: var(--color-canvas);
+  border: 1px solid color-mix(in srgb, var(--color-canvas) 20%, transparent);
+}
+
+.checkout-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.checkout-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ── Cart page ── */
+.cart-qty-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1;
+  color: var(--color-taupe-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cart-qty-btn:hover {
+  color: var(--color-canvas);
+}
+
+.cart-qty-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  padding: 0 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-canvas);
+}
+
+.cart-mobile-bar {
+  box-shadow: 0 -1px 0 color-mix(in srgb, var(--color-canvas) 8%, transparent);
+}
+
+@media (max-width: 1023px) {
+  .checkout-split {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-form-side {
+    min-height: auto;
+  }
+
+  .checkout-ledger {
+    order: -1;
+    min-height: auto;
+    border-left: none;
+  }
+}
+
+@keyframes checkout-stamp-in {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.15);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
 /* ── Nav drawer ── */
 .nav-drawer {
-  box-shadow: -16px 0 48px rgba(13, 11, 10, 0.08);
+  box-shadow: -16px 0 48px color-mix(in srgb, var(--color-canvas) 8%, transparent);
 }

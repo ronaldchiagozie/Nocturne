@@ -92,7 +92,18 @@ const INTENT_LABELS: Record<DistillerIntent, string> = {
   elusive: 'Elusive',
 };
 
-/** S_profile = w1·Hour + w2·Environment + w3·Intent → maps to 1 of 9 variants */
+/** S_profile = w1·Hour + w2·Environment + w3·Intent → maps to 1 of 8 variants */
+export const VARIANT_SUMMARIES: Record<BottleVariantId, string> = {
+  v01: 'Flagship amber extrait. Warm, dark, worn after hours.',
+  v03: 'Ruby spice and cedar. Heat up front, timber underneath.',
+  v04: 'Pale violet oud. Quiet resin, slow to unfold.',
+  v05: 'Straw-gold amber. Sunset warmth in a bottle.',
+  v06: 'Deep violet extrait. Midnight, mineral, close to the skin.',
+  v07: 'Emerald depth. Cool forest air after dark.',
+  v08: 'Rose-amber twilight. Elusive, warm, hard to place.',
+  v09: 'Pale gold dawn. Light resin, clean first light.',
+};
+
 export function distillMatch(answers: DistillerAnswers): DistillerResult {
   const w1 = 3;
   const w2 = 2;
@@ -112,21 +123,9 @@ export function distillMatch(answers: DistillerAnswers): DistillerResult {
     `Parameter 01. Hour: ${HOUR_LABELS[answers.hour]}`,
     `Parameter 02. Environment: ${ENV_LABELS[answers.environment]}`,
     `Parameter 03. Intent: ${INTENT_LABELS[answers.intent]}`,
-    `Allocation: ${formulationLabel}`,
+    `Matched: ${formulationLabel}`,
     'Batch compound: extrait · 50ml · compounded to order',
   ];
-
-  const summaries: Record<BottleVariantId, string> = {
-    v01: 'Flagship amber extrait. Warm, dark, worn after hours.',
-    v02: 'Mauve-rose compound. Soft dusk on the skin.',
-    v03: 'Ruby spice and cedar. Heat up front, timber underneath.',
-    v04: 'Pale violet oud. Quiet resin, slow to unfold.',
-    v05: 'Straw-gold amber. Sunset warmth in a bottle.',
-    v06: 'Deep violet extrait. Midnight, mineral, close to the skin.',
-    v07: 'Emerald depth. Cool forest air after dark.',
-    v08: 'Rose-amber twilight. Elusive, warm, hard to place.',
-    v09: 'Pale gold dawn. Light resin, clean first light.',
-  };
 
   return {
     variantId: variant.id,
@@ -135,7 +134,7 @@ export function distillMatch(answers: DistillerAnswers): DistillerResult {
     formulationLabel,
     productId: variant.productId,
     log,
-    summary: summaries[variant.id],
+    summary: VARIANT_SUMMARIES[variant.id],
   };
 }
 
