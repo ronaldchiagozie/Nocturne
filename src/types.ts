@@ -66,3 +66,31 @@ export interface ShippingInfo {
   email: string;
   address: string;
 }
+
+export interface OrderLineItem {
+  productId: ProductId;
+  variantId: BottleVariantId;
+  productLabel: string;
+  productTitle: string;
+  formulationLabel?: string;
+  priceNgn: number;
+  qty: number;
+  image: string;
+}
+
+export type StoreOrderStatus = 'received' | 'compounding' | 'dispatched';
+
+export interface StoreOrder {
+  id: string;
+  createdAt: string;
+  shipping: ShippingInfo;
+  items: OrderLineItem[];
+  subtotalNgn: number;
+  shippingNgn: number;
+  totalNgn: number;
+  totalUsd: number;
+  couponCode?: string | null;
+  couponDiscountNgn?: number;
+  status: StoreOrderStatus;
+  paymentStatus: 'simulated';
+}

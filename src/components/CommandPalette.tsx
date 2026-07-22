@@ -19,7 +19,7 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const location = useLocation();
   const { cartCount } = useStore();
-  const { openDistiller, openCollections } = useSiteModals();
+  const { openDistiller } = useSiteModals();
   const { openProduct } = useProductDetail();
 
   const close = useCallback(() => {
@@ -30,14 +30,7 @@ export function CommandPalette() {
   const actions: CommandAction[] = useMemo(() => {
     const nav: CommandAction[] = [
       { type: 'route', id: 'home', label: 'Home', hint: 'Landing', to: ROUTES.home },
-      { type: 'route', id: 'shop', label: 'Shop', hint: 'The collection', to: ROUTES.shop },
-      {
-        type: 'modal',
-        id: 'collections',
-        label: 'Collections',
-        hint: 'All formulations',
-        run: openCollections,
-      },
+      { type: 'route', id: 'shop', label: 'Shop', hint: 'All formulations', to: ROUTES.shop },
       {
         type: 'modal',
         id: 'distill',
@@ -71,7 +64,7 @@ export function CommandPalette() {
     }));
 
     return [...nav, ...products];
-  }, [cartCount, openCollections, openDistiller, openProduct]);
+  }, [cartCount, openDistiller, openProduct]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

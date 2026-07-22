@@ -7,13 +7,11 @@ interface NavDrawerProps {
   onClose: () => void;
   onOpenCart: () => void;
   onOpenDistiller: () => void;
-  onOpenCollections: () => void;
   onOpenShop?: () => void;
 }
 
 const LINKS = [
   { id: 'shop', label: 'Shop', action: 'shop' as const },
-  { id: 'collections', label: 'Collections', action: 'collections' as const },
   { id: 'cart', label: 'Cart', action: 'cart' as const },
   { id: 'distill', label: 'The Distiller', action: 'distill' as const },
 ];
@@ -24,7 +22,6 @@ export function NavDrawer({
   onClose,
   onOpenCart,
   onOpenDistiller,
-  onOpenCollections,
   onOpenShop,
 }: NavDrawerProps) {
   useEffect(() => {
@@ -40,7 +37,6 @@ export function NavDrawer({
     onClose();
     setTimeout(() => {
       if (action === 'shop') onOpenShop?.();
-      if (action === 'collections') onOpenCollections();
       if (action === 'cart') onOpenCart();
       if (action === 'distill') onOpenDistiller();
     }, 280);

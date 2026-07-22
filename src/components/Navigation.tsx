@@ -8,7 +8,6 @@ import { scrollToTop } from '../hooks/useLenis';
 interface NavigationProps {
   onOpenCart: () => void;
   onOpenDistiller: () => void;
-  onOpenCollections: () => void;
   onOpenShop?: () => void;
   onMenuChange?: (open: boolean) => void;
 }
@@ -16,7 +15,6 @@ interface NavigationProps {
 export function Navigation({
   onOpenCart,
   onOpenDistiller,
-  onOpenCollections,
   onOpenShop,
   onMenuChange,
 }: NavigationProps) {
@@ -99,7 +97,6 @@ export function Navigation({
         onClose={() => setOpen(false)}
         onOpenCart={onOpenCart}
         onOpenDistiller={onOpenDistiller}
-        onOpenCollections={onOpenCollections}
         onOpenShop={onOpenShop}
       />
     </>

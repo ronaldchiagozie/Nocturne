@@ -19,9 +19,13 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
   const soldOut = stock ? stock.stock === 0 : false;
 
   const label = override?.productLabel ?? product?.label ?? '';
-  const title = override?.formulationLabel ?? override?.productTitle ?? product?.title ?? '';
-  const image = productId ? resolveProductImage(productId, override) : '';
-  const imageKey = `${productId ?? 'none'}-${override?.variantId ?? 'default'}-${override?.image ?? ''}`;
+  const title =
+    override?.formulationLabel ??
+    override?.productTitle ??
+    product?.title ??
+    '';
+  const image = override?.image ?? (productId ? resolveProductImage(productId, override) : '');
+  const imageKey = `${productId ?? 'none'}-${override?.variantId ?? 'default'}-${image}`;
 
   return (
     <AnimatePresence>

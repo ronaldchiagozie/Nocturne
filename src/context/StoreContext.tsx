@@ -11,10 +11,12 @@ import { getBottleVariant } from '../data/bottleVariants';
 import { getProduct, ProductId } from '../data/products';
 import { UNIT_PRICE_NGN } from '../data/pricing';
 import type { ProductStock, StoreMeta } from '../services/storeLedger';
+import type { CheckoutSubmitInput } from '../services/orderSync';
 import type {
   CartItem,
   CheckoutOverride,
   SimulatedOrder,
+  StoreOrder,
 } from '../types';
 
 const CART_KEY = 'nocturne_cart';
@@ -39,6 +41,9 @@ interface StoreContextValue {
   removeFromCart: (cartKey: string) => void;
   clearCart: () => void;
   purchaseCart: () => Promise<{ ok: true } | { ok: false; reason: string }>;
+  completeCheckout: (
+    input: Omit<CheckoutSubmitInput, 'items'>,
+  ) => Promise<{ ok: true; order: StoreOrder } | { ok: false; reason: string }>;
   buildCartKey: (
     productId: ProductId,
     variantId: string,
@@ -217,6 +222,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return purchaseFromStore(cart);
   }, [cart]);
 
+  const completeCheckout = useCallback(
+    async (input: Omit<CheckoutSubmitInput, 'items'>) => {
+      const { submitCheckout } = await import('../services/orderSync');
+      return submitCheckout({ ...input, items: cart });
+    },
+    [cart],
+  );
+
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.qty, 0), [cart]);
   const cartTotalNgn = useMemo(
     () => cart.reduce((sum, item) => sum + item.priceNgn * item.qty, 0),
@@ -238,6 +251,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeFromCart,
       clearCart,
       purchaseCart,
+      completeCheckout,
       buildCartKey,
     }),
     [
@@ -254,6 +268,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeFromCart,
       clearCart,
       purchaseCart,
+      completeCheckout,
     ],
   );
 

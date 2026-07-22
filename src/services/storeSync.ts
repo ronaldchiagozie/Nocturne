@@ -40,7 +40,7 @@ function useFirebaseStore(): boolean {
   return isFirebaseConfigured && !getFirebaseInitError();
 }
 
-function freshInventory(): Record<ProductId, ProductStock> {
+export function freshInventory(): Record<ProductId, ProductStock> {
   return (Object.keys(PRODUCTS) as ProductId[]).reduce(
     (acc, id) => {
       acc[id] = { productId: id, stock: DEFAULT_STOCK[id].max, maxStock: DEFAULT_STOCK[id].max };
@@ -180,7 +180,9 @@ export function subscribeStore(onData: (snap: StoreSnapshot) => void): Unsubscri
     localListeners.add(onData);
   };
 
-  ensureFirebaseStore().catch(fallbackLocal);
+  ensureFirebaseStore()
+    .then(() => import('./catalogSync').then(({ seedCatalogToFirebase }) => seedCatalogToFirebase()))
+    .catch(fallbackLocal);
 
   const unsubMeta = onSnapshot(
     metaRef,
@@ -279,36 +281,53 @@ async function runPhantomTick() {
   });
 }
 
-export async function purchaseFromStore(
-  items: CartItem[],
-): Promise<{ ok: true } | { ok: false; reason: string }> {
-  const qtyByProduct = items.reduce(
+function qtyByProduct(items: CartItem[]): Record<ProductId, number> {
+  return items.reduce(
     (acc, item) => {
       acc[item.productId] = (acc[item.productId] ?? 0) + item.qty;
       return acc;
     },
     {} as Record<ProductId, number>,
   );
+}
 
+export function applyPurchase(
+  meta: StoreMeta,
+  inventory: Record<ProductId, ProductStock>,
+  items: CartItem[],
+):
+  | { ok: true; meta: StoreMeta; inventory: Record<ProductId, ProductStock> }
+  | { ok: false; reason: string } {
+  const counts = qtyByProduct(items);
+  const refreshed = maybeRefreshCycle(meta, inventory);
+  meta = refreshed.meta;
+  inventory = refreshed.inventory;
+
+  for (const [productId, qty] of Object.entries(counts) as [ProductId, number][]) {
+    if (inventory[productId].stock < qty) {
+      return { ok: false, reason: `${getProduct(productId).title} is sold out for today.` };
+    }
+  }
+
+  for (const [productId, qty] of Object.entries(counts) as [ProductId, number][]) {
+    inventory[productId] = {
+      ...inventory[productId],
+      stock: inventory[productId].stock - qty,
+    };
+  }
+
+  meta = { ...meta, totalSoldThisCycle: meta.totalSoldThisCycle + items.length };
+  return { ok: true, meta, inventory };
+}
+
+export async function purchaseFromStore(
+  items: CartItem[],
+): Promise<{ ok: true } | { ok: false; reason: string }> {
   if (!useFirebaseStore()) {
     const snap = loadLocal();
-    let { meta, inventory } = snap;
-
-    for (const [productId, qty] of Object.entries(qtyByProduct) as [ProductId, number][]) {
-      if (inventory[productId].stock < qty) {
-        return { ok: false, reason: `${getProduct(productId).title} is sold out for today.` };
-      }
-    }
-
-    for (const [productId, qty] of Object.entries(qtyByProduct) as [ProductId, number][]) {
-      inventory[productId] = {
-        ...inventory[productId],
-        stock: inventory[productId].stock - qty,
-      };
-    }
-
-    meta = { ...meta, totalSoldThisCycle: meta.totalSoldThisCycle + items.length };
-    saveLocal({ ...snap, meta, inventory });
+    const result = applyPurchase(snap.meta, snap.inventory, items);
+    if (result.ok === false) return result;
+    saveLocal({ ...snap, meta: result.meta, inventory: result.inventory });
     notifyLocal();
     return { ok: true };
   }
@@ -330,31 +349,12 @@ export async function purchaseFromStore(
         if (invSnap.exists()) inventory[id] = invSnap.data() as ProductStock;
       }
 
-      const refreshed = maybeRefreshCycle(meta, inventory);
-      meta = refreshed.meta;
-      Object.assign(inventory, refreshed.inventory);
+      const result = applyPurchase(meta, inventory, items);
+      if (result.ok === false) throw new Error(result.reason);
 
-      for (const [productId, qty] of Object.entries(qtyByProduct) as [ProductId, number][]) {
-        if (inventory[productId].stock < qty) {
-          throw new Error(`${getProduct(productId).title} is sold out for today.`);
-        }
-      }
-
-      for (const [productId, qty] of Object.entries(qtyByProduct) as [ProductId, number][]) {
-        inventory[productId] = {
-          ...inventory[productId],
-          stock: inventory[productId].stock - qty,
-        };
-      }
-
-      meta = {
-        ...meta,
-        totalSoldThisCycle: meta.totalSoldThisCycle + items.length,
-      };
-
-      tx.set(metaRef, meta);
+      tx.set(metaRef, result.meta);
       for (const id of Object.keys(PRODUCTS) as ProductId[]) {
-        tx.set(doc(db, 'inventory', id), inventory[id]);
+        tx.set(doc(db, 'inventory', id), result.inventory[id]);
       }
     });
     return { ok: true };

@@ -1,24 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, type FormEvent } from 'react';
-import { scrollToTop } from '../hooks/useLenis';
+import { useSiteModals } from '../context/SiteModalsContext';
 import { LEGAL_LINKS, legalPath, ROUTES, type LegalSlug } from '../data/routes';
 
 const INSTAGRAM_URL = 'https://instagram.com';
 
-export interface SiteFooterHomeActions {
-  onOpenDistiller: () => void;
-  onOpenCollections: () => void;
-}
-
-interface SiteFooterProps {
-  homeActions?: SiteFooterHomeActions;
-}
+interface SiteFooterProps {}
 
 type FooterAction =
   | { type: 'route'; to: string; label: string }
   | { type: 'legal'; slug: LegalSlug; label: string }
   | { type: 'external'; href: string; label: string }
-  | { type: 'home'; action: 'distill' | 'collections' | 'top'; label: string };
+  | { type: 'home'; action: 'distill' | 'top'; label: string };
 
 /** OSSOU-style: About leads col 1; legal middle; meta right */
 const LINK_COLUMNS: { links: FooterAction[] }[] = [
@@ -26,7 +19,7 @@ const LINK_COLUMNS: { links: FooterAction[] }[] = [
     links: [
       { type: 'route', to: ROUTES.about, label: 'About' },
       { type: 'route', to: ROUTES.shop, label: 'Shop' },
-      { type: 'home', action: 'collections', label: 'Collections' },
+      { type: 'route', to: ROUTES.cart, label: 'Cart' },
       { type: 'home', action: 'distill', label: 'The Distiller' },
       { type: 'legal', slug: 'shipping', label: 'Shipping Policy' },
     ],
@@ -40,7 +33,6 @@ const LINK_COLUMNS: { links: FooterAction[] }[] = [
   },
   {
     links: [
-      { type: 'external', href: ROUTES.sitemap, label: 'Sitemap' },
       { type: 'external', href: INSTAGRAM_URL, label: 'Follow Nocturne' },
     ],
   },
@@ -48,13 +40,13 @@ const LINK_COLUMNS: { links: FooterAction[] }[] = [
 
 function FooterLink({
   link,
-  homeActions,
+  onOpenDistiller,
   onNavigateHome,
   active,
 }: {
   link: FooterAction;
-  homeActions?: SiteFooterHomeActions;
-  onNavigateHome: (state?: { open: string }) => void;
+  onOpenDistiller: () => void;
+  onNavigateHome: () => void;
   active?: boolean;
 }) {
   const baseClass = `font-sans text-[13px] sm:text-[14px] text-canvas hover:text-canvas/70 transition-colors text-left ${
@@ -91,19 +83,11 @@ function FooterLink({
   }
 
   const runHomeAction = () => {
-    if (homeActions) {
-      if (link.action === 'distill') homeActions.onOpenDistiller();
-      else if (link.action === 'collections') homeActions.onOpenCollections();
-      else scrollToTop();
+    if (link.action === 'distill') {
+      onOpenDistiller();
       return;
     }
-
-    if (link.action === 'top') {
-      onNavigateHome();
-      return;
-    }
-
-    onNavigateHome({ open: link.action });
+    onNavigateHome();
   };
 
   return (
@@ -113,9 +97,10 @@ function FooterLink({
   );
 }
 
-export function SiteFooter({ homeActions }: SiteFooterProps) {
+export function SiteFooter(_props: SiteFooterProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { openDistiller } = useSiteModals();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,9 +116,8 @@ export function SiteFooter({ homeActions }: SiteFooterProps) {
     }, 600);
   };
 
-  const onNavigateHome = (state?: { open: string }) => {
-    navigate(ROUTES.home, state ? { state } : undefined);
-    if (!state) scrollToTop();
+  const onNavigateHome = () => {
+    navigate(ROUTES.home);
   };
 
   const year = new Date().getFullYear();
@@ -204,7 +188,7 @@ export function SiteFooter({ homeActions }: SiteFooterProps) {
                   <li key={link.label}>
                     <FooterLink
                       link={link}
-                      homeActions={homeActions}
+                      onOpenDistiller={openDistiller}
                       onNavigateHome={onNavigateHome}
                       active={isLinkActive(link)}
                     />

@@ -3,7 +3,6 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images } from '../assets/images';
-import { BottleVariantId } from '../data/bottleVariants';
 import { FORMULATION_COUNT_WORD, ADDITIONAL_FORMULATION_COUNT_WORD } from '../data/brand';
 import { PRODUCTS, ProductId } from '../data/products';
 import type { CheckoutOverride } from '../types';
@@ -11,6 +10,11 @@ import { preloadImages } from '../utils/preloadImages';
 import { buildCheckoutOverride } from '../utils/productDisplay';
 import { useStore } from '../context/StoreContext';
 import { useAddToCart } from '../hooks/useAddToCart';
+import {
+  isHomeScrollRestorePending,
+  readScrollY,
+  restoreHomeScrollPosition,
+} from '../hooks/useLenis';
 import { BatchLedger } from './BatchLedger';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -24,10 +28,12 @@ interface HeroScrollProps {
 
 const CARD_ORDER: ProductId[] = ['no03', 'no07', 'no05'];
 
+/** Flagship trio — same three on desktop and mobile home */
 const CARDS = CARD_ORDER.map((id) => {
   const product = PRODUCTS[id];
   return {
     productId: id,
+    variantId: product.variantId,
     label: product.label,
     title: product.title,
     detail: product.detail,
@@ -37,40 +43,78 @@ const CARDS = CARD_ORDER.map((id) => {
   };
 });
 
-/** Extra formulations. Mobile home shows 5 total (3 flagship + 2) */
-const MOBILE_EXTRA_CARDS = [
-  {
-    productId: 'no07' as ProductId,
-    variantId: 'v05' as BottleVariantId,
-    label: 'No. 11',
-    title: 'Golden Hour',
-    detail: 'Nocturne No. 11. Extrait de parfum. 50ml. Compounded to order.',
-    image: images.bottle11GoldenHour,
-    imageAlt: 'Nocturne No. 11 Golden Hour extrait de parfum bottle',
-    price: PRODUCTS.no07.price,
-  },
-  {
-    productId: 'no07' as ProductId,
-    variantId: 'v06' as BottleVariantId,
-    label: 'No. 17',
-    title: 'Violet Noir',
-    detail: 'Nocturne No. 17. Extrait de parfum. 50ml. Compounded to order.',
-    image: images.bottle17VioletNoir,
-    imageAlt: 'Nocturne No. 17 Violet Noir extrait de parfum bottle',
-    price: PRODUCTS.no07.price,
-  },
-] as const;
-
-function cardOverride(
-  card: (typeof CARDS)[number] | (typeof MOBILE_EXTRA_CARDS)[number],
-): CheckoutOverride {
+function cardOverride(card: (typeof CARDS)[number]): CheckoutOverride {
   return buildCheckoutOverride({
     productId: card.productId,
     label: card.label,
     title: card.title,
     image: card.image,
-    variantId: 'variantId' in card ? card.variantId : undefined,
+    variantId: card.variantId,
   });
+}
+
+function MobileLedgerRow({
+  card,
+  onOpen,
+}: {
+  card: (typeof CARDS)[number];
+  onOpen: () => void;
+}) {
+  const { add } = useAddToCart();
+  const { getStock } = useStore();
+  const stock = getStock(card.productId);
+  const left = stock?.stock ?? 0;
+  const soldOut = left === 0;
+  const override = cardOverride(card);
+
+  return (
+    <article
+      onClick={onOpen}
+      className="mobile-ledger-row group flex items-center gap-4 py-5 cursor-pointer active:opacity-80 transition-opacity duration-200"
+    >
+      <div className="relative h-[5.5rem] w-[4.25rem] shrink-0 flex items-end justify-center">
+        <img
+          src={card.image}
+          alt={card.imageAlt}
+          className="h-[5rem] w-auto max-w-full object-contain object-bottom"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="font-sans text-[8px] uppercase tracking-[0.26em] text-taupe-muted">
+          {card.label}
+        </p>
+        <h3 className="font-serif text-[1.15rem] text-canvas tracking-tight leading-snug mt-1">
+          {card.title}
+        </h3>
+        <p className="font-body-italic italic text-[11px] text-taupe-muted leading-relaxed font-light mt-1.5 line-clamp-2">
+          {card.detail}
+        </p>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <p className="font-mono text-[10px] tabular-nums text-canvas">{card.price}</p>
+          {stock && (
+            <p className="font-mono text-[7px] tracking-[0.12em] text-taupe-muted/75 uppercase">
+              {soldOut ? 'Sold out' : `${left} left`}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        disabled={soldOut}
+        onClick={(e) => {
+          e.stopPropagation();
+          add(card.productId, { override });
+        }}
+        className="pointer-events-auto shrink-0 font-sans text-[8px] uppercase tracking-[0.18em] bg-canvas text-cream px-4 py-2.5 min-h-[40px] inline-flex items-center rounded-full hover:opacity-85 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {soldOut ? 'Sold out' : 'Add'}
+      </button>
+    </article>
+  );
 }
 
 function BottleSlot({
@@ -237,6 +281,7 @@ export function HeroScroll({
 
       let landing = { x: 0, y: 0, scale: 0.55 };
       let driftX = 0;
+      let syncDesktopHero: (() => void) | null = null;
 
       const refreshMetrics = () => {
         landing = measureLanding();
@@ -246,11 +291,28 @@ export function HeroScroll({
 
       const mobileMq = window.matchMedia('(max-width: 768px)');
 
+      const getHeroScrollProgress = () => {
+        const container = containerRef.current;
+        if (!container) return 0;
+        let scrollY = readScrollY();
+        if (isHomeScrollRestorePending()) {
+          scrollY = Math.max(scrollY, restoreHomeScrollPosition());
+        }
+        const range = Math.max(1, container.offsetHeight - window.innerHeight);
+        return (scrollY - container.offsetTop) / range;
+      };
+
+      const savedRestoreY = isHomeScrollRestorePending() ? restoreHomeScrollPosition() : 0;
+      const deepRestore = savedRestoreY > window.innerHeight * 1.5;
+      const initialProgress = getHeroScrollProgress();
+      const startLanded = !mobileMq.matches && (initialProgress > 0.55 || deepRestore);
+      const hidePinnedBottle = startLanded || deepRestore;
+
       gsap.set(bottleAnimRef.current, {
         x: 0,
         y: 0,
         scale: 1,
-        opacity: 1,
+        opacity: hidePinnedBottle ? 0 : 1,
         rotation: 0,
         rotateY: 0,
         transformOrigin: '50% 90%',
@@ -259,10 +321,31 @@ export function HeroScroll({
         transformPerspective: mobileMq.matches ? 0 : 1200,
       });
 
+      if (hidePinnedBottle && bottleRef.current) {
+        bottleRef.current.style.visibility = 'hidden';
+      }
+
       if (!mobileMq.matches) {
-        gsap.set([leftCardRef.current, rightCardRef.current], { xPercent: 0, opacity: 0 });
-        gsap.set(centerCardRef.current, { opacity: 0 });
-        gsap.set(centerBottleImgRef.current, { opacity: 0 });
+        if (startLanded) {
+          refreshMetrics();
+          gsap.set(bottleAnimRef.current, {
+            opacity: 0,
+            x: landing.x,
+            y: landing.y,
+            scale: landing.scale,
+            rotation: 0,
+            rotateY: 0,
+          });
+          gsap.set(centerBottleImgRef.current, { opacity: 1 });
+          gsap.set(leftCardRef.current, { xPercent: 0, opacity: 1 });
+          gsap.set(rightCardRef.current, { xPercent: 0, opacity: 1 });
+          gsap.set(centerCardRef.current, { opacity: 1 });
+          if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
+        } else {
+          gsap.set([leftCardRef.current, rightCardRef.current], { xPercent: 0, opacity: 0 });
+          gsap.set(centerCardRef.current, { opacity: 0 });
+          gsap.set(centerBottleImgRef.current, { opacity: 0 });
+        }
       } else {
         // Mobile: cards always visible. No landing choreography
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
@@ -270,6 +353,22 @@ export function HeroScroll({
           clearProps: 'xPercent',
         });
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
+      }
+
+      if (mobileMq.matches && (deepRestore || savedRestoreY > window.innerHeight * 0.9)) {
+        document.documentElement.classList.add('hero-ledger-visible');
+        if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
+        gsap.set(bottleAnimRef.current, { opacity: 0 });
+      } else if (mobileMq.matches) {
+        const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
+        if (chapter2) {
+          const ch2Top = (chapter2 as HTMLElement).getBoundingClientRect().top;
+          if (ch2Top < window.innerHeight * 0.85) {
+            document.documentElement.classList.add('hero-ledger-visible');
+            if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
+            gsap.set(bottleAnimRef.current, { opacity: 0 });
+          }
+        }
       }
 
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -374,7 +473,92 @@ export function HeroScroll({
         tl.to(bottleAnimRef.current, { opacity: 0, ease: 'none', duration: 0.08 }, 3.42);
         tl.to(centerBottleImgRef.current, { opacity: 1, ease: 'none', duration: 0.08 }, 3.42);
         tl.to(bottleAnimRef.current, { ease: 'none', duration: 0.18 });
+
+        const forceDesktopLandedState = () => {
+          refreshMetrics();
+          gsap.set(bottleAnimRef.current, {
+            opacity: 0,
+            x: landing.x,
+            y: landing.y,
+            scale: landing.scale,
+            rotation: 0,
+            rotateY: 0,
+          });
+          gsap.set(centerBottleImgRef.current, { opacity: 1 });
+          gsap.set(leftCardRef.current, { xPercent: 0, opacity: 1 });
+          gsap.set(rightCardRef.current, { xPercent: 0, opacity: 1 });
+          gsap.set(centerCardRef.current, { opacity: 1 });
+          if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
+        };
+
+        const syncHeroToScroll = () => {
+          refreshMetrics();
+          ScrollTrigger.refresh(true);
+
+          if (tl.scrollTrigger) {
+            tl.scrollTrigger.refresh();
+            tl.scrollTrigger.update();
+          }
+          ScrollTrigger.getAll().forEach((trigger) => trigger.update());
+
+          const progress = getHeroScrollProgress();
+          if (progress > 0.55) {
+            forceDesktopLandedState();
+            return;
+          }
+
+          if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
+          gsap.set(bottleAnimRef.current, { opacity: 1 });
+          tl.scrollTrigger?.update();
+        };
+
+        syncDesktopHero = syncHeroToScroll;
+
+        if (!isHomeScrollRestorePending()) {
+          requestAnimationFrame(() => syncHeroToScroll());
+        }
       });
+
+      const syncMobileHeroToScroll = () => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const chapter2 = container.querySelector('[data-hero-chapter="2"]');
+        if (!chapter2) return;
+
+        const ch2Top = (chapter2 as HTMLElement).getBoundingClientRect().top;
+        if (ch2Top < window.innerHeight * 0.85) {
+          document.documentElement.classList.add('hero-ledger-visible');
+          if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
+          if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
+        } else {
+          document.documentElement.classList.remove('hero-ledger-visible');
+          if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
+        }
+      };
+
+      const finishHeroRestore = () => {
+        if (window.matchMedia('(min-width: 769px)').matches) {
+          syncDesktopHero?.();
+        } else {
+          syncMobileHeroToScroll();
+        }
+        document.documentElement.classList.remove('hero-restore-pending');
+      };
+
+      const onScrollRestored = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(finishHeroRestore);
+        });
+      };
+
+      const onHeroReady = () => {
+        if (isHomeScrollRestorePending()) return;
+        finishHeroRestore();
+      };
+
+      window.addEventListener('nocturne-scroll-restored', onScrollRestored);
+      window.addEventListener('nocturne-hero-ready', onHeroReady);
 
       mm.add('(max-width: 768px)', () => {
         // Mobile: pin through hero, fully fade out before "Worn after dark" enters.
@@ -413,22 +597,23 @@ export function HeroScroll({
           },
         });
 
-        // Hold, fade early, then stay invisible before Worn after dark
+        // Hold briefly, fade out before chapter 2 copy
         tl.to(bottleAnimRef.current, {
           scale: 1,
           ease: 'none',
-          duration: 0.35,
+          duration: 0.25,
         })
           .to(bottleAnimRef.current, {
             opacity: 0,
-            scale: 0.9,
-            ease: 'none',
-            duration: 0.45,
+            scale: 0.94,
+            y: -24,
+            ease: 'power1.out',
+            duration: 0.35,
           })
           .to(bottleAnimRef.current, {
             opacity: 0,
             ease: 'none',
-            duration: 0.2,
+            duration: 0.15,
           });
 
         // Hard-hide before chapter 2 copy reaches the screen
@@ -436,10 +621,12 @@ export function HeroScroll({
           trigger: chapter2 || chapter1 || containerRef.current,
           start: 'top 85%',
           onEnter: () => {
+            document.documentElement.classList.add('hero-ledger-visible');
             if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
             if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
           },
           onLeaveBack: () => {
+            document.documentElement.classList.remove('hero-ledger-visible');
             if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
           },
         });
@@ -459,19 +646,17 @@ export function HeroScroll({
 
       window.addEventListener('resize', onResize);
 
-      const heroImages = [
-        images.hero,
-        ...CARDS.map((card) => card.image),
-        ...MOBILE_EXTRA_CARDS.map((card) => card.image),
-      ];
+      const heroImages = [images.hero, ...CARDS.map((card) => card.image)];
       preloadImages(heroImages).then(() => {
         refreshMetrics();
         ScrollTrigger.refresh();
+        window.dispatchEvent(new CustomEvent('nocturne-hero-ready'));
       });
 
       requestAnimationFrame(() => {
         refreshMetrics();
         ScrollTrigger.refresh();
+        window.dispatchEvent(new CustomEvent('nocturne-hero-ready'));
       });
 
       const onLoad = () => {
@@ -483,8 +668,13 @@ export function HeroScroll({
       return () => {
         window.removeEventListener('load', onLoad);
         window.removeEventListener('resize', onResize);
+        window.removeEventListener('nocturne-scroll-restored', onScrollRestored);
+        window.removeEventListener('nocturne-hero-ready', onHeroReady);
         clearTimeout(resizeTimer);
         ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
+        document.documentElement.classList.remove('hero-ledger-visible');
+        document.documentElement.classList.remove('hero-restore-pending');
+        syncDesktopHero = null;
         mm.revert();
       };
     },
@@ -507,7 +697,7 @@ export function HeroScroll({
             ref={bottleImgRef}
             src={images.hero}
             alt={CARDS[1].imageAlt}
-            className="hero-bottle-image relative z-30 block h-[min(400px,52dvh)] sm:h-[min(460px,58dvh)] md:h-[min(520px,62vh)] w-auto object-contain"
+            className="hero-bottle-image relative z-30 block h-[min(320px,44dvh)] sm:h-[min(460px,58dvh)] md:h-[min(520px,62vh)] w-auto object-contain"
             loading="eager"
             decoding="async"
             fetchPriority="high"
@@ -515,10 +705,10 @@ export function HeroScroll({
         </div>
       </div>
 
-      {/* Chapter 1: hero (taller on mobile for bottle fade runway) */}
+      {/* Chapter 1: hero — shorter runway on mobile */}
       <section
         data-hero-chapter="1"
-        className="relative min-h-[180dvh] md:min-h-[100dvh] w-full bg-cream-plate"
+        className="relative min-h-[115dvh] md:min-h-[100dvh] w-full bg-cream-plate"
       >
         <div className="absolute inset-0 z-0 overflow-hidden bg-cream-plate" />
 
@@ -554,6 +744,13 @@ export function HeroScroll({
 
           <HeroEditorial
             title="After dark."
+            body="Cracked pepper up front, smoked cedar through the heart, aged oud in the dry-down."
+            align="left"
+            className="absolute left-5 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-w-[15rem] md:hidden z-[25]"
+          />
+
+          <HeroEditorial
+            title="After dark."
             body="Cracked pepper up front, smoked cedar through the heart, aged oud in the dry-down. Built for presence, not compliments."
             align="right"
             className="absolute right-6 md:right-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
@@ -568,7 +765,7 @@ export function HeroScroll({
       {/* Chapter 2: worn after dark copy */}
       <section
         data-hero-chapter="2"
-        className="relative w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pt-16 pb-16 sm:pb-20 md:min-h-[100dvh] md:pt-0 md:pb-36"
+        className="relative w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pt-12 pb-14 sm:pb-20 md:min-h-[100dvh] md:pt-0 md:pb-36"
       >
         <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
           EXTRAIT DE PARFUM // 50ML
@@ -581,13 +778,15 @@ export function HeroScroll({
           className="absolute right-6 md:right-12 top-[18%] md:top-[22%] lg:top-[26%] z-[20] hidden md:block"
         />
 
-        <div className="relative z-[20]">
-          <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] text-canvas tracking-tight leading-snug max-w-xl">
+        <div className="relative z-[20] max-w-xl">
+          <p className="font-sans text-[9px] uppercase tracking-[0.28em] text-taupe-muted mb-4 md:hidden">
+            Nocturne
+          </p>
+          <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] text-canvas tracking-tight leading-snug">
             Worn after dark.
           </h1>
-          <p className="font-body-italic italic text-sm md:text-base text-taupe-muted leading-relaxed font-light max-w-md mt-8 md:mt-10">
-            A fragrance for the hours no one else sees. No florals, no compliments. Dark, textured,
-            quietly dangerous.
+          <p className="font-body-italic italic text-sm md:text-base text-taupe-muted leading-relaxed font-light max-w-md mt-6 md:mt-10">
+            A fragrance for the hours no one else sees. Dark, textured, quietly dangerous.
           </p>
         </div>
       </section>
@@ -601,11 +800,11 @@ export function HeroScroll({
         <div className="max-md:hidden sticky top-0 flex h-screen w-full flex-col items-center justify-center px-8 lg:px-12">
           <div
             ref={cardsGridRef}
-            className="relative w-full max-w-6xl grid grid-cols-3 border border-neutral-300/80 bg-cream-plate z-20"
+            className="hero-cards-grid relative w-full max-w-6xl grid grid-cols-3 border border-neutral-300/80 bg-cream-plate z-20 overflow-hidden"
           >
             <article
               ref={leftCardRef}
-              onClick={() => onOpenProductDetail?.(CARDS[0].productId)}
+              onClick={() => onOpenProductDetail?.(CARDS[0].productId, cardOverride(CARDS[0]))}
               className="border-r border-neutral-300/80 p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
@@ -632,7 +831,7 @@ export function HeroScroll({
 
             <article
               ref={centerCardRef}
-              onClick={() => onOpenProductDetail?.(CARDS[1].productId)}
+              onClick={() => onOpenProductDetail?.(CARDS[1].productId, cardOverride(CARDS[1]))}
               className="border-r border-neutral-300/80 p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
@@ -661,7 +860,7 @@ export function HeroScroll({
 
             <article
               ref={rightCardRef}
-              onClick={() => onOpenProductDetail?.(CARDS[2].productId)}
+              onClick={() => onOpenProductDetail?.(CARDS[2].productId, cardOverride(CARDS[2]))}
               className="p-6 lg:p-8 flex flex-col opacity-0 cursor-pointer hover:bg-cream/60 transition-colors duration-300"
             >
               <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-6">
@@ -700,54 +899,32 @@ export function HeroScroll({
           )}
         </div>
 
-        {/* Mobile: editorial ledger stack */}
-        <div className="md:hidden relative z-20 w-full px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))]">
-          <p className="font-sans text-[9px] uppercase tracking-[0.28em] text-taupe-muted mb-2 px-1">
-            The ledger
-          </p>
-          <p className="font-body-italic italic text-xs text-taupe-muted/90 font-light mb-6 px-1 leading-relaxed">
-            Tap a formulation to view notes and add to cart.
-          </p>
+        {/* Mobile: three-bottle ledger list */}
+        <div className="md:hidden relative z-20 w-full px-5 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+          <div className="mb-6">
+            <p className="font-sans text-[9px] uppercase tracking-[0.28em] text-taupe-muted">
+              The collection
+            </p>
+            <h2 className="font-serif text-[1.65rem] text-canvas tracking-tight leading-snug mt-2">
+              Three extrait de parfums.
+            </h2>
+            <p className="font-body-italic italic text-xs text-taupe-muted/90 font-light mt-2 leading-relaxed">
+              Tap to view notes. Add directly from here.
+            </p>
+          </div>
 
-          <div className="mx-auto flex w-full max-w-lg flex-col gap-4">
-            {[...CARDS, ...MOBILE_EXTRA_CARDS].map((card, index) => (
-              <article
-                key={`${card.label}-${card.title}`}
-                onClick={() => onOpenProductDetail?.(card.productId, cardOverride(card))}
-                className="mobile-ledger-card group flex flex-col border border-neutral-300/70 bg-cream-plate p-5 cursor-pointer active:scale-[0.985] transition-transform duration-200"
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                <div className="flex items-center justify-between gap-3 mb-5">
-                  <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted">
-                    {card.label}
-                  </p>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-taupe-muted/70">
-                    50ml extrait
-                  </span>
-                </div>
-                <BottleSlot
-                  imageSrc={card.image}
-                  imageAlt={card.imageAlt}
-                  imageClassName={`${BOTTLE_SLOT_CLASS} transition-transform duration-500 group-active:scale-[0.98]`}
-                  priority={index < 2}
-                />
-                <h3 className="font-serif text-[1.35rem] text-canvas tracking-tight leading-snug mb-2">
-                  {card.title}
-                </h3>
-                <p className="font-body-italic italic text-xs text-taupe-muted leading-relaxed font-light mb-5">
-                  {card.detail}
-                </p>
-                <CardFooter
-                  price={card.price}
-                  productId={card.productId}
-                  checkoutOverride={cardOverride(card)}
-                />
-              </article>
+          <div className="divide-y divide-neutral-300/70 border-y border-neutral-300/70">
+            {CARDS.map((card) => (
+              <MobileLedgerRow
+                key={card.label}
+                card={card}
+                onOpen={() => onOpenProductDetail?.(card.productId, cardOverride(card))}
+              />
             ))}
           </div>
 
           {onOpenDistiller && (
-            <div className="pointer-events-auto mt-8 border-t border-neutral-300/80 pt-8 pb-2 w-full text-center">
+            <div className="pointer-events-auto mt-8 pt-6 w-full text-center">
               <button
                 type="button"
                 onClick={onOpenDistiller}

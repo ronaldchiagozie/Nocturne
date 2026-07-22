@@ -24,10 +24,31 @@ function allowModalTouch(target: EventTarget | null) {
   return Boolean(target.closest('[data-modal-scroll]'));
 }
 
+let scrollLockCount = 0;
+
+function getScrollY(): number {
+  if (bodyLocked) return lockedScrollY;
+  if (lenis) return lenis.scroll;
+  return window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+}
+
+/** Lenis-aware scroll position — use instead of window.scrollY for GSAP sync. */
+export function readScrollY(): number {
+  return getScrollY();
+}
+
+function restoreScrollY(y: number) {
+  if (lenis) {
+    lenis.scrollTo(y, { immediate: true });
+    return;
+  }
+  window.scrollTo(0, y);
+}
+
 function lockBodyScroll() {
   if (bodyLocked) return;
   bodyLocked = true;
-  lockedScrollY = window.scrollY || window.pageYOffset || 0;
+  lockedScrollY = getScrollY();
 
   const html = document.documentElement;
   const { body } = document;
@@ -72,7 +93,24 @@ function unlockBodyScroll() {
   body.style.width = '';
   body.style.overscrollBehavior = '';
 
-  window.scrollTo(0, lockedScrollY);
+  restoreScrollY(lockedScrollY);
+}
+
+function applyScrollLock() {
+  if (lenis) {
+    lenis.stop();
+  }
+  lockBodyScroll();
+}
+
+function releaseScrollLock() {
+  unlockBodyScroll();
+  if (lenis) {
+    lenis.start();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+    return;
+  }
+  requestAnimationFrame(() => ScrollTrigger.refresh());
 }
 
 function initNativeScroll() {
@@ -156,26 +194,16 @@ export function initLenisScroll() {
   return lenis;
 }
 
-/** Pause background scroll while modals are open */
+/** Pause background scroll while modals are open. Ref-counted so stacked modals stay locked. */
 export function setScrollLocked(locked: boolean) {
-  if (lenis) {
-    if (locked) {
-      lenis.stop();
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-      lenis.start();
-      requestAnimationFrame(() => ScrollTrigger.refresh());
-    }
+  if (locked) {
+    scrollLockCount += 1;
+    if (scrollLockCount === 1) applyScrollLock();
     return;
   }
 
-  if (locked) {
-    lockBodyScroll();
-  } else {
-    unlockBodyScroll();
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-  }
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) releaseScrollLock();
 }
 
 export function scrollToTop() {
@@ -193,6 +221,140 @@ export function scrollToTopImmediate() {
     return;
   }
   window.scrollTo(0, 0);
+}
+
+const HOME_SCROLL_KEY = 'nocturne_home_scroll';
+let homeRestorePending = false;
+let lastHomeScrollY = 0;
+
+try {
+  const bootRaw = sessionStorage.getItem(HOME_SCROLL_KEY);
+  if (bootRaw != null) {
+    const bootY = Number(bootRaw);
+    if (Number.isFinite(bootY) && bootY > 0) lastHomeScrollY = bootY;
+  }
+} catch {
+  /* ignore */
+}
+
+function persistHomeScrollY(y: number) {
+  if (!Number.isFinite(y) || y <= 0) return;
+  lastHomeScrollY = y;
+  try {
+    sessionStorage.setItem(HOME_SCROLL_KEY, String(Math.round(y)));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function saveHomeScrollPosition() {
+  const y = getScrollY();
+  if (y > 0) {
+    persistHomeScrollY(y);
+    return y;
+  }
+  return lastHomeScrollY;
+}
+
+/** Call right before leaving home — never overwrite a good saved Y with 0. */
+export function captureHomeScrollBeforeLeave() {
+  const y = getScrollY();
+  if (y > 0) {
+    persistHomeScrollY(y);
+    return y;
+  }
+  return lastHomeScrollY;
+}
+
+export function restoreHomeScrollPosition(): number {
+  try {
+    const raw = sessionStorage.getItem(HOME_SCROLL_KEY);
+    if (raw != null) {
+      const y = Number(raw);
+      if (Number.isFinite(y) && y > 0) {
+        lastHomeScrollY = Math.max(lastHomeScrollY, y);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return lastHomeScrollY;
+}
+
+/** Call when navigating back to home — do not consume until scroll is applied. */
+export function markHomeScrollRestore() {
+  homeRestorePending = true;
+}
+
+export function isHomeScrollRestorePending(): boolean {
+  return homeRestorePending;
+}
+
+export function clearHomeScrollRestorePending() {
+  homeRestorePending = false;
+}
+
+/** Retry until GSAP/Lenis finish layout — fixes hero always jumping to top. */
+export function applyPendingHomeScrollRestore(onSettled?: () => void): () => void {
+  if (!homeRestorePending) return () => {};
+
+  const targetY = restoreHomeScrollPosition();
+  if (targetY <= 0) {
+    clearHomeScrollRestorePending();
+    onSettled?.();
+    return () => {};
+  }
+
+  let cancelled = false;
+  let attempts = 0;
+  const maxAttempts = 24;
+
+  const finish = () => {
+    clearHomeScrollRestorePending();
+    window.dispatchEvent(new CustomEvent('nocturne-scroll-restored'));
+    onSettled?.();
+  };
+
+  const attempt = () => {
+    if (cancelled || !homeRestorePending) return;
+
+    scrollToYImmediate(targetY);
+    ScrollTrigger.refresh(true);
+
+    attempts += 1;
+    const current = getScrollY();
+    const settled = Math.abs(current - targetY) <= 32;
+
+    if (settled || attempts >= maxAttempts) {
+      if (!settled && attempts >= maxAttempts) {
+        scrollToYImmediate(targetY);
+      }
+      finish();
+      return;
+    }
+
+    window.setTimeout(() => requestAnimationFrame(attempt), 80 + attempts * 40);
+  };
+
+  window.setTimeout(() => requestAnimationFrame(attempt), 100);
+
+  return () => {
+    cancelled = true;
+  };
+}
+
+export function subscribeScroll(handler: () => void): () => void {
+  initLenisScroll();
+  if (lenis) {
+    lenis.on('scroll', handler);
+    return () => lenis?.off('scroll', handler);
+  }
+  window.addEventListener('scroll', handler, { passive: true });
+  return () => window.removeEventListener('scroll', handler);
+}
+
+export function scrollToYImmediate(y: number) {
+  restoreScrollY(Math.max(0, y));
 }
 
 export function destroyLenisScroll() {

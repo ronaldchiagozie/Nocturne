@@ -136,7 +136,9 @@ export function StoreLayout({ children }: StoreLayoutProps) {
         </header>
       )}
       {children ?? <Outlet />}
-      {location.pathname !== '/' && <SiteFooter />}
+      {location.pathname !== '/' && !location.pathname.startsWith('/checkout') && (
+        <SiteFooter />
+      )}
       <ToastViewport />
     </>
   );

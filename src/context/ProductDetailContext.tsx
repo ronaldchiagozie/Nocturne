@@ -36,19 +36,15 @@ export function ProductDetailProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setScrollLocked(state.productId !== null);
+    const open = state.productId !== null;
+    setScrollLocked(open);
 
     const html = document.documentElement;
-    if (state.productId !== null) {
+    if (open) {
       html.classList.add('product-detail-open');
     } else {
       html.classList.remove('product-detail-open');
     }
-
-    return () => {
-      setScrollLocked(false);
-      html.classList.remove('product-detail-open');
-    };
   }, [state.productId]);
 
   const value = useMemo(

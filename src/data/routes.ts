@@ -5,7 +5,6 @@ export const ROUTES = {
   about: '/about',
   cart: '/cart',
   checkout: '/checkout',
-  sitemap: '/sitemap.xml',
 } as const;
 
 export const LEGAL_SLUGS = ['shipping', 'returns', 'faq', 'privacy', 'terms'] as const;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { HeroScroll } from '../components/HeroScroll';
@@ -6,7 +6,16 @@ import { CloseSection } from '../components/PageSections';
 import { SiteFooter } from '../components/SiteFooter';
 import { ApertureIntro } from '../components/ApertureIntro';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useLenis, setScrollLocked } from '../hooks/useLenis';
+import {
+  useLenis,
+  setScrollLocked,
+  saveHomeScrollPosition,
+  applyPendingHomeScrollRestore,
+  isHomeScrollRestorePending,
+  restoreHomeScrollPosition,
+  scrollToYImmediate,
+  subscribeScroll,
+} from '../hooks/useLenis';
 import { isMobileViewport, prefersReducedMotion } from '../hooks/useMotionPreference';
 import { useProductDetail } from '../context/ProductDetailContext';
 import { useSiteModals } from '../context/SiteModalsContext';
@@ -37,7 +46,7 @@ function shouldSkipIntro(): boolean {
 export function HomePage() {
   const navigate = useNavigate();
   const { openProduct } = useProductDetail();
-  const { openDistiller, openCollections } = useSiteModals();
+  const { openDistiller } = useSiteModals();
   const [menuOpen, setMenuOpen] = useState(false);
   const [introRevealed, setIntroRevealed] = useState(shouldSkipIntro);
 
@@ -49,12 +58,58 @@ export function HomePage() {
     setScrollLocked(scrollLocked);
   }, [scrollLocked]);
 
+  useLayoutEffect(() => {
+    if (!introRevealed || !isHomeScrollRestorePending()) return;
+    const y = restoreHomeScrollPosition();
+    if (y > 0) scrollToYImmediate(y);
+  }, [introRevealed]);
+
   useEffect(() => {
     if (!introRevealed) return;
-    const id = requestAnimationFrame(() => {
-      ScrollTrigger.refresh(true);
+
+    return applyPendingHomeScrollRestore(() => {
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh(true);
+        requestAnimationFrame(() => ScrollTrigger.refresh(true));
+      });
     });
-    return () => cancelAnimationFrame(id);
+  }, [introRevealed]);
+
+  useEffect(() => {
+    if (!introRevealed || menuOpen) return;
+
+    let throttleId: ReturnType<typeof setTimeout> | null = null;
+    const save = () => {
+      if (throttleId) return;
+      throttleId = window.setTimeout(() => {
+        saveHomeScrollPosition();
+        throttleId = null;
+      }, 120);
+    };
+
+    const unsubScroll = subscribeScroll(save);
+    window.addEventListener('scroll', save, { passive: true });
+    const onPageHide = () => saveHomeScrollPosition();
+    window.addEventListener('pagehide', onPageHide);
+
+    return () => {
+      unsubScroll();
+      window.removeEventListener('scroll', save);
+      window.removeEventListener('pagehide', onPageHide);
+      if (throttleId) window.clearTimeout(throttleId);
+    };
+  }, [introRevealed, menuOpen]);
+
+  useEffect(() => {
+    if (!introRevealed) return;
+
+    const onHeroReady = () => {
+      if (isHomeScrollRestorePending()) {
+        applyPendingHomeScrollRestore();
+      }
+    };
+    window.addEventListener('nocturne-hero-ready', onHeroReady);
+    return () => window.removeEventListener('nocturne-hero-ready', onHeroReady);
   }, [introRevealed]);
 
   return (
@@ -71,7 +126,6 @@ export function HomePage() {
       <Navigation
         onOpenCart={() => navigate('/cart')}
         onOpenDistiller={openDistiller}
-        onOpenCollections={openCollections}
         onOpenShop={() => navigate('/shop')}
         onMenuChange={setMenuOpen}
       />
@@ -84,12 +138,7 @@ export function HomePage() {
 
       <CloseSection line={REPEATED_LINE} onOpenDistiller={openDistiller} />
 
-      <SiteFooter
-        homeActions={{
-          onOpenDistiller: openDistiller,
-          onOpenCollections: openCollections,
-        }}
-      />
+      <SiteFooter />
     </div>
   );
 }

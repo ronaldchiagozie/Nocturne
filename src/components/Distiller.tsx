@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   DISTILLER_QUESTIONS,
   DistillerAnswers,
   DistillerResult,
   distillMatch,
+  getDistillerBottleImage,
 } from '../data/distiller';
-import { DistillerStep } from '../data/distillerVisuals';
+import { DistillerStep, getAuraForOption } from '../data/distillerVisuals';
 import { FORMULATION_COUNT_WORD } from '../data/brand';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { DistillerViewport } from './DistillerViewport';
@@ -65,6 +66,7 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
   };
 
   const currentQuestion = typeof step === 'number' ? DISTILLER_QUESTIONS[step] : null;
+  const currentStepIndex = typeof step === 'number' ? step : step === 'result' ? 3 : -1;
 
   return (
     <AnimatePresence>
@@ -74,30 +76,71 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="fixed inset-0 z-[210] distiller-panel text-canvas flex flex-col bg-cream-plate overflow-hidden"
+          className="fixed inset-0 z-[210] distiller-panel text-canvas flex flex-col overflow-hidden"
           data-lenis-prevent
           role="dialog"
           aria-label="The Distiller"
         >
-          <div className="flex shrink-0 justify-between items-baseline px-4 sm:px-6 md:px-10 lg:px-12 pt-[max(1.25rem,env(safe-area-inset-top))] md:pt-8 border-b border-neutral-300/60">
-            <p className="font-mono text-[9px] tracking-[0.28em] uppercase text-taupe-muted">
-              The Distiller
-            </p>
+          <div className="flex shrink-0 justify-between items-center px-4 sm:px-6 md:px-10 lg:px-12 pt-[max(1rem,env(safe-area-inset-top))] md:pt-7 pb-4 border-b border-canvas/[0.08]">
+            <div className="min-w-0">
+              <p className="font-mono text-[9px] tracking-[0.28em] uppercase text-taupe-muted">
+                The Distiller
+              </p>
+              <p className="font-body-italic italic text-[11px] text-taupe-muted/80 mt-1 hidden sm:block">
+                Scent-matching ritual
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleClose}
-              className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer py-3"
+              className="font-sans text-[10px] uppercase tracking-[0.25em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer min-h-[44px] inline-flex items-center px-2"
             >
               Close
             </button>
           </div>
 
-          <div className="flex flex-1 min-h-0 flex-col lg:flex-row w-full max-w-[100vw]">
-            <div className="lg:w-[40%] flex flex-col min-h-0 min-w-0 border-b lg:border-b-0 lg:border-r border-neutral-300/60">
+          <div className="flex flex-1 min-h-0 flex-col lg:flex-row w-full">
+            {/* Chamber — first on mobile for immediate visual */}
+            <div className="order-1 lg:order-2 lg:w-[58%] min-h-[min(42dvh,360px)] lg:min-h-0 flex flex-col flex-1 lg:flex-none border-b lg:border-b-0 lg:border-l border-canvas/[0.08]">
+              <DistillerViewport
+                step={step}
+                answers={answers}
+                hoveredOptionId={hoveredOptionId}
+                result={result}
+              />
+            </div>
+
+            {/* Questions */}
+            <div className="order-2 lg:order-1 lg:w-[42%] flex flex-col min-h-0 min-w-0 bg-cream-plate">
               <div
-                className="modal-scroll flex-1 min-h-0 px-4 sm:px-6 md:px-10 lg:px-12 py-8 sm:py-10 md:py-12 lg:py-14 flex flex-col justify-center"
+                className="modal-scroll flex-1 min-h-0 px-4 sm:px-6 md:px-10 lg:px-12 py-7 sm:py-9 md:py-11 lg:py-12 flex flex-col justify-center"
                 data-modal-scroll
               >
+                {currentStepIndex >= 0 && (
+                  <nav
+                    className="distiller-step-rail mb-8 sm:mb-10"
+                    aria-label="Distiller progress"
+                  >
+                    {DISTILLER_QUESTIONS.map((q, index) => {
+                      const done = currentStepIndex > index || step === 'result';
+                      const active = currentStepIndex === index;
+                      return (
+                        <div
+                          key={q.id}
+                          className={`distiller-step-node ${done ? 'distiller-step-done' : ''} ${
+                            active ? 'distiller-step-active' : ''
+                          }`}
+                        >
+                          <span className="distiller-step-dot" aria-hidden />
+                          <span className="distiller-step-label">
+                            {q.title.replace('The ', '')}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </nav>
+                )}
+
                 <AnimatePresence mode="wait">
                   {step === 'intro' && (
                     <motion.div
@@ -108,21 +151,24 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                       transition={{ duration: 0.45 }}
                       className="max-w-md"
                     >
-                      <p className="font-serif text-[clamp(1.75rem,4vw,2.5rem)] tracking-tight leading-snug text-canvas">
+                      <p className="font-mono text-[9px] tracking-[0.22em] text-taupe-muted uppercase">
+                        01 / Ritual
+                      </p>
+                      <p className="font-serif text-[clamp(1.85rem,4.5vw,2.65rem)] tracking-tight leading-[1.08] text-canvas mt-4">
                         Three parameters.
                         <br />
                         One formulation.
                       </p>
-                      <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mt-8 max-w-sm">
+                      <p className="font-body-italic italic text-sm sm:text-[15px] text-taupe-muted leading-relaxed font-light mt-7 max-w-sm">
                         Answer three quiet questions. We&apos;ll match you with one of{' '}
-                        {FORMULATION_COUNT_WORD} compounds.
+                        {FORMULATION_COUNT_WORD} compounds — compounded to order, worn after dark.
                       </p>
                       <button
                         type="button"
                         onClick={() => setStep(0)}
-                        className="mt-14 font-sans text-[10px] uppercase tracking-[0.25em] text-canvas hover:text-canvas/70 transition-colors cursor-pointer"
+                        className="distiller-cta-primary mt-10 sm:mt-12"
                       >
-                        Begin →
+                        Begin distillation
                       </button>
                     </motion.div>
                   )}
@@ -136,20 +182,21 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                       transition={{ duration: 0.45 }}
                       className="max-w-lg w-full"
                     >
-                      <p className="font-mono text-[9px] tracking-[0.22em] text-taupe-muted uppercase mb-4">
+                      <p className="font-mono text-[9px] tracking-[0.22em] text-taupe-muted uppercase">
                         {String((step as number) + 1).padStart(2, '0')} / 03
                       </p>
-                      <h2 className="font-serif text-[clamp(1.5rem,3.5vw,2.25rem)] tracking-tight leading-snug text-canvas">
+                      <h2 className="font-serif text-[clamp(1.55rem,3.5vw,2.35rem)] tracking-tight leading-snug text-canvas mt-3">
                         {currentQuestion.title}
                       </h2>
-                      <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 mb-10 md:mb-12">
+                      <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 mb-8 sm:mb-10">
                         {currentQuestion.subtitle}
                       </p>
 
-                      <div className="space-y-3">
+                      <div className="space-y-2.5 sm:space-y-3">
                         {currentQuestion.options.map((option) => {
                           const isSelected =
                             answers[currentQuestion.id as keyof DistillerAnswers] === option.id;
+                          const accent = getAuraForOption(option.id).hex;
 
                           return (
                             <button
@@ -160,20 +207,21 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                               onMouseLeave={() => setHoveredOptionId(null)}
                               onFocus={() => setHoveredOptionId(option.id)}
                               onBlur={() => setHoveredOptionId(null)}
-                              className={`distiller-option w-full text-left px-5 py-4 md:py-5 border transition-colors duration-300 cursor-pointer group ${
-                                isSelected
-                                  ? 'border-canvas/25 bg-cream'
-                                  : 'border-neutral-300/80 hover:border-canvas/20 hover:bg-cream/80'
+                              style={{ '--option-accent': accent } as CSSProperties}
+                              className={`distiller-option w-full text-left px-5 py-4 sm:py-[1.125rem] cursor-pointer group min-h-[44px] ${
+                                isSelected ? 'distiller-option-selected' : ''
                               }`}
                             >
                               <p
-                                className={`font-sans text-[10px] uppercase tracking-[0.2em] ${
-                                  isSelected ? 'text-canvas' : 'text-canvas/80 group-hover:text-canvas'
+                                className={`font-sans text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                                  isSelected
+                                    ? 'text-canvas'
+                                    : 'text-canvas/75 group-hover:text-canvas'
                                 }`}
                               >
                                 {option.label}
                               </p>
-                              <p className="font-body-italic italic text-xs text-taupe-muted font-light mt-1.5">
+                              <p className="font-body-italic italic text-xs text-taupe-muted font-light mt-1.5 leading-relaxed">
                                 {option.detail}
                               </p>
                             </button>
@@ -192,26 +240,31 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                       className="max-w-md w-full"
                     >
                       <p className="font-mono text-[9px] tracking-[0.22em] text-taupe-muted uppercase">
-                        Your match
+                        Match locked
                       </p>
-                      <h2 className="font-serif text-[clamp(1.5rem,3vw,2rem)] tracking-tight leading-snug mt-4 text-canvas">
+                      <h2 className="font-serif text-[clamp(1.55rem,3vw,2.1rem)] tracking-tight leading-snug mt-3 text-canvas">
                         {result.formulationLabel}
                       </h2>
                       <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mt-5">
                         {result.summary}
                       </p>
 
-                      <ul className="mt-8 space-y-2 font-mono text-[9px] tracking-[0.06em] text-taupe-muted uppercase">
+                      <ul className="mt-8 space-y-2.5 border-l border-canvas/10 pl-4">
                         {result.log.slice(0, 3).map((line) => (
-                          <li key={line}>{line}</li>
+                          <li
+                            key={line}
+                            className="font-mono text-[8px] sm:text-[9px] tracking-[0.06em] text-taupe-muted uppercase leading-relaxed"
+                          >
+                            {line}
+                          </li>
                         ))}
                       </ul>
 
-                      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start gap-4 mt-10">
+                      <div className="flex flex-col gap-3 mt-10">
                         <button
                           type="button"
                           onClick={() => onViewSpec?.(result)}
-                          className="font-sans text-[10px] uppercase tracking-[0.22em] border border-canvas/20 text-canvas px-6 py-3 rounded-full hover:bg-cream transition-colors cursor-pointer"
+                          className="distiller-cta-secondary w-full sm:w-auto"
                         >
                           View spec sheet
                         </button>
@@ -224,35 +277,27 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                                 formulationLabel: result.formulationLabel,
                                 productLabel: `No. ${result.formulationNumber}`,
                                 productTitle: result.formulationName,
+                                image: getDistillerBottleImage(result.variantId),
                               },
                             });
                             if (added.ok) handleClose();
                           }}
-                          className="font-sans text-[10px] uppercase tracking-[0.22em] bg-canvas text-cream px-6 py-3 rounded-full hover:opacity-90 transition-opacity cursor-pointer"
+                          className="distiller-cta-primary w-full sm:w-auto"
                         >
                           Add to cart
                         </button>
                         <button
                           type="button"
                           onClick={reset}
-                          className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer"
+                          className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer min-h-[44px]"
                         >
-                          Retake
+                          Retake ritual
                         </button>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-            </div>
-
-            <div className="lg:w-[60%] min-h-[220px] lg:min-h-0 flex flex-col flex-1 lg:flex-none">
-              <DistillerViewport
-                step={step}
-                answers={answers}
-                hoveredOptionId={hoveredOptionId}
-                result={result}
-              />
             </div>
           </div>
         </motion.div>
