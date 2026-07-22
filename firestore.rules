@@ -70,9 +70,28 @@ service cloud.firestore {
         && shipping.address.size() <= 500;
     }
 
+    // Firestore rules disallow recursion and list.slice(); unroll up to max 20 line items.
     function validAllItems(items) {
-      return items.size() == 0
-        || (validLineItem(items[0]) && validAllItems(items.slice(1)));
+      return items.size() >= 1 && validLineItem(items[0])
+        && (items.size() < 2 || validLineItem(items[1]))
+        && (items.size() < 3 || validLineItem(items[2]))
+        && (items.size() < 4 || validLineItem(items[3]))
+        && (items.size() < 5 || validLineItem(items[4]))
+        && (items.size() < 6 || validLineItem(items[5]))
+        && (items.size() < 7 || validLineItem(items[6]))
+        && (items.size() < 8 || validLineItem(items[7]))
+        && (items.size() < 9 || validLineItem(items[8]))
+        && (items.size() < 10 || validLineItem(items[9]))
+        && (items.size() < 11 || validLineItem(items[10]))
+        && (items.size() < 12 || validLineItem(items[11]))
+        && (items.size() < 13 || validLineItem(items[12]))
+        && (items.size() < 14 || validLineItem(items[13]))
+        && (items.size() < 15 || validLineItem(items[14]))
+        && (items.size() < 16 || validLineItem(items[15]))
+        && (items.size() < 17 || validLineItem(items[16]))
+        && (items.size() < 18 || validLineItem(items[17]))
+        && (items.size() < 19 || validLineItem(items[18]))
+        && (items.size() < 20 || validLineItem(items[19]));
     }
 
     function validOrderCreate() {
