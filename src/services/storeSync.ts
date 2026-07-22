@@ -152,7 +152,22 @@ export function subscribeStore(onData: (snap: StoreSnapshot) => void): Unsubscri
     };
   }
 
-  const db = getDb();
+  let db;
+  try {
+    db = getDb();
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      console.warn('[Nocturne] Firebase unavailable — using local inventory.', err);
+    }
+    onData(loadLocal());
+    localListeners.add(onData);
+    const interval = window.setInterval(() => notifyLocal(), 30_000);
+    return () => {
+      localListeners.delete(onData);
+      window.clearInterval(interval);
+    };
+  }
+
   const metaRef = doc(db, 'store', 'meta');
   const inventoryCol = collection(db, 'inventory');
 

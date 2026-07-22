@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -9,7 +9,7 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(): ErrorBoundaryState {
@@ -19,6 +19,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, info: ErrorInfo) {
     if (import.meta.env.DEV) {
       console.error('[Nocturne] Uncaught error', error, info.componentStack);
+    }
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (this.state.hasError && prevProps.children !== this.props.children) {
+      this.setState({ hasError: false });
     }
   }
 
@@ -48,4 +54,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     return this.props.children;
   }
+}
+
+/** Resets the error boundary when the route changes so one crash does not lock the whole app. */
+export function ErrorBoundary({ children }: ErrorBoundaryProps) {
+  const location = useLocation();
+  return <ErrorBoundaryInner key={location.pathname}>{children}</ErrorBoundaryInner>;
 }

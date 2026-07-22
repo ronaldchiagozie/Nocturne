@@ -248,7 +248,15 @@ export async function fetchSessionOrders(): Promise<StoreOrder[]> {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  const db = getDb();
+  let db;
+  try {
+    db = getDb();
+  } catch {
+    return loadLocalOrders()
+      .filter((order) => ids.includes(order.id))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
   const orders: StoreOrder[] = [];
 
   for (const batch of chunk(ids, 30)) {

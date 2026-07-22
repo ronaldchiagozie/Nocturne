@@ -203,18 +203,26 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
     }
 
     let cancelled = false;
-    void import('../../services/orderSync').then(({ fetchLatestSessionOrder, orderLinesToCartItems }) => {
-      void fetchLatestSessionOrder().then((order) => {
-        if (cancelled) return;
-        if (order) {
-          setConfirmedOrder(order);
-          setShipping(order.shipping);
-          setOrderSnapshot(orderLinesToCartItems(order.items));
-          setStep('done');
-        }
-        setRestoreChecked(true);
+    void import('../../services/orderSync')
+      .then(({ fetchLatestSessionOrder, orderLinesToCartItems }) =>
+        fetchLatestSessionOrder()
+          .then((order) => {
+            if (cancelled) return;
+            if (order) {
+              setConfirmedOrder(order);
+              setShipping(order.shipping);
+              setOrderSnapshot(orderLinesToCartItems(order.items));
+              setStep('done');
+            }
+            setRestoreChecked(true);
+          })
+          .catch(() => {
+            if (!cancelled) setRestoreChecked(true);
+          }),
+      )
+      .catch(() => {
+        if (!cancelled) setRestoreChecked(true);
       });
-    });
 
     return () => {
       cancelled = true;
