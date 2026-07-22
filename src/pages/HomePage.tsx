@@ -78,7 +78,7 @@ export function HomePage() {
   useEffect(() => {
     if (!introRevealed || menuOpen) return;
 
-    let throttleId: ReturnType<typeof setTimeout> | null = null;
+    let throttleId: number | null = null;
     const save = () => {
       if (throttleId) return;
       throttleId = window.setTimeout(() => {

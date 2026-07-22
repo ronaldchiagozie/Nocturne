@@ -1,6 +1,8 @@
+import { useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { formatNgn, formatUsd } from '../../data/pricing';
+import { scrollToTopImmediate } from '../../hooks/useLenis';
 import type { CartItem, ShippingInfo, StoreOrder } from '../../types';
 import { CheckoutSecuredStamp, CheckoutStreamBanner } from './CheckoutConfirmedBanner';
 
@@ -139,6 +141,11 @@ export function CheckoutConfirmation({
 }: CheckoutConfirmationProps) {
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
   const allocationDate = new Date(order.createdAt).toLocaleDateString('en-GB').replace(/\//g, '.');
+
+  useLayoutEffect(() => {
+    scrollToTopImmediate();
+    requestAnimationFrame(() => scrollToTopImmediate());
+  }, []);
 
   return (
     <div className="checkout-confirmation min-h-[100dvh] bg-cream text-canvas flex flex-col">
