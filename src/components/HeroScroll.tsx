@@ -282,6 +282,7 @@ export function HeroScroll({
       let landing = { x: 0, y: 0, scale: 0.55 };
       let driftX = 0;
       let syncDesktopHero: (() => void) | null = null;
+      let syncMobileHero: (() => void) | null = null;
 
       const refreshMetrics = () => {
         landing = measureLanding();
@@ -356,21 +357,8 @@ export function HeroScroll({
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
       }
 
-      if (mobileMq.matches && (deepRestore || savedRestoreY > window.innerHeight * 0.9)) {
-        document.documentElement.classList.add('hero-ledger-visible');
+      if (mobileMq.matches && deepRestore) {
         gsap.set(bottleAnimRef.current, { opacity: 0 });
-      } else if (mobileMq.matches) {
-        const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
-        if (chapter2) {
-          const ch2Top = (chapter2 as HTMLElement).getBoundingClientRect().top;
-          if (ch2Top < window.innerHeight * 0.85) {
-            document.documentElement.classList.add('hero-ledger-visible');
-            gsap.set(bottleAnimRef.current, { opacity: 0 });
-          } else {
-            document.documentElement.classList.remove('hero-ledger-visible');
-            ensurePinVisible();
-          }
-        }
       }
 
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -521,21 +509,9 @@ export function HeroScroll({
       });
 
       const syncMobileHeroToScroll = () => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        const chapter2 = container.querySelector('[data-hero-chapter="2"]');
-        if (!chapter2) return;
-
-        const ch2Top = (chapter2 as HTMLElement).getBoundingClientRect().top;
-        if (ch2Top < window.innerHeight * 0.85) {
-          document.documentElement.classList.add('hero-ledger-visible');
-          if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
-        } else {
-          document.documentElement.classList.remove('hero-ledger-visible');
-          ensurePinVisible();
-          ScrollTrigger.getAll().forEach((trigger) => trigger.update());
-        }
+        ensurePinVisible();
+        document.documentElement.classList.remove('hero-ledger-visible');
+        syncMobileHero?.();
       };
 
       const finishHeroRestore = () => {
@@ -580,7 +556,6 @@ export function HeroScroll({
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
 
         const chapter1 = containerRef.current?.querySelector('[data-hero-chapter="1"]');
-        const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
 
         const mobileTl = gsap.timeline({
           scrollTrigger: {
@@ -598,39 +573,33 @@ export function HeroScroll({
           },
         });
 
-        // Hold briefly, fade out before chapter 2 copy
+        // Hold hero bottle visible through most of chapter 1, then fade once
         mobileTl.to(bottleAnimRef.current, {
           scale: 1,
+          opacity: 1,
           ease: 'none',
-          duration: 0.25,
+          duration: 0.55,
         })
           .to(bottleAnimRef.current, {
             opacity: 0,
-            scale: 0.94,
-            y: -24,
+            scale: 0.96,
+            y: -18,
             ease: 'power1.out',
-            duration: 0.35,
+            duration: 0.28,
           })
           .to(bottleAnimRef.current, {
             opacity: 0,
             ease: 'none',
-            duration: 0.15,
+            duration: 0.12,
           });
 
-        // Hard-hide before chapter 2 copy reaches the screen
-        ScrollTrigger.create({
-          trigger: chapter2 || chapter1 || containerRef.current,
-          start: 'top 85%',
-          onEnter: () => {
-            document.documentElement.classList.add('hero-ledger-visible');
-            if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
-          },
-          onLeaveBack: () => {
-            document.documentElement.classList.remove('hero-ledger-visible');
-            ensurePinVisible();
-            mobileTl.scrollTrigger?.update();
-          },
-        });
+        syncMobileHero = () => {
+          ensurePinVisible();
+          mobileTl.scrollTrigger?.refresh();
+          mobileTl.scrollTrigger?.update();
+        };
+
+        requestAnimationFrame(() => syncMobileHero?.());
       });
 
       const onRefreshInit = () => refreshMetrics();
@@ -676,6 +645,7 @@ export function HeroScroll({
         document.documentElement.classList.remove('hero-ledger-visible');
         document.documentElement.classList.remove('hero-restore-pending');
         syncDesktopHero = null;
+        syncMobileHero = null;
         mm.revert();
       };
     },

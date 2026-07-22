@@ -34,14 +34,14 @@ const LEGAL: Record<
     body: [
       'We collect only what is needed to fulfil your order: name, contact details, and delivery address.',
       'Email subscribers receive batch and restock updates. You may unsubscribe at any time.',
-      'We do not sell your data. Payment processing is handled by our payment partners under their own privacy terms.',
+      'We do not sell your data. Order details are stored to fulfil your purchase. Online card payment will be added soon; until then, payment is arranged by email after you place an order.',
     ],
   },
   terms: {
     title: 'Terms & Conditions',
     body: [
       'By placing an order with Nocturne you agree to these terms and our shipping and returns policies.',
-      'All fragrances are sold as compounded extrait de parfum. Descriptions and batch availability may change without notice.',
+      'All fragrances are sold as compounded extrait de parfum. Payment is confirmed separately after your order is received unless otherwise stated at checkout.',
       'Prices are listed in Nigerian Naira. Nocturne reserves the right to refuse or cancel orders at its discretion.',
     ],
   },

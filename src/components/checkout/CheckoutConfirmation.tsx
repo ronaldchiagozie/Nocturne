@@ -212,7 +212,7 @@ export function CheckoutConfirmation({
         <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
           <div className="min-w-0">
             <p className="font-sans text-[9px] uppercase tracking-[0.18em] text-taupe-muted">
-              Total paid
+              Order total
             </p>
             <p className="font-serif text-lg tabular-nums text-canvas leading-tight truncate">
               {formatNgn(totalNgn)}

@@ -11,9 +11,9 @@ import { getBottleVariant } from '../data/bottleVariants';
 import { getProduct, ProductId } from '../data/products';
 import { UNIT_PRICE_NGN } from '../data/pricing';
 import type { ProductStock, StoreMeta } from '../services/storeLedger';
-import type { CheckoutSubmitInput } from '../services/orderSync';
 import type {
   CartItem,
+  CheckoutSubmitInput,
   CheckoutOverride,
   SimulatedOrder,
   StoreOrder,

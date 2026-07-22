@@ -184,13 +184,6 @@ html.hero-restore-pending [data-hero-object] {
 }
 
 @media (max-width: 768px) {
-  html.hero-ledger-visible .hero-bottle-pin,
-  html.hero-ledger-visible [data-hero-object] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
   .hero-bottle-pin {
     perspective: none;
     transform: translate3d(0, 0, 0);

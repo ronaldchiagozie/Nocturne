@@ -13,21 +13,18 @@ import { PRODUCTS, ProductId } from '../data/products';
 import { getDb, getFirebaseInitError, isFirebaseConfigured } from '../lib/firebase';
 import type { ProductStock, StoreMeta } from './storeLedger';
 import { applyPurchase, freshInventory } from './storeSync';
-import type { CartItem, OrderLineItem, ShippingInfo, SimulatedOrder, StoreOrder } from '../types';
+import { validateCheckoutInput } from './orderValidation';
+import type {
+  CartItem,
+  CheckoutSubmitInput,
+  OrderLineItem,
+  ShippingInfo,
+  SimulatedOrder,
+  StoreOrder,
+} from '../types';
 
 const SESSION_ORDER_IDS_KEY = 'nocturne_order_ids';
 const LOCAL_ORDERS_KEY = 'nocturne_orders';
-
-export interface CheckoutSubmitInput {
-  items: CartItem[];
-  shipping: ShippingInfo;
-  subtotalNgn: number;
-  shippingNgn: number;
-  totalNgn: number;
-  totalUsd: number;
-  couponCode?: string;
-  couponDiscountNgn?: number;
-}
 
 function useFirebaseOrders(): boolean {
   return isFirebaseConfigured && !getFirebaseInitError();
@@ -312,9 +309,8 @@ export function subscribeSessionOrders(onData: (orders: StoreOrder[]) => void): 
 export async function submitCheckout(
   input: CheckoutSubmitInput,
 ): Promise<{ ok: true; order: StoreOrder } | { ok: false; reason: string }> {
-  if (input.items.length === 0) {
-    return { ok: false, reason: 'Your cart is empty.' };
-  }
+  const validation = validateCheckoutInput(input);
+  if (validation.ok === false) return validation;
 
   if (!useFirebaseOrders()) {
     const { purchaseFromStore } = await import('./storeSync');

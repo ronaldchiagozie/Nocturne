@@ -1,21 +1,141 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Demo B2C store — open read/write for prototype. Tighten before production.
-    match /store/{document=**} {
-      allow read, write: if true;
+    function isKnownProduct(id) {
+      return id in ['no03', 'no05', 'no07'];
     }
+
+    function validProductStock(data) {
+      return data.keys().hasAll(['productId', 'stock', 'maxStock'])
+        && data.productId is string
+        && isKnownProduct(data.productId)
+        && data.stock is int
+        && data.maxStock is int
+        && data.stock >= 0
+        && data.stock <= data.maxStock;
+    }
+
+    function inventoryUpdateValid() {
+      return validProductStock(request.resource.data)
+        && validProductStock(resource.data)
+        && request.resource.data.productId == resource.data.productId
+        && request.resource.data.maxStock == resource.data.maxStock
+        && request.resource.data.stock <= resource.data.stock
+        && resource.data.stock - request.resource.data.stock <= 12;
+    }
+
+    function validStoreMeta(data) {
+      return data.keys().hasAll(['cycleStartedAt', 'lastPhantomAt', 'totalSoldThisCycle'])
+        && data.cycleStartedAt is int
+        && data.lastPhantomAt is int
+        && data.totalSoldThisCycle is int
+        && data.totalSoldThisCycle >= 0;
+    }
+
+    function metaUpdateValid() {
+      return validStoreMeta(request.resource.data)
+        && validStoreMeta(resource.data)
+        && request.resource.data.totalSoldThisCycle >= resource.data.totalSoldThisCycle
+        && request.resource.data.totalSoldThisCycle <= resource.data.totalSoldThisCycle + 24;
+    }
+
+    function validLineItem(item) {
+      return item.keys().hasAll([
+          'productId', 'variantId', 'productLabel', 'productTitle', 'priceNgn', 'qty', 'image',
+        ])
+        && item.productId is string
+        && isKnownProduct(item.productId)
+        && item.variantId is string
+        && item.productLabel is string
+        && item.productTitle is string
+        && item.priceNgn is int
+        && item.priceNgn == 180000
+        && item.qty is int
+        && item.qty >= 1
+        && item.qty <= 12
+        && item.image is string;
+    }
+
+    function validShipping(shipping) {
+      return shipping.keys().hasAll(['fullName', 'email', 'address'])
+        && shipping.fullName is string
+        && shipping.email is string
+        && shipping.address is string
+        && shipping.fullName.size() >= 2
+        && shipping.fullName.size() <= 120
+        && shipping.email.size() >= 5
+        && shipping.email.size() <= 254
+        && shipping.address.size() >= 8
+        && shipping.address.size() <= 500;
+    }
+
+    function validAllItems(items) {
+      return items.size() == 0
+        || (validLineItem(items[0]) && validAllItems(items.slice(1)));
+    }
+
+    function validOrderCreate() {
+      let data = request.resource.data;
+      let discount = ('couponDiscountNgn' in data && data.couponDiscountNgn is int)
+        ? data.couponDiscountNgn
+        : 0;
+
+      return data.keys().hasAll([
+          'createdAt', 'shipping', 'items', 'subtotalNgn', 'shippingNgn', 'totalNgn', 'totalUsd',
+          'status', 'paymentStatus',
+        ])
+        && data.createdAt is string
+        && data.createdAt.size() >= 10
+        && data.createdAt.size() <= 40
+        && validShipping(data.shipping)
+        && data.items is list
+        && data.items.size() >= 1
+        && data.items.size() <= 20
+        && validAllItems(data.items)
+        && data.subtotalNgn is int
+        && data.shippingNgn is int
+        && data.shippingNgn == 3500
+        && data.totalNgn is int
+        && data.totalUsd is int
+        && data.status == 'received'
+        && data.paymentStatus == 'simulated'
+        && discount >= 0
+        && discount <= data.subtotalNgn
+        && data.totalNgn == data.subtotalNgn + data.shippingNgn - discount;
+    }
+
+    match /store/{docId} {
+      allow read: if true;
+      allow create: if docId == 'meta' && validStoreMeta(request.resource.data);
+      allow create: if docId == 'catalog';
+      allow update: if docId == 'meta' && metaUpdateValid();
+      allow update, delete: if false;
+    }
+
     match /inventory/{productId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isKnownProduct(productId) && validProductStock(request.resource.data);
+      allow update: if isKnownProduct(productId) && inventoryUpdateValid();
+      allow delete: if false;
     }
+
     match /products/{productId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isKnownProduct(productId);
+      allow update, delete: if false;
     }
+
     match /variants/{variantId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if !exists(/databases/$(database)/documents/variants/$(variantId));
+      allow update, delete: if false;
     }
+
     match /orders/{orderId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if validOrderCreate();
+      allow update, delete: if false;
     }
   }
 }

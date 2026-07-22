@@ -67,6 +67,17 @@ export interface ShippingInfo {
   address: string;
 }
 
+export interface CheckoutSubmitInput {
+  items: CartItem[];
+  shipping: ShippingInfo;
+  subtotalNgn: number;
+  shippingNgn: number;
+  totalNgn: number;
+  totalUsd: number;
+  couponCode?: string;
+  couponDiscountNgn?: number;
+}
+
 export interface OrderLineItem {
   productId: ProductId;
   variantId: BottleVariantId;

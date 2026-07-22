@@ -20,7 +20,7 @@ const EMPTY: ShippingInfo = { fullName: '', email: '', address: '' };
 const STEPS: { id: Step | 'cart'; label: string }[] = [
   { id: 'cart', label: 'Cart' },
   { id: 'delivery', label: 'Delivery' },
-  { id: 'payment', label: 'Payment' },
+  { id: 'payment', label: 'Confirm' },
   { id: 'done', label: 'Confirmation' },
 ];
 
@@ -409,7 +409,7 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                 </div>
 
                 <button type="submit" className="checkout-btn mt-12 sm:mt-14">
-                  Continue to payment
+                  Continue to review
                 </button>
               </motion.form>
             ) : (
@@ -429,7 +429,8 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                   Complete your order
                 </h1>
                 <p className="font-body-italic italic text-base sm:text-lg text-taupe-muted font-light mt-4 leading-relaxed max-w-xl">
-                  Your order is saved to our atelier ledger. Payment can be arranged separately for now.
+                  Review your details and place the order. Payment is arranged separately — we&apos;ll
+                  email you with next steps from the atelier.
                 </p>
 
                 <div className="mt-10 sm:mt-12 py-6 sm:py-7 border-y border-canvas/10">
@@ -468,7 +469,7 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                 </button>
 
                 <p className="font-sans text-[11px] sm:text-xs text-taupe-muted mt-6 leading-relaxed">
-                  Encrypted checkout · No card details stored on our servers
+                  No card charged at checkout · Payment instructions sent by email
                 </p>
 
                 {error && (
