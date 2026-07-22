@@ -97,20 +97,33 @@ function unlockBodyScroll() {
 }
 
 function applyScrollLock() {
+  lockedScrollY = getScrollY();
   if (lenis) {
     lenis.stop();
+    return;
   }
   lockBodyScroll();
 }
 
 function releaseScrollLock() {
-  unlockBodyScroll();
+  const savedY = bodyLocked ? lockedScrollY : lockedScrollY || getScrollY();
+
   if (lenis) {
     lenis.start();
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-    return;
   }
-  requestAnimationFrame(() => ScrollTrigger.refresh());
+  if (bodyLocked) {
+    unlockBodyScroll();
+  }
+
+  requestAnimationFrame(() => {
+    if (savedY > 0) restoreScrollY(savedY);
+    ScrollTrigger.refresh(true);
+    requestAnimationFrame(() => {
+      if (savedY > 0) restoreScrollY(savedY);
+      ScrollTrigger.getAll().forEach((trigger) => trigger.update());
+      window.dispatchEvent(new CustomEvent('nocturne-scroll-restored'));
+    });
+  });
 }
 
 function initNativeScroll() {

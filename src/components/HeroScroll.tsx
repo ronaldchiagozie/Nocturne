@@ -291,6 +291,11 @@ export function HeroScroll({
 
       const mobileMq = window.matchMedia('(max-width: 768px)');
 
+      /** Never use visibility:hidden on the pin — it sticks and kills the scrub animation. */
+      const ensurePinVisible = () => {
+        if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
+      };
+
       const getHeroScrollProgress = () => {
         const container = containerRef.current;
         if (!container) return 0;
@@ -306,13 +311,13 @@ export function HeroScroll({
       const deepRestore = savedRestoreY > window.innerHeight * 1.5;
       const initialProgress = getHeroScrollProgress();
       const startLanded = !mobileMq.matches && (initialProgress > 0.55 || deepRestore);
-      const hidePinnedBottle = startLanded || deepRestore;
 
+      ensurePinVisible();
       gsap.set(bottleAnimRef.current, {
         x: 0,
         y: 0,
         scale: 1,
-        opacity: hidePinnedBottle ? 0 : 1,
+        opacity: startLanded ? 0 : 1,
         rotation: 0,
         rotateY: 0,
         transformOrigin: '50% 90%',
@@ -320,10 +325,6 @@ export function HeroScroll({
         autoRound: true,
         transformPerspective: mobileMq.matches ? 0 : 1200,
       });
-
-      if (hidePinnedBottle && bottleRef.current) {
-        bottleRef.current.style.visibility = 'hidden';
-      }
 
       if (!mobileMq.matches) {
         if (startLanded) {
@@ -340,8 +341,8 @@ export function HeroScroll({
           gsap.set(leftCardRef.current, { xPercent: 0, opacity: 1 });
           gsap.set(rightCardRef.current, { xPercent: 0, opacity: 1 });
           gsap.set(centerCardRef.current, { opacity: 1 });
-          if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
         } else {
+          ensurePinVisible();
           gsap.set([leftCardRef.current, rightCardRef.current], { xPercent: 0, opacity: 0 });
           gsap.set(centerCardRef.current, { opacity: 0 });
           gsap.set(centerBottleImgRef.current, { opacity: 0 });
@@ -357,7 +358,6 @@ export function HeroScroll({
 
       if (mobileMq.matches && (deepRestore || savedRestoreY > window.innerHeight * 0.9)) {
         document.documentElement.classList.add('hero-ledger-visible');
-        if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
         gsap.set(bottleAnimRef.current, { opacity: 0 });
       } else if (mobileMq.matches) {
         const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
@@ -365,8 +365,10 @@ export function HeroScroll({
           const ch2Top = (chapter2 as HTMLElement).getBoundingClientRect().top;
           if (ch2Top < window.innerHeight * 0.85) {
             document.documentElement.classList.add('hero-ledger-visible');
-            if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
             gsap.set(bottleAnimRef.current, { opacity: 0 });
+          } else {
+            document.documentElement.classList.remove('hero-ledger-visible');
+            ensurePinVisible();
           }
         }
       }
@@ -488,7 +490,6 @@ export function HeroScroll({
           gsap.set(leftCardRef.current, { xPercent: 0, opacity: 1 });
           gsap.set(rightCardRef.current, { xPercent: 0, opacity: 1 });
           gsap.set(centerCardRef.current, { opacity: 1 });
-          if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
         };
 
         const syncHeroToScroll = () => {
@@ -507,8 +508,8 @@ export function HeroScroll({
             return;
           }
 
-          if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
-          gsap.set(bottleAnimRef.current, { opacity: 1 });
+          ensurePinVisible();
+          gsap.set(centerBottleImgRef.current, { opacity: 0 });
           tl.scrollTrigger?.update();
         };
 
@@ -529,11 +530,11 @@ export function HeroScroll({
         const ch2Top = (chapter2 as HTMLElement).getBoundingClientRect().top;
         if (ch2Top < window.innerHeight * 0.85) {
           document.documentElement.classList.add('hero-ledger-visible');
-          if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
           if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
         } else {
           document.documentElement.classList.remove('hero-ledger-visible');
-          if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
+          ensurePinVisible();
+          ScrollTrigger.getAll().forEach((trigger) => trigger.update());
         }
       };
 
@@ -581,7 +582,7 @@ export function HeroScroll({
         const chapter1 = containerRef.current?.querySelector('[data-hero-chapter="1"]');
         const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
 
-        const tl = gsap.timeline({
+        const mobileTl = gsap.timeline({
           scrollTrigger: {
             trigger: chapter1 || containerRef.current,
             start: 'top top',
@@ -598,7 +599,7 @@ export function HeroScroll({
         });
 
         // Hold briefly, fade out before chapter 2 copy
-        tl.to(bottleAnimRef.current, {
+        mobileTl.to(bottleAnimRef.current, {
           scale: 1,
           ease: 'none',
           duration: 0.25,
@@ -622,12 +623,12 @@ export function HeroScroll({
           start: 'top 85%',
           onEnter: () => {
             document.documentElement.classList.add('hero-ledger-visible');
-            if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
             if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
           },
           onLeaveBack: () => {
             document.documentElement.classList.remove('hero-ledger-visible');
-            if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
+            ensurePinVisible();
+            mobileTl.scrollTrigger?.update();
           },
         });
       });

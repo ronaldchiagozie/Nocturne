@@ -177,11 +177,9 @@ html.product-detail-open .hero-bottle-pin {
   pointer-events: none !important;
 }
 
-/* Route-back: suppress pinned hero bottle until scroll + GSAP sync settle */
-html.hero-restore-pending [data-hero-object],
-html.hero-restore-pending .hero-bottle-pin {
-  visibility: hidden !important;
-  opacity: 0 !important;
+/* Route-back: let GSAP sync opacity — do not force-hide the pin or the scrub breaks */
+html.hero-restore-pending .hero-bottle-pin,
+html.hero-restore-pending [data-hero-object] {
   pointer-events: none !important;
 }
 
@@ -1394,4 +1392,67 @@ option {
 /* ── Nav drawer ── */
 .nav-drawer {
   box-shadow: -16px 0 48px color-mix(in srgb, var(--color-canvas) 8%, transparent);
+}
+
+/* ── Shop skeleton loaders ── */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-canvas) 5%, #ebe7df);
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    color-mix(in srgb, white 72%, transparent) 50%,
+    transparent 62%
+  );
+  animation: skeleton-shimmer-pass 1.55s ease-in-out infinite;
+  will-change: transform;
+}
+
+.skeleton-bottle-shape {
+  background: color-mix(in srgb, var(--color-canvas) 12%, transparent);
+}
+
+.shop-skeleton-card {
+  animation: shop-skeleton-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes skeleton-shimmer-pass {
+  0% {
+    transform: translateX(-55%) skewX(-14deg);
+  }
+  100% {
+    transform: translateX(55%) skewX(-14deg);
+  }
+}
+
+@keyframes shop-skeleton-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
+    opacity: 0.35;
+    inset: 0;
+    transform: none;
+    background: color-mix(in srgb, white 28%, transparent);
+  }
+
+  .shop-skeleton-card {
+    animation: none;
+  }
 }

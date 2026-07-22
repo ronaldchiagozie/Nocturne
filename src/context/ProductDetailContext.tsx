@@ -10,7 +10,7 @@ import {
 import type { ProductId } from '../data/products';
 import type { CheckoutOverride } from '../types';
 import { ProductDetailPanel } from '../components/ProductDetailPanel';
-import { setScrollLocked } from '../hooks/useLenis';
+import { setScrollLocked, saveHomeScrollPosition } from '../hooks/useLenis';
 
 interface ProductDetailState {
   productId: ProductId | null;
@@ -28,6 +28,7 @@ export function ProductDetailProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ProductDetailState>({ productId: null });
 
   const openProduct = useCallback((productId: ProductId, override?: CheckoutOverride) => {
+    saveHomeScrollPosition();
     setState({ productId, override });
   }, []);
 
