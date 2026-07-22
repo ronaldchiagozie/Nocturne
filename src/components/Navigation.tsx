@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NavDrawer } from './NavDrawer';
-import { ThemeToggle } from './ThemeToggle';
 import { useSoundscape } from '../context/SoundscapeContext';
 import { useStore } from '../context/StoreContext';
 import { scrollToTop } from '../hooks/useLenis';
 
 interface NavigationProps {
-  orderCount: number;
   onOpenCart: () => void;
-  onOpenVault: () => void;
   onOpenDistiller: () => void;
   onOpenCollections: () => void;
   onOpenShop?: () => void;
@@ -17,9 +14,7 @@ interface NavigationProps {
 }
 
 export function Navigation({
-  orderCount,
   onOpenCart,
-  onOpenVault,
   onOpenDistiller,
   onOpenCollections,
   onOpenShop,
@@ -41,7 +36,7 @@ export function Navigation({
           <button
             type="button"
             onClick={() => scrollToTop()}
-            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group leading-none"
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group leading-none min-h-[44px]"
             aria-label="Nocturne. Scroll to top"
           >
             <img
@@ -57,12 +52,11 @@ export function Navigation({
         </div>
 
         <div className="pointer-events-auto flex items-center gap-5 sm:gap-7">
-          <ThemeToggle />
           {isActive && (
             <button
               type="button"
               onClick={toggleMute}
-              className="font-mono text-[9px] uppercase tracking-[0.22em] leading-none text-canvas/45 hover:text-canvas/80 transition-colors duration-300 cursor-pointer"
+              className="font-mono text-[9px] uppercase tracking-[0.22em] leading-none text-canvas/45 hover:text-canvas/80 transition-colors duration-300 cursor-pointer min-h-[44px] inline-flex items-center"
               aria-label={isAudible ? 'Mute soundscape' : 'Unmute soundscape'}
             >
               {isAudible ? 'Sound' : 'Muted'}
@@ -71,7 +65,7 @@ export function Navigation({
           <button
             type="button"
             onClick={() => onOpenShop?.()}
-            className="font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+            className="font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer min-h-[44px] inline-flex items-center"
           >
             Shop
           </button>
@@ -91,7 +85,7 @@ export function Navigation({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+            className="font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer min-h-[44px] inline-flex items-center"
             aria-label="Open menu"
           >
             Menu
@@ -101,11 +95,9 @@ export function Navigation({
 
       <NavDrawer
         isOpen={menuOpen}
-        orderCount={orderCount}
         cartCount={cartCount}
         onClose={() => setOpen(false)}
         onOpenCart={onOpenCart}
-        onOpenVault={onOpenVault}
         onOpenDistiller={onOpenDistiller}
         onOpenCollections={onOpenCollections}
         onOpenShop={onOpenShop}

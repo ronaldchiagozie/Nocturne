@@ -4,14 +4,11 @@ import { Navigation } from '../components/Navigation';
 import { HeroScroll } from '../components/HeroScroll';
 import { CloseSection } from '../components/PageSections';
 import { SiteFooter } from '../components/SiteFooter';
-import { ScentVault, VaultTab } from '../components/ScentVault';
-import { Distiller } from '../components/Distiller';
-import { CollectionsPanel } from '../components/CollectionsPanel';
 import { ApertureIntro } from '../components/ApertureIntro';
 import { useLenis, setScrollLocked } from '../hooks/useLenis';
+import { isMobileViewport, prefersReducedMotion } from '../hooks/useMotionPreference';
 import { useProductDetail } from '../context/ProductDetailContext';
-import { normalizeOrder } from '../data/orders';
-import { SimulatedOrder } from '../types';
+import { useSiteModals } from '../context/SiteModalsContext';
 
 const REPEATED_LINE = 'One scent. Worn differently by everyone who wears it.';
 const INTRO_SEEN_KEY = 'nocturne_intro_seen';
@@ -32,34 +29,20 @@ function markIntroSeen(): void {
   }
 }
 
+function shouldSkipIntro(): boolean {
+  return hasSeenIntro() || isMobileViewport() || prefersReducedMotion();
+}
+
 export function HomePage() {
   const navigate = useNavigate();
-  const { productId: detailProductId, openProduct } = useProductDetail();
+  const { openProduct } = useProductDetail();
+  const { openDistiller, openCollections } = useSiteModals();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [vaultOpen, setVaultOpen] = useState(false);
-  const [distillerOpen, setDistillerOpen] = useState(false);
-  const [collectionsOpen, setCollectionsOpen] = useState(false);
-  const [orders, setOrders] = useState<SimulatedOrder[]>([]);
-  const [introRevealed, setIntroRevealed] = useState(hasSeenIntro);
+  const [introRevealed, setIntroRevealed] = useState(shouldSkipIntro);
 
   useLenis();
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('nocturne_batches');
-      if (!stored) return;
-      const parsed = JSON.parse(stored) as Record<string, unknown>[];
-      const normalized = parsed
-        .map((item) => normalizeOrder(item))
-        .filter((order): order is SimulatedOrder => order !== null);
-      setOrders(normalized);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const scrollLocked =
-    !introRevealed || menuOpen || vaultOpen || distillerOpen || collectionsOpen;
+  const scrollLocked = !introRevealed || menuOpen;
 
   useEffect(() => {
     setScrollLocked(scrollLocked);
@@ -77,72 +60,26 @@ export function HomePage() {
       )}
 
       <Navigation
-        orderCount={orders.length}
         onOpenCart={() => navigate('/cart')}
-        onOpenVault={() => setVaultOpen(true)}
-        onOpenDistiller={() => setDistillerOpen(true)}
-        onOpenCollections={() => setCollectionsOpen(true)}
+        onOpenDistiller={openDistiller}
+        onOpenCollections={openCollections}
         onOpenShop={() => navigate('/shop')}
         onMenuChange={setMenuOpen}
       />
 
       <HeroScroll
-        onOpenDistiller={() => setDistillerOpen(true)}
+        onOpenDistiller={openDistiller}
         onOpenProductDetail={openProduct}
       />
 
-      <CloseSection line={REPEATED_LINE} />
+      <CloseSection line={REPEATED_LINE} onOpenDistiller={openDistiller} />
 
       <SiteFooter
-        orderCount={orders.length}
-        onOpenCart={() => navigate('/cart')}
-        onOpenDistiller={() => setDistillerOpen(true)}
-        onOpenVault={() => setVaultOpen(true)}
-        onOpenCollections={() => setCollectionsOpen(true)}
-        onOpenShop={() => navigate('/shop')}
-      />
-
-      <VaultTab
-        count={orders.length}
-        isHidden={
-          !introRevealed ||
-          vaultOpen ||
-          distillerOpen ||
-          collectionsOpen ||
-          menuOpen ||
-          detailProductId !== null
-        }
-        onOpen={() => setVaultOpen(true)}
-      />
-
-      <CollectionsPanel
-        isOpen={collectionsOpen}
-        onClose={() => setCollectionsOpen(false)}
-        onSelectProduct={(item) => {
-          openProduct(item.productId, {
-            variantId: item.variantId,
-            productLabel: item.label,
-            productTitle: item.name,
-          });
-          setCollectionsOpen(false);
-        }}
-        onOpenDistiller={() => setDistillerOpen(true)}
-      />
-
-      <Distiller
-        isOpen={distillerOpen}
-        onClose={() => setDistillerOpen(false)}
-        onViewSpec={(result) => {
-          openProduct(result.productId, {
-            variantId: result.variantId,
-            formulationLabel: result.formulationLabel,
-            productLabel: `No. ${result.formulationNumber}`,
-            productTitle: result.formulationName,
-          });
+        homeActions={{
+          onOpenDistiller: openDistiller,
+          onOpenCollections: openCollections,
         }}
       />
-
-      <ScentVault isOpen={vaultOpen} orders={orders} onClose={() => setVaultOpen(false)} />
     </div>
   );
 }

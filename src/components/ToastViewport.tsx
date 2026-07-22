@@ -36,8 +36,9 @@ export function ToastViewport() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 top-0 z-[300] flex flex-col items-center gap-2 px-4 pt-[max(0.875rem,env(safe-area-inset-top))]"
+      role="status"
       aria-live="polite"
-      aria-label="Notifications"
+      aria-atomic="false"
     >
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => {

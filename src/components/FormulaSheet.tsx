@@ -3,6 +3,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { NoteItem } from '../types';
+import { prefersReducedMotion } from '../hooks/useMotionPreference';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,6 +26,7 @@ export function FormulaSheet({ onCheckout }: FormulaSheetProps) {
 
   const highlightRow = (idx: number) => {
     setActiveIdx(idx);
+    if (prefersReducedMotion()) return;
     rowRefs.current.forEach((row, i) => {
       if (!row) return;
       gsap.to(row, {
@@ -37,16 +39,26 @@ export function FormulaSheet({ onCheckout }: FormulaSheetProps) {
 
   useGSAP(
     () => {
+      if (prefersReducedMotion()) return;
+
+      const triggers: ScrollTrigger[] = [];
+
       rowRefs.current.forEach((row, idx) => {
         if (!row) return;
-        ScrollTrigger.create({
-          trigger: row,
-          start: 'top 80%',
-          end: 'bottom 20%',
-          onEnter: () => highlightRow(idx),
-          onEnterBack: () => highlightRow(idx),
-        });
+        triggers.push(
+          ScrollTrigger.create({
+            trigger: row,
+            start: 'top 80%',
+            end: 'bottom 20%',
+            onEnter: () => highlightRow(idx),
+            onEnterBack: () => highlightRow(idx),
+          }),
+        );
       });
+
+      return () => {
+        triggers.forEach((trigger) => trigger.kill());
+      };
     },
     { scope: sectionRef },
   );
@@ -54,7 +66,7 @@ export function FormulaSheet({ onCheckout }: FormulaSheetProps) {
   return (
     <section
       ref={sectionRef}
-      className="w-full min-h-screen py-32 md:py-48 px-6 md:px-12 bg-cream"
+      className="w-full min-h-[100dvh] py-32 md:py-48 px-6 md:px-12 bg-cream"
     >
       <div className="max-w-sm md:max-w-md">
         <p className="font-body-italic italic text-sm md:text-base text-canvas leading-relaxed font-light max-w-xl mb-32 md:mb-48">
@@ -85,7 +97,7 @@ export function FormulaSheet({ onCheckout }: FormulaSheetProps) {
         <div className="mt-32 md:mt-48">
           <button
             onClick={onCheckout}
-            className="group text-left cursor-pointer focus:outline-none"
+            className="group text-left cursor-pointer focus:outline-none min-h-[44px]"
           >
             <span className="block font-sans text-[10px] uppercase tracking-[0.25em] text-canvas group-hover:text-canvas/80 transition-colors duration-300">
               [ add to cart — batch no. 07 ]

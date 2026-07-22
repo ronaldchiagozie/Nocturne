@@ -7,6 +7,7 @@ import {
   distillMatch,
 } from '../data/distiller';
 import { DistillerStep } from '../data/distillerVisuals';
+import { FORMULATION_COUNT_WORD } from '../data/brand';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { DistillerViewport } from './DistillerViewport';
 
@@ -113,8 +114,8 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                         One formulation.
                       </p>
                       <p className="font-body-italic italic text-sm text-taupe-muted leading-relaxed font-light mt-8 max-w-sm">
-                        Answer three quiet questions. We&apos;ll match you with one of eight
-                        compounds.
+                        Answer three quiet questions. We&apos;ll match you with one of{' '}
+                        {FORMULATION_COUNT_WORD} compounds.
                       </p>
                       <button
                         type="button"

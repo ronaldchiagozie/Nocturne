@@ -3,8 +3,15 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images } from '../assets/images';
+import { BottleVariantId } from '../data/bottleVariants';
+import {
+  ADDITIONAL_FORMULATION_COUNT_WORD,
+  FORMULATION_COUNT_WORD,
+} from '../data/brand';
 import { PRODUCTS, ProductId } from '../data/products';
+import type { CheckoutOverride } from '../types';
 import { preloadImages } from '../utils/preloadImages';
+import { getViewportHeight, prefersReducedMotion } from '../hooks/useMotionPreference';
 import { useStore } from '../context/StoreContext';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { BatchLedger } from './BatchLedger';
@@ -13,7 +20,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface HeroScrollProps {
   onOpenDistiller?: () => void;
-  onOpenProductDetail?: (productId: ProductId) => void;
+  onOpenProductDetail?: (productId: ProductId, override?: CheckoutOverride) => void;
 }
 
 const CARD_ORDER: ProductId[] = ['no03', 'no07', 'no05'];
@@ -35,6 +42,7 @@ const CARDS = CARD_ORDER.map((id) => {
 const MOBILE_EXTRA_CARDS = [
   {
     productId: 'no07' as ProductId,
+    variantId: 'v05' as BottleVariantId,
     label: 'No. 11',
     title: 'Golden Hour',
     detail: 'Nocturne No. 11. Extrait de parfum. 50ml. Compounded to order.',
@@ -44,6 +52,7 @@ const MOBILE_EXTRA_CARDS = [
   },
   {
     productId: 'no07' as ProductId,
+    variantId: 'v06' as BottleVariantId,
     label: 'No. 17',
     title: 'Violet Noir',
     detail: 'Nocturne No. 17. Extrait de parfum. 50ml. Compounded to order.',
@@ -113,7 +122,7 @@ function CardFooter({
           e.stopPropagation();
           add(productId);
         }}
-        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 min-h-[44px] inline-flex items-center rounded-full hover:opacity-85 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {soldOut ? 'Sold out' : 'Add to cart'}
       </button>
@@ -188,7 +197,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
         }
 
         const vw = window.innerWidth;
-        const vh = window.innerHeight;
+        const vh = getViewportHeight();
         const pad = vw >= 768 ? 24 : 16;
 
         // offsetTop within the sticky flex container, stable, no getBoundingClientRect during scroll
@@ -244,7 +253,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
       }
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (prefersReducedMotion()) {
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], { opacity: 1 });
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
         gsap.set(bottleAnimRef.current, { opacity: 0 });
@@ -348,7 +357,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
       });
 
       mm.add('(max-width: 768px)', () => {
-        // Mobile: pin through hero, fully fade out before "Worn after dark" enters.
+        // Mobile: fade only — no pin (avoids iOS Safari rubber-band / 100vh issues)
         gsap.set(bottleAnimRef.current, {
           rotateY: 0,
           rotation: 0,
@@ -366,53 +375,20 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
 
         const chapter1 = containerRef.current?.querySelector('[data-hero-chapter="1"]');
-        const chapter2 = containerRef.current?.querySelector('[data-hero-chapter="2"]');
 
-        const tl = gsap.timeline({
+        gsap.timeline({
           scrollTrigger: {
             trigger: chapter1 || containerRef.current,
             start: 'top top',
-            // End while ch1 bottom is still at viewport bottom — before ch2 text
-            end: 'bottom bottom',
-            scrub: true,
-            pin: bottleRef.current,
-            pinSpacing: false,
-            pinType: 'fixed',
-            anticipatePin: 0,
+            end: 'bottom top',
+            scrub: 0.5,
             invalidateOnRefresh: true,
-            fastScrollEnd: true,
           },
-        });
-
-        // Hold, fade early, then stay invisible before Worn after dark
-        tl.to(bottleAnimRef.current, {
-          scale: 1,
+        }).to(bottleAnimRef.current, {
+          opacity: 0,
+          scale: 0.92,
           ease: 'none',
-          duration: 0.35,
-        })
-          .to(bottleAnimRef.current, {
-            opacity: 0,
-            scale: 0.9,
-            ease: 'none',
-            duration: 0.45,
-          })
-          .to(bottleAnimRef.current, {
-            opacity: 0,
-            ease: 'none',
-            duration: 0.2,
-          });
-
-        // Hard-hide before chapter 2 copy reaches the screen
-        ScrollTrigger.create({
-          trigger: chapter2 || chapter1 || containerRef.current,
-          start: 'top 85%',
-          onEnter: () => {
-            if (bottleRef.current) bottleRef.current.style.visibility = 'hidden';
-            if (bottleAnimRef.current) gsap.set(bottleAnimRef.current, { opacity: 0 });
-          },
-          onLeaveBack: () => {
-            if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
-          },
+          duration: 1,
         });
       });
 
@@ -478,7 +454,9 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
             ref={bottleImgRef}
             src={images.hero}
             alt={CARDS[1].imageAlt}
-            className="hero-bottle-image relative z-30 block h-[min(400px,52dvh)] sm:h-[min(460px,58dvh)] md:h-[min(520px,62vh)] w-auto object-contain"
+            className="hero-bottle-image relative z-30 block h-[min(400px,52dvh)] sm:h-[min(460px,58dvh)] md:h-[min(520px,62dvh)] w-auto object-contain"
+            width={520}
+            height={780}
             loading="eager"
             decoding="async"
             fetchPriority="high"
@@ -489,7 +467,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
       {/* Chapter 1: hero (taller on mobile for bottle fade runway) */}
       <section
         data-hero-chapter="1"
-        className="relative min-h-[180dvh] md:min-h-[100dvh] w-full bg-cream-plate"
+        className="relative min-h-[130dvh] md:min-h-[100dvh] w-full bg-cream-plate"
       >
         <div className="absolute inset-0 z-0 overflow-hidden bg-cream-plate" />
 
@@ -516,10 +494,10 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
         </div>
 
         <div className="absolute inset-0 z-[25] pointer-events-none select-none">
-          <p className="absolute left-4 sm:left-6 md:left-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] rotate-180 hidden sm:block">
+          <p className="absolute left-4 sm:left-6 md:left-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-taupe-muted [writing-mode:vertical-rl] rotate-180 hidden sm:block">
             BATCH // 001-NG
           </p>
-          <p className="absolute right-4 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] hidden sm:block">
+          <p className="absolute right-4 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-taupe-muted [writing-mode:vertical-rl] hidden sm:block">
             EXTRAIT DE PARFUM // 50ML
           </p>
 
@@ -541,13 +519,13 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
         data-hero-chapter="2"
         className="relative w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pt-16 pb-16 sm:pb-20 md:min-h-[100dvh] md:pt-0 md:pb-36"
       >
-        <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
+        <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-taupe-muted [writing-mode:vertical-rl] z-[20] hidden sm:block">
           EXTRAIT DE PARFUM // 50ML
         </p>
 
         <HeroEditorial
           title="Compounded to order."
-          body="No. 03, 05, and 07, plus six more on the ledger. Each extrait distilled for a different hour, a different intent."
+          body={`No. 03, 05, and 07, plus ${ADDITIONAL_FORMULATION_COUNT_WORD} more on the ledger. Each extrait distilled for a different hour, a different intent.`}
           align="right"
           className="absolute right-6 md:right-12 top-[18%] md:top-[22%] lg:top-[26%] z-[20] hidden md:block"
         />
@@ -569,7 +547,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
         className="relative w-full bg-cream-plate md:min-h-[200vh]"
       >
         {/* Desktop sticky choreography. Never paint on mobile */}
-        <div className="max-md:hidden sticky top-0 flex h-screen w-full flex-col items-center justify-center px-8 lg:px-12">
+        <div className="max-md:hidden sticky top-0 flex h-[100dvh] w-full flex-col items-center justify-center px-8 lg:px-12">
           <div
             ref={cardsGridRef}
             className="relative w-full max-w-6xl grid grid-cols-3 border border-neutral-300/80 bg-cream-plate z-20"
@@ -588,9 +566,9 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
                 imageClassName={BOTTLE_SLOT_CLASS}
                 priority
               />
-              <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
+              <h2 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[0].title}
-              </h3>
+              </h2>
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[0].detail}
               </p>
@@ -613,9 +591,9 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
                 slotRef={centerSlotRef}
                 priority
               />
-              <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
+              <h2 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[1].title}
-              </h3>
+              </h2>
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[1].detail}
               </p>
@@ -636,9 +614,9 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
                 imageClassName={BOTTLE_SLOT_CLASS}
                 priority
               />
-              <h3 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
+              <h2 className="font-serif text-lg md:text-xl text-canvas tracking-tight leading-snug mb-3">
                 {CARDS[2].title}
-              </h3>
+              </h2>
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[2].detail}
               </p>
@@ -653,7 +631,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
                 onClick={onOpenDistiller}
                 className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors duration-300 cursor-pointer"
               >
-                Eight formulations exist. Discover yours →
+                {`${FORMULATION_COUNT_WORD.charAt(0).toUpperCase()}${FORMULATION_COUNT_WORD.slice(1)} formulations exist. Discover yours →`}
               </button>
             </div>
           )}
@@ -669,7 +647,13 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
             {[...CARDS, ...MOBILE_EXTRA_CARDS].map((card, index) => (
               <article
                 key={`${card.label}-${card.title}`}
-                onClick={() => onOpenProductDetail?.(card.productId)}
+                onClick={() =>
+                  onOpenProductDetail?.(card.productId, {
+                    variantId: 'variantId' in card ? card.variantId : undefined,
+                    productLabel: card.label,
+                    productTitle: card.title,
+                  })
+                }
                 className="flex flex-col border border-neutral-300/80 bg-cream-plate p-5 cursor-pointer active:bg-cream/60"
               >
                 <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-5">
@@ -681,9 +665,9 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
                   imageClassName={BOTTLE_SLOT_CLASS}
                   priority={index < 2}
                 />
-                <h3 className="font-serif text-lg text-canvas tracking-tight leading-snug mb-2">
+                <h2 className="font-serif text-lg text-canvas tracking-tight leading-snug mb-2">
                   {card.title}
-                </h3>
+                </h2>
                 <p className="font-body-italic italic text-xs text-taupe-muted leading-relaxed font-light mb-5">
                   {card.detail}
                 </p>
@@ -702,7 +686,7 @@ export function HeroScroll({ onOpenDistiller, onOpenProductDetail }: HeroScrollP
                 onClick={onOpenDistiller}
                 className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors duration-300 cursor-pointer"
               >
-                Eight formulations exist. Discover yours →
+                {`${FORMULATION_COUNT_WORD.charAt(0).toUpperCase()}${FORMULATION_COUNT_WORD.slice(1)} formulations exist. Discover yours →`}
               </button>
             </div>
           )}

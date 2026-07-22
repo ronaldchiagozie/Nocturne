@@ -139,7 +139,7 @@ export function initLenisScroll() {
         top: 0,
         left: 0,
         width: window.innerWidth,
-        height: window.innerHeight,
+        height: window.visualViewport?.height ?? window.innerHeight,
       };
     },
     pinType: 'transform',
@@ -184,6 +184,15 @@ export function scrollToTop() {
     return;
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/** Instant scroll — use on route changes so the new page starts at the top. */
+export function scrollToTopImmediate() {
+  if (lenis) {
+    lenis.scrollTo(0, { immediate: true });
+    return;
+  }
+  window.scrollTo(0, 0);
 }
 
 export function destroyLenisScroll() {

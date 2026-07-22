@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { cartItemsToOrders, useStore } from '../../context/StoreContext';
-import { ThemeToggle } from '../ThemeToggle';
 import { formatNgn, formatUsd, SHIPPING_NGN, UNIT_PRICE_USD } from '../../data/pricing';
 import type { CartItem, ShippingInfo, SimulatedOrder } from '../../types';
 
@@ -26,35 +25,65 @@ function CheckoutProgress({ step }: { step: Step }) {
   const activeIndex =
     step === 'delivery' ? 1 : step === 'payment' ? 2 : step === 'done' ? 3 : 0;
 
+  const progressPct = (activeIndex / (STEPS.length - 1)) * 100;
+
   return (
-    <nav
-      className="flex items-center gap-2 sm:gap-3 font-mono text-[8px] uppercase tracking-[0.22em]"
-      aria-label="Checkout progress"
-    >
-      {STEPS.map((item, index) => {
-        const isComplete = index < activeIndex;
-        const isCurrent = index === activeIndex;
-        return (
-          <span key={item.id} className="flex items-center gap-2 sm:gap-3">
-            {index > 0 && (
-              <span className="text-canvas/15" aria-hidden>
-                ·
-              </span>
-            )}
-            <span
-              className={
-                isCurrent
-                  ? 'text-canvas'
-                  : isComplete
-                    ? 'text-taupe-muted'
-                    : 'text-canvas/25'
-              }
+    <nav className="checkout-stepper w-full" aria-label="Checkout progress">
+      <div className="checkout-stepper-rail" aria-hidden>
+        <div className="checkout-stepper-rail-track" />
+        <div
+          className="checkout-stepper-rail-fill"
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
+
+      <ol className="checkout-stepper-list">
+        {STEPS.map((item, index) => {
+          const isComplete = index < activeIndex;
+          const isCurrent = index === activeIndex;
+
+          return (
+            <li
+              key={item.id}
+              className="checkout-stepper-step"
+              aria-current={isCurrent ? 'step' : undefined}
             >
-              {item.label}
-            </span>
-          </span>
-        );
-      })}
+              <span
+                className={`checkout-stepper-node${
+                  isComplete ? ' is-complete' : isCurrent ? ' is-current' : ''
+                }`}
+              >
+                {isComplete ? (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M2.5 7.25L5.75 10.5L11.5 3.75"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  index + 1
+                )}
+              </span>
+              <span
+                className={`checkout-stepper-label${
+                  isComplete ? ' is-complete' : isCurrent ? ' is-current' : ''
+                }`}
+              >
+                {item.label}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </nav>
   );
 }
@@ -95,13 +124,13 @@ function OrderLines({
               <img src={item.image} alt="" className="h-[64px] w-auto object-contain" />
             </div>
             <div className="flex-1 min-w-0 pb-0.5">
-              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-taupe-muted">
+              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-taupe-muted">
                 {item.productLabel}
               </p>
-              <p className="font-serif text-[15px] text-canvas tracking-tight mt-0.5 truncate">
+              <p className="font-serif text-base sm:text-lg text-canvas tracking-tight mt-1 truncate">
                 {item.formulationLabel ?? item.productTitle}
               </p>
-              <p className="font-mono text-[10px] tabular-nums text-taupe-muted mt-1.5">
+              <p className="font-sans text-xs tabular-nums text-taupe-muted mt-2">
                 Qty {item.qty} · {formatNgn(item.priceNgn * item.qty)}
               </p>
             </div>
@@ -109,7 +138,7 @@ function OrderLines({
         ))}
       </ul>
 
-      <div className="mt-auto pt-6 border-t border-canvas/10 space-y-2.5 font-mono text-[11px]">
+      <div className="mt-auto pt-8 border-t border-canvas/10 space-y-3 font-sans text-xs sm:text-sm">
         <div className="flex justify-between text-taupe-muted">
           <span>Subtotal</span>
           <span className="tabular-nums">{formatNgn(cartTotalNgn)}</span>
@@ -119,10 +148,10 @@ function OrderLines({
           <span className="tabular-nums">{formatNgn(shippingCost)}</span>
         </div>
         <div className="flex justify-between items-baseline pt-3 border-t border-canvas/10">
-          <span className="font-sans text-[9px] uppercase tracking-[0.2em] text-canvas/70">
+          <span className="font-sans text-xs uppercase tracking-[0.12em] text-canvas/80">
             Total
           </span>
-          <span className="font-serif text-lg tabular-nums text-canvas">
+          <span className="font-serif text-xl sm:text-2xl tabular-nums text-canvas">
             {formatNgn(totalNgn)}
             <span className="font-mono text-[10px] text-taupe-muted ml-2">
               / {formatUsd(totalUsd)}
@@ -191,33 +220,32 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
   };
 
   return (
-    <div className="checkout-split min-h-[100dvh] grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]">
+    <div className="checkout-split min-h-[100dvh] grid lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_460px]">
       <div className="checkout-form-side relative flex flex-col bg-cream text-canvas min-h-[50dvh] lg:min-h-[100dvh]">
-        <header className="flex items-center justify-between px-5 sm:px-8 md:px-12 lg:px-14 pt-[max(1rem,env(safe-area-inset-top))] lg:pt-10 pb-5 border-b border-canvas/[0.06] lg:border-b-0">
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-[max(1.25rem,env(safe-area-inset-top))] lg:pt-8 pb-6 border-b border-canvas/[0.08]">
           <Link
             to={step === 'done' ? '/' : '/cart'}
-            className="font-sans text-[9px] uppercase tracking-[0.24em] text-taupe-muted hover:text-canvas transition-colors"
+            className="font-sans text-[11px] sm:text-xs text-taupe-muted hover:text-canvas transition-colors justify-self-start"
           >
             {step === 'done' ? '← Home' : '← Cart'}
           </Link>
-          <div className="flex items-center gap-5">
-            <ThemeToggle />
-            <Link
-              to="/"
-              className="font-serif text-[11px] tracking-[0.28em] uppercase text-taupe-muted hover:text-canvas transition-colors"
-            >
-              Nocturne
-            </Link>
-          </div>
+          <Link
+            to="/"
+            className="font-serif text-lg sm:text-xl tracking-[0.12em] text-canvas hover:text-canvas/75 transition-colors justify-self-center"
+            aria-label="Nocturne home"
+          >
+            NOCTURNE
+          </Link>
+          <span className="justify-self-end" aria-hidden />
         </header>
 
-        <div className="flex-1 flex flex-col justify-center px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pb-12 lg:pb-16 max-w-lg lg:max-w-xl mx-auto lg:mx-0 w-full">
-          {!isEmpty && step !== 'done' && (
-            <div className="mb-8 lg:mb-10">
-              <CheckoutProgress step={step} />
-            </div>
-          )}
+        {!isEmpty && (
+          <div className="checkout-stepper-bar px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 py-7 sm:py-8 lg:py-9 border-b border-canvas/[0.08] bg-cream">
+            <CheckoutProgress step={step} />
+          </div>
+        )}
 
+        <div className="flex-1 flex flex-col px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-10 sm:pt-12 lg:pt-14 pb-14 lg:pb-20 max-w-2xl xl:max-w-3xl w-full">
           <AnimatePresence mode="wait">
             {isEmpty ? (
               <motion.div
@@ -246,7 +274,6 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center lg:text-left"
               >
-                <CheckoutProgress step={step} />
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -283,18 +310,18 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               >
-                <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-taupe-muted">
+                <p className="font-sans text-xs sm:text-sm text-taupe-muted tracking-wide">
                   Step 1 of 2
                 </p>
-                <h1 className="font-serif text-[clamp(1.85rem,5vw,2.65rem)] tracking-tight leading-[1.08] mt-3">
+                <h1 className="font-serif text-[clamp(2.25rem,6vw,3.25rem)] tracking-tight leading-[1.06] mt-4">
                   Where shall we send it?
                 </h1>
-                <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 leading-relaxed">
+                <p className="font-body-italic italic text-base sm:text-lg text-taupe-muted font-light mt-4 leading-relaxed max-w-xl">
                   Compounded to order, then dispatched nationwide from our Lagos atelier.
                 </p>
 
-                <div className="mt-10 space-y-7">
-                  <div className="grid sm:grid-cols-2 gap-7 sm:gap-5">
+                <div className="mt-12 sm:mt-14 space-y-9 sm:space-y-10">
+                  <div className="grid sm:grid-cols-2 gap-9 sm:gap-8">
                     <div>
                       <label className="checkout-label" htmlFor="checkout-name">
                         Full name
@@ -349,7 +376,7 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                   </div>
                 </div>
 
-                <button type="submit" className="checkout-btn mt-10">
+                <button type="submit" className="checkout-btn mt-12 sm:mt-14">
                   Continue to payment
                 </button>
               </motion.form>
@@ -362,39 +389,39 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               >
-                <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-taupe-muted">
+                <p className="font-sans text-xs sm:text-sm text-taupe-muted tracking-wide">
                   Step 2 of 2
                 </p>
-                <h1 className="font-serif text-[clamp(1.85rem,5vw,2.65rem)] tracking-tight leading-[1.08] mt-3">
+                <h1 className="font-serif text-[clamp(2.25rem,6vw,3.25rem)] tracking-tight leading-[1.06] mt-4">
                   Complete your order
                 </h1>
-                <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 leading-relaxed">
+                <p className="font-body-italic italic text-base sm:text-lg text-taupe-muted font-light mt-4 leading-relaxed max-w-xl">
                   Secure payment via Paystack — card, bank transfer, or USSD.
                 </p>
 
-                <div className="mt-9 py-5 border-y border-canvas/10">
-                  <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-taupe-muted mb-3">
+                <div className="mt-10 sm:mt-12 py-6 sm:py-7 border-y border-canvas/10">
+                  <p className="font-sans text-[11px] sm:text-xs uppercase tracking-[0.14em] text-taupe-muted mb-3">
                     Delivering to
                   </p>
-                  <p className="font-serif text-lg text-canvas">{shipping.fullName}</p>
-                  <p className="font-mono text-[10px] text-taupe-muted mt-1">{shipping.email}</p>
-                  <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-2 leading-relaxed">
+                  <p className="font-serif text-xl sm:text-2xl text-canvas">{shipping.fullName}</p>
+                  <p className="font-sans text-sm text-taupe-muted mt-1.5">{shipping.email}</p>
+                  <p className="font-body-italic italic text-base text-taupe-muted font-light mt-2 leading-relaxed">
                     {shipping.address}
                   </p>
                   <button
                     type="button"
                     onClick={() => setStep('delivery')}
-                    className="font-sans text-[8px] uppercase tracking-[0.2em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer mt-4"
+                    className="font-sans text-xs text-taupe-muted hover:text-canvas transition-colors cursor-pointer mt-5 underline underline-offset-[4px] decoration-canvas/25"
                   >
                     Edit delivery
                   </button>
                 </div>
 
-                <div className="mt-8 lg:hidden">
-                  <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-taupe-muted">
+                <div className="mt-10 lg:hidden">
+                  <p className="font-sans text-xs uppercase tracking-[0.12em] text-taupe-muted">
                     Order total
                   </p>
-                  <p className="font-serif text-2xl tabular-nums text-canvas mt-1">
+                  <p className="font-serif text-3xl tabular-nums text-canvas mt-2">
                     {formatNgn(totalNgn)}
                   </p>
                 </div>
@@ -402,12 +429,12 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="checkout-btn mt-8 w-full sm:w-auto disabled:opacity-40"
+                  className="checkout-btn mt-10 sm:mt-12 w-full sm:w-auto min-w-[14rem] disabled:opacity-40"
                 >
                   {isSubmitting ? 'Processing…' : `Pay ${formatNgn(totalNgn)}`}
                 </button>
 
-                <p className="font-mono text-[8px] uppercase tracking-[0.14em] text-taupe-muted mt-5 leading-relaxed">
+                <p className="font-sans text-[11px] sm:text-xs text-taupe-muted mt-6 leading-relaxed">
                   Encrypted checkout · No card details stored on our servers
                 </p>
 
@@ -420,13 +447,13 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
         </div>
       </div>
 
-      <aside className="checkout-ledger relative bg-cream text-canvas lg:min-h-[100dvh] flex flex-col border-t lg:border-t-0 lg:border-l border-canvas/10">
-        <div className="flex-1 flex flex-col px-5 sm:px-8 lg:px-9 xl:px-10 py-8 lg:py-10 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-          <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-taupe-muted">
+      <aside className="checkout-ledger relative bg-cream-plate text-canvas lg:min-h-[100dvh] flex flex-col border-t lg:border-t-0 lg:border-l border-canvas/10">
+        <div className="flex-1 flex flex-col px-5 sm:px-8 lg:px-10 xl:px-12 py-10 lg:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <p className="font-sans text-xs sm:text-sm text-canvas tracking-tight">
             {step === 'done' ? 'Your order' : 'Order summary'}
           </p>
           {step !== 'done' && (
-            <p className="font-body-italic italic text-xs text-taupe-muted font-light mt-2 leading-relaxed hidden lg:block">
+            <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-2 leading-relaxed hidden lg:block">
               {cart.reduce((n, i) => n + i.qty, 0)} bottle
               {cart.reduce((n, i) => n + i.qty, 0) === 1 ? '' : 's'} · compounded to order
             </p>

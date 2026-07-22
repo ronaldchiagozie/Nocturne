@@ -10,26 +10,27 @@ export function ShopLayoutToggle() {
 
   return (
     <div
-      className="flex items-center gap-0.5 rounded-full border border-canvas/10 p-0.5 bg-cream/60"
+      className="hidden sm:flex items-center gap-1 font-sans text-[11px] sm:text-xs text-taupe-muted"
       role="group"
       aria-label="Shop layout"
     >
-      {MODES.map(({ id, label }) => {
+      <span className="mr-1">View:</span>
+      {MODES.map(({ id, label }, index) => {
         const active = mode === id;
         return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setMode(id)}
-            aria-pressed={active}
-            className={`font-sans text-[9px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
-              active
-                ? 'bg-canvas text-cream'
-                : 'text-taupe-muted hover:text-canvas'
-            }`}
-          >
-            {label}
-          </button>
+          <span key={id} className="inline-flex items-center">
+            {index > 0 && <span className="mx-1.5 text-canvas/20">·</span>}
+            <button
+              type="button"
+              onClick={() => setMode(id)}
+              aria-pressed={active}
+              className={`transition-colors cursor-pointer ${
+                active ? 'text-canvas' : 'hover:text-canvas'
+              }`}
+            >
+              {label}
+            </button>
+          </span>
         );
       })}
     </div>

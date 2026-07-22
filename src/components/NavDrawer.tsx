@@ -3,11 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface NavDrawerProps {
   isOpen: boolean;
-  orderCount: number;
   cartCount: number;
   onClose: () => void;
   onOpenCart: () => void;
-  onOpenVault: () => void;
   onOpenDistiller: () => void;
   onOpenCollections: () => void;
   onOpenShop?: () => void;
@@ -18,16 +16,13 @@ const LINKS = [
   { id: 'collections', label: 'Collections', action: 'collections' as const },
   { id: 'cart', label: 'Cart', action: 'cart' as const },
   { id: 'distill', label: 'The Distiller', action: 'distill' as const },
-  { id: 'vault', label: 'My Orders', action: 'vault' as const },
 ];
 
 export function NavDrawer({
   isOpen,
-  orderCount,
   cartCount,
   onClose,
   onOpenCart,
-  onOpenVault,
   onOpenDistiller,
   onOpenCollections,
   onOpenShop,
@@ -48,7 +43,6 @@ export function NavDrawer({
       if (action === 'collections') onOpenCollections();
       if (action === 'cart') onOpenCart();
       if (action === 'distill') onOpenDistiller();
-      if (action === 'vault') onOpenVault();
     }, 280);
   };
 
@@ -94,33 +88,24 @@ export function NavDrawer({
 
             <nav className="modal-scroll flex-1 min-h-0 px-8 py-12 flex flex-col" data-modal-scroll>
               <ul className="space-y-10">
-                {LINKS.map((link) => {
-                  if (link.action === 'vault' && orderCount === 0) return null;
-
-                  return (
-                    <li key={link.id}>
-                      <button
-                        type="button"
-                        onClick={() => handleAction(link.action)}
-                        className="nav-drawer-link group text-left w-full cursor-pointer"
-                      >
-                        <span className="font-serif text-[clamp(1.25rem,3vw,1.5rem)] text-canvas tracking-tight group-hover:opacity-70 transition-opacity">
-                          {link.label}
+                {LINKS.map((link) => (
+                  <li key={link.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleAction(link.action)}
+                      className="nav-drawer-link group text-left w-full cursor-pointer"
+                    >
+                      <span className="font-serif text-[clamp(1.25rem,3vw,1.5rem)] text-canvas tracking-tight group-hover:opacity-70 transition-opacity">
+                        {link.label}
+                      </span>
+                      {link.action === 'cart' && cartCount > 0 && (
+                        <span className="block font-mono text-[10px] tabular-nums text-taupe-muted mt-2">
+                          {cartCount} item{cartCount === 1 ? '' : 's'}
                         </span>
-                        {link.action === 'vault' && orderCount > 0 && (
-                          <span className="block font-mono text-[10px] tabular-nums text-taupe-muted mt-2">
-                            {orderCount} order{orderCount === 1 ? '' : 's'}
-                          </span>
-                        )}
-                        {link.action === 'cart' && cartCount > 0 && (
-                          <span className="block font-mono text-[10px] tabular-nums text-taupe-muted mt-2">
-                            {cartCount} item{cartCount === 1 ? '' : 's'}
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
+                      )}
+                    </button>
+                  </li>
+                ))}
               </ul>
             </nav>
 

@@ -1,8 +1,10 @@
 import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images, type ImageKey } from '../assets/images';
+import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,6 +31,7 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   useGSAP(
     () => {
       if (!trackRef.current || !pinRef.current) return;
+      if (prefersReducedMotion() || shouldDisableScrollPinning()) return;
 
       const layers = imageRefs.current.filter(Boolean) as HTMLDivElement[];
       if (layers.length === 0) return;
@@ -47,7 +50,6 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
         },
       });
 
-      // Crossfade through three photographs across the scroll duration
       tl.to(layers[0], { opacity: 1, duration: 0.28, ease: 'none' }, 0);
       tl.to(layers[0], { opacity: 0, duration: 0.12, ease: 'none' }, 0.28);
       tl.to(layers[1], { opacity: 1, duration: 0.12, ease: 'none' }, 0.28);
@@ -56,13 +58,18 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
       tl.to(layers[1], { opacity: 0, duration: 0.12, ease: 'none' }, 0.68);
       tl.to(layers[2], { opacity: 1, duration: 0.12, ease: 'none' }, 0.68);
       tl.to(layers[2], { opacity: 1, duration: 0.32, ease: 'none' }, 0.8);
+
+      return () => {
+        tl.scrollTrigger?.kill();
+        tl.kill();
+      };
     },
     { scope: trackRef },
   );
 
   return (
     <section ref={trackRef} className="relative h-[250vh] w-full">
-      <div ref={pinRef} className="sticky top-0 h-screen w-screen overflow-hidden">
+      <div ref={pinRef} className="sticky top-0 h-[100dvh] w-full overflow-hidden">
         {/* Full-bleed photographs, stacked, crossfade on scroll */}
         {SLIDES.map((slide, idx) => (
           <div
@@ -99,7 +106,13 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   );
 }
 
-export function CloseSection({ line }: { line: string }) {
+export function CloseSection({
+  line,
+  onOpenDistiller,
+}: {
+  line: string;
+  onOpenDistiller?: () => void;
+}) {
   return (
     <section className="w-full bg-cream px-5 sm:px-6 md:px-12 pt-12 pb-28 md:min-h-[70vh] md:flex md:flex-col md:justify-end md:pt-0 md:pb-32">
       <p className="font-serif text-[clamp(1.5rem,3.5vw,2.5rem)] text-canvas tracking-tight leading-snug max-w-lg">
@@ -108,6 +121,23 @@ export function CloseSection({ line }: { line: string }) {
       <p className="font-serif text-base md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-8 md:mt-24">
         {line}
       </p>
+      <div className="mt-10 md:mt-12 flex flex-wrap items-center gap-x-8 gap-y-4">
+        <Link
+          to="/shop"
+          className="font-sans text-[10px] uppercase tracking-[0.22em] text-canvas border-b border-canvas/30 pb-px hover:border-canvas transition-colors"
+        >
+          Shop the collection →
+        </Link>
+        {onOpenDistiller && (
+          <button
+            type="button"
+            onClick={onOpenDistiller}
+            className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer"
+          >
+            Find your formulation →
+          </button>
+        )}
+      </div>
     </section>
   );
 }

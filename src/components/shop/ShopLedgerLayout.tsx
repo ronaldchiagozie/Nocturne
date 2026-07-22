@@ -11,6 +11,7 @@ import { PRODUCTS } from '../../data/products';
 import { formatNgn, UNIT_PRICE_NGN } from '../../data/pricing';
 import { useStore } from '../../context/StoreContext';
 import { useProductDetail } from '../../context/ProductDetailContext';
+import { useSiteModals } from '../../context/SiteModalsContext';
 import { BatchLedger } from '../BatchLedger';
 import { ShopLedgerStage } from './ShopLedgerStage';
 import { glowRgb, type LedgerBottleItem } from './shopLedgerUtils';
@@ -40,6 +41,7 @@ export function ShopLedgerLayout() {
   const [activeIndex, setActiveIndex] = useState(0);
   const { openProduct } = useProductDetail();
   const { getStock } = useStore();
+  const { openDistiller } = useSiteModals();
 
   const ledgerItems = useMemo<LedgerBottleItem[]>(
     () =>
@@ -189,13 +191,20 @@ export function ShopLedgerLayout() {
           })}
         </div>
 
-        <div className="px-4 sm:px-6 md:px-12 py-10">
+        <div className="px-4 sm:px-6 md:px-12 py-10 flex flex-col sm:flex-row sm:items-center gap-6">
           <Link
             to="/"
             className="font-sans text-[9px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors"
           >
             ← Back to Nocturne
           </Link>
+          <button
+            type="button"
+            onClick={openDistiller}
+            className="font-sans text-[9px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer text-left"
+          >
+            Not sure which is yours? The Distiller →
+          </button>
         </div>
       </div>
 

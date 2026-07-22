@@ -10,12 +10,7 @@ import {
 import { getBottleVariant } from '../data/bottleVariants';
 import { getProduct, ProductId } from '../data/products';
 import { UNIT_PRICE_NGN } from '../data/pricing';
-import {
-  purchaseFromStore,
-  subscribeStore,
-  type ProductStock,
-  type StoreMeta,
-} from '../services/storeSync';
+import type { ProductStock, StoreMeta } from '../services/storeLedger';
 import type {
   CartItem,
   CheckoutOverride,
@@ -112,11 +107,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   useEffect(() => {
-    return subscribeStore((snap) => {
-      setInventory(snap.inventory);
-      setMeta(snap.meta);
-      setStoreReady(true);
-    });
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+
+    const connect = () => {
+      import('../services/storeSync').then(({ subscribeStore }) => {
+        if (cancelled) return;
+        unsubscribe = subscribeStore((snap) => {
+          setInventory(snap.inventory);
+          setMeta(snap.meta);
+          setStoreReady(true);
+        });
+      });
+    };
+
+    const w = window as Window &
+      typeof globalThis & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+
+    if (w.requestIdleCallback) {
+      const idleId = w.requestIdleCallback(connect, { timeout: 2500 });
+      return () => {
+        cancelled = true;
+        w.cancelIdleCallback?.(idleId);
+        unsubscribe?.();
+      };
+    }
+
+    const timerId = window.setTimeout(connect, 200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timerId);
+      unsubscribe?.();
+    };
   }, []);
 
   const getStock = useCallback(
@@ -188,6 +213,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(() => setCart([]), []);
 
   const purchaseCart = useCallback(async () => {
+    const { purchaseFromStore } = await import('../services/storeSync');
     return purchaseFromStore(cart);
   }, [cart]);
 

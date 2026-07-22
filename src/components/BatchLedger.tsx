@@ -4,7 +4,7 @@ import {
   getCycleTimeRemaining,
   getTotalMaxStock,
   getTotalStock,
-} from '../services/storeSync';
+} from '../services/storeLedger';
 
 interface BatchLedgerProps {
   className?: string;

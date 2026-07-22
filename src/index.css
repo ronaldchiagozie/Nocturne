@@ -108,16 +108,20 @@
   --color-taupe-muted: #6b655c;
 }
 
-html.dark {
-  --color-canvas: #ece6d8;
-  --color-cream: #0d0b0a;
-  --color-cream-plate: #14110f;
-  --color-taupe-muted: #8a8278;
-}
-
 html.lenis,
 html.lenis body {
   height: auto;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
 }
 
 .lenis.lenis-smooth {
@@ -274,9 +278,75 @@ video,
   letter-spacing: 0.14em;
 }
 
-/* ── Site footer ── */
+/* ── Site footer (OSSOU-style) ── */
 .site-footer {
   position: relative;
+}
+
+.site-footer-wordmark-clip {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: clamp(10rem, 28vw, 18rem);
+  padding: clamp(2.5rem, 7vw, 5rem) clamp(1rem, 4vw, 2rem) 0;
+  overflow: hidden;
+}
+
+.site-footer-wordmark-clip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 55%;
+  background: linear-gradient(to bottom, transparent 0%, var(--color-cream) 88%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .site-footer-wordmark-clip {
+    min-height: clamp(12rem, 24vw, 20rem);
+    padding-top: clamp(3rem, 6vw, 5.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-footer-wordmark-clip {
+    min-height: clamp(13rem, 20vw, 22rem);
+  }
+}
+
+.site-footer-wordmark-text {
+  position: relative;
+  z-index: 0;
+  margin: 0;
+  transform: translateY(24%);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(4.25rem, 17vw, 15rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--color-canvas);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  text-align: center;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 38%,
+    rgba(0, 0, 0, 0.55) 68%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 38%,
+    rgba(0, 0, 0, 0.55) 68%,
+    transparent 100%
+  );
 }
 
 /* ── The Distiller ── */
@@ -317,14 +387,156 @@ video,
   caret-color: #8a5a2e;
 }
 
+/* ── Checkout stepper ── */
+.checkout-stepper {
+  position: relative;
+  width: 100%;
+  max-width: 52rem;
+}
+
+.checkout-stepper-rail {
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 1.125rem;
+  height: 2px;
+  z-index: 0;
+}
+
+@media (min-width: 640px) {
+  .checkout-stepper-rail {
+    top: 1.25rem;
+  }
+}
+
+.checkout-stepper-rail-track {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-canvas) 12%, transparent);
+  border-radius: 999px;
+}
+
+.checkout-stepper-rail-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--color-canvas);
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.checkout-stepper-list {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checkout-stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .checkout-stepper-step {
+    gap: 0.875rem;
+  }
+}
+
+.checkout-stepper-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--color-canvas) 18%, transparent);
+  background: var(--color-cream);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--color-canvas) 35%, transparent);
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .checkout-stepper-node {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 12px;
+  }
+}
+
+.checkout-stepper-node.is-current {
+  background: var(--color-canvas);
+  border-color: var(--color-canvas);
+  color: var(--color-cream);
+  transform: scale(1.06);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-canvas) 8%, transparent);
+}
+
+.checkout-stepper-node.is-complete {
+  background: var(--color-canvas);
+  border-color: var(--color-canvas);
+  color: var(--color-cream);
+}
+
+.checkout-stepper-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-canvas) 32%, transparent);
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .checkout-stepper-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+}
+
+.checkout-stepper-label.is-current {
+  color: var(--color-canvas);
+  font-weight: 600;
+}
+
+.checkout-stepper-label.is-complete {
+  color: var(--color-taupe-muted);
+}
+
 /* ── Checkout split layout ── */
 .checkout-label {
   display: block;
-  font-size: 9px;
-  letter-spacing: 0.22em;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-taupe-muted);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .checkout-label {
+    font-size: 12px;
+    margin-bottom: 1rem;
+  }
 }
 
 .checkout-line {
@@ -332,10 +544,10 @@ video,
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-canvas) 18%, transparent);
-  padding: 0.5rem 0 0.625rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-canvas) 22%, transparent);
+  padding: 0.625rem 0 0.875rem;
   font-family: "GT Sectra", Georgia, serif;
-  font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
   font-style: italic;
   color: var(--color-canvas);
   caret-color: var(--color-amber-accent);
@@ -352,19 +564,30 @@ video,
 }
 
 .checkout-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-sans);
-  font-size: 9px;
-  letter-spacing: 0.26em;
+  font-size: 11px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   background: var(--color-canvas);
   color: var(--color-cream);
-  padding: 0.95rem 2rem;
+  padding: 1.125rem 2.5rem;
+  min-height: 3.25rem;
   border-radius: 9999px;
   border: none;
   cursor: pointer;
   transition: opacity 0.25s ease, transform 0.2s ease;
   text-decoration: none;
+}
+
+@media (min-width: 640px) {
+  .checkout-btn {
+    font-size: 12px;
+    padding: 1.25rem 2.75rem;
+    min-height: 3.5rem;
+  }
 }
 
 .checkout-btn-ghost {
@@ -383,8 +606,10 @@ video,
 
 /* ── Cart page ── */
 .cart-qty-btn {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1;
@@ -439,6 +664,13 @@ video,
     opacity: 1;
     transform: rotate(-3deg) scale(1);
   }
+}
+
+.nav-drawer-link {
+  min-height: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* ── Nav drawer ── */

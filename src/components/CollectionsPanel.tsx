@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { COLLECTION_ITEMS, COLLECTION_TAGLINE, type CollectionItem } from '../data/collection';
+import { FORMULATION_COUNT_WORD } from '../data/brand';
 
 interface CollectionsPanelProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export function CollectionsPanel({
                 {COLLECTION_TAGLINE}
               </p>
               <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-2 sm:mt-3 max-w-md leading-relaxed">
-                Eight color-shift extrait compounds on the ledger. Compounded to order.
+                {`${FORMULATION_COUNT_WORD.charAt(0).toUpperCase()}${FORMULATION_COUNT_WORD.slice(1)} color-shift extrait compounds on the ledger. Compounded to order.`}
               </p>
             </div>
             <button

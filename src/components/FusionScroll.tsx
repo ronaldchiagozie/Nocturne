@@ -3,6 +3,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { seekVideo } from '../hooks/useLenis';
+import { prefersReducedMotion } from '../hooks/useMotionPreference';
 import { images } from '../assets/images';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -112,6 +113,7 @@ export function FusionScrollDesktop({ onCheckout }: { onCheckout?: () => void })
   useGSAP(
     () => {
       if (!trackRef.current || !pinRef.current || !videosReady) return;
+      if (prefersReducedMotion()) return;
 
       const v1 = video1Ref.current;
       const v2 = video2Ref.current;
@@ -189,6 +191,11 @@ export function FusionScrollDesktop({ onCheckout }: { onCheckout?: () => void })
         0.86,
       );
       tl.set(finaleRef.current, { pointerEvents: 'auto' }, 0.92);
+
+      return () => {
+        tl.scrollTrigger?.kill();
+        tl.kill();
+      };
     },
     { scope: trackRef, dependencies: [videosReady] },
   );
@@ -209,7 +216,7 @@ export function FusionScrollDesktop({ onCheckout }: { onCheckout?: () => void })
     <section ref={trackRef} className="hidden md:block relative h-[400vh] bg-cream">
       <div
         ref={pinRef}
-        className="relative h-screen w-screen overflow-hidden"
+        className="relative h-[100dvh] w-full overflow-hidden"
         style={{ backgroundColor: CANVAS }}
       >
         <div ref={videoStackRef} className="absolute inset-0 z-0 overflow-hidden" style={{ backgroundColor: CANVAS }}>

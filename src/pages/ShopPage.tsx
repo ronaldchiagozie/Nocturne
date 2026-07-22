@@ -6,7 +6,7 @@ export function ShopPage() {
   const [mode] = useShopLayoutMode();
 
   return (
-    <div className="bg-cream text-canvas min-h-screen pb-20">
+    <div className="bg-cream text-canvas min-h-screen">
       {mode === 'ledger' ? <ShopLedgerLayout /> : <ShopGridLayout />}
     </div>
   );

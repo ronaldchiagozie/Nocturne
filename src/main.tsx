@@ -9,6 +9,10 @@ import './index.css';
 preloadCriticalImages();
 initLenisScroll();
 
+document.documentElement.classList.remove('dark');
+document.documentElement.style.colorScheme = 'light';
+document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#ece6d8');
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

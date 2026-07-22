@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { isTouchDevice } from '../hooks/useLenis';
+import { prefersReducedMotion } from '../hooks/useMotionPreference';
+import { images } from '../assets/images';
 
 const INTRO_MS = 2000;
+const INTRO_MS_MOBILE = 1200;
 const SHUTTER_MS = 1200;
 const FLASH_MS = 400;
 const EASE_SHUTTER = 'cubic-bezier(0.85, 0, 0.15, 1)';
@@ -22,6 +26,7 @@ function Crosshair() {
 }
 
 export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
+  const useStaticPoster = isTouchDevice() || prefersReducedMotion();
   const [progress, setProgress] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isShutterOpen, setIsShutterOpen] = useState(false);
@@ -36,6 +41,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
     const video = videoRef.current;
     let raf = 0;
     loadedRef.current = false;
+    const introMs = useStaticPoster ? INTRO_MS_MOBILE : INTRO_MS;
     const start = performance.now();
 
     const finish = () => {
@@ -47,7 +53,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
     };
 
     const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / INTRO_MS);
+      const t = Math.min(1, (now - start) / introMs);
       const next = Math.min(100, Math.max(1, Math.round(t * 100)));
       setProgress(next);
 
@@ -58,7 +64,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
       raf = requestAnimationFrame(tick);
     };
 
-    if (video) {
+    if (video && !useStaticPoster) {
       video.loop = true;
       video.playbackRate = 1;
       video.play().catch(() => {
@@ -68,7 +74,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [useStaticPoster]);
 
   useEffect(() => {
     if (!isLoaded || enteringRef.current || isRevealed) return;
@@ -119,7 +125,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
           className="relative overflow-hidden"
           style={{
             width: 'min(40vw, 440px)',
-            height: 'min(68vh, 600px)',
+            height: 'min(68dvh, 600px)',
             // Horizontal feather only. Keeps full bottle height
             WebkitMaskImage:
               'linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%)',
@@ -127,17 +133,28 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
               'linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%)',
           }}
         >
-          <video
-            ref={videoRef}
-            src="/clip5.mp4"
-            className="absolute inset-0 h-full w-full scale-x-[1.06] object-contain object-center brightness-[1.1] contrast-[1.05]"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            aria-hidden
-          />
+          {useStaticPoster ? (
+            <img
+              src={images.hero}
+              alt=""
+              className="absolute inset-0 h-full w-full object-contain object-center brightness-[1.1] contrast-[1.05]"
+              decoding="async"
+              fetchPriority="high"
+              aria-hidden
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              src="/clip5.mp4"
+              className="absolute inset-0 h-full w-full scale-x-[1.06] object-contain object-center brightness-[1.1] contrast-[1.05]"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden
+            />
+          )}
           {/* Side curtains. Kill the sharp vertical clip frame */}
           <div
             className="pointer-events-none absolute inset-y-0 left-0 w-[18%]"

@@ -3,30 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nocturne — Extrait de parfum, compounded to order</title>
     <meta
       name="description"
-      content="Nocturne. Extrait de parfum for the hours no one else sees. Eight formulations, compounded to order."
+      content="Nocturne. Extrait de parfum for the hours no one else sees. Eight formulations, compounded to order from our Lagos atelier."
     />
     <meta name="theme-color" content="#ece6d8" />
-    <script>
-      (function () {
-        try {
-          var theme = localStorage.getItem('nocturne_theme');
-          if (
-            theme === 'dark' ||
-            (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-          ) {
-            document.documentElement.classList.add('dark');
-          }
-        } catch (e) {}
-      })();
+    <meta name="color-scheme" content="light" />
+    <link rel="canonical" href="https://nocturne.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nocturne" />
+    <meta property="og:title" content="Nocturne — Extrait de parfum, compounded to order" />
+    <meta
+      property="og:description"
+      content="Extrait de parfum for the hours no one else sees. Eight formulations, compounded to order."
+    />
+    <meta property="og:image" content="/heroimage.png" />
+    <meta property="og:image:alt" content="Nocturne extrait de parfum bottle" />
+    <meta property="og:locale" content="en_NG" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Nocturne — Extrait de parfum" />
+    <meta
+      name="twitter:description"
+      content="Eight extrait formulations, compounded to order from Lagos."
+    />
+    <meta name="twitter:image" content="/heroimage.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Nocturne",
+        "description": "Luxury extrait de parfum house. Eight formulations, compounded to order.",
+        "url": "https://nocturne.com",
+        "logo": "https://nocturne.com/logo-mark.svg",
+        "sameAs": ["https://instagram.com"]
+      }
     </script>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="preload" as="image" href="/bottle-07-nocturne.png" fetchpriority="high" />
     <link rel="preload" as="image" href="/bottle-05-pepper-cedar.png" />
     <link rel="preload" as="image" href="/bottle-03-oud-resin.png" />
-    <title>Nocturne</title>
   </head>
   <body>
     <div id="root"></div>

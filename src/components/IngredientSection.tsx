@@ -3,6 +3,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Ingredient } from '../types';
+import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -138,6 +139,10 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
       });
       setActiveLine(0);
 
+      if (prefersReducedMotion() || shouldDisableScrollPinning()) {
+        return;
+      }
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: trackRef.current,
@@ -204,6 +209,11 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
         },
         0.825,
       );
+
+      return () => {
+        tl.scrollTrigger?.kill();
+        tl.kill();
+      };
     },
     { scope: trackRef, dependencies: [setActiveLine, applyScrollState] },
   );
@@ -249,7 +259,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
     <section ref={trackRef} className="relative h-[300vh] w-full bg-canvas">
       <div
         ref={pinRef}
-        className="sticky top-0 h-screen w-screen overflow-hidden bg-canvas"
+        className="sticky top-0 h-[100dvh] w-full overflow-hidden bg-canvas"
       >
         <div className="absolute inset-0 flex flex-row">
           {/* Left: batch analysis sheet + scroll-driven ingredient list */}
