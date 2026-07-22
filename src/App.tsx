@@ -6,10 +6,12 @@ import { ToastProvider } from './context/ToastContext';
 import { ProductDetailProvider } from './context/ProductDetailContext';
 import { SiteModalsProvider } from './context/SiteModalsContext';
 import { CommandPalette } from './components/CommandPalette';
+import { AnalyticsTracker } from './components/AnalyticsTracker';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { StoreLayout } from './components/StoreLayout';
 import { ScrollToTop } from './components/ScrollToTop';
 import { HomePage } from './pages/HomePage';
+import { Analytics } from '@vercel/analytics/react';
 
 const ShopPage = lazy(() => import('./pages/ShopPage').then((m) => ({ default: m.ShopPage })));
 const CartPage = lazy(() => import('./pages/CartPage').then((m) => ({ default: m.CartPage })));
@@ -38,6 +40,7 @@ export default function App() {
           <ProductDetailProvider>
             <SiteModalsProvider>
               <ErrorBoundary>
+                <AnalyticsTracker />
                 <StoreLayout>
                   <ScrollToTop />
                   <Suspense fallback={<RouteFallback />}>
@@ -54,6 +57,7 @@ export default function App() {
                 </StoreLayout>
               </ErrorBoundary>
               <CommandPalette />
+              <Analytics />
             </SiteModalsProvider>
           </ProductDetailProvider>
         </ToastProvider>

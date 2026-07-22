@@ -6,6 +6,7 @@ import { formatNgn, formatUsd, SHIPPING_NGN, UNIT_PRICE_USD } from '../../data/p
 import {
   CheckoutConfirmation,
 } from './CheckoutConfirmation';
+import { trackPurchase } from '../../lib/analytics';
 import type { CartItem, ShippingInfo, StoreOrder } from '../../types';
 
 interface CheckoutFlowProps {
@@ -260,6 +261,11 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
     onOrderCreated?.(result.order);
     setConfirmedOrder(result.order);
     setOrderSnapshot(snapshot);
+    trackPurchase({
+      orderId: result.order.id,
+      valueNgn: result.order.totalNgn,
+      itemCount: snapshot.reduce((sum, item) => sum + item.qty, 0),
+    });
     clearCart();
     setIsSubmitting(false);
     setStep('done');
