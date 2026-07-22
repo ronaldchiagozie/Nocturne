@@ -113,11 +113,6 @@ html.lenis body {
   height: auto;
 }
 
-html,
-body {
-  overflow-x: clip;
-}
-
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;

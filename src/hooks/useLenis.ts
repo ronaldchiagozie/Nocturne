@@ -139,7 +139,7 @@ export function initLenisScroll() {
         top: 0,
         left: 0,
         width: window.innerWidth,
-        height: window.visualViewport?.height ?? window.innerHeight,
+        height: window.innerHeight,
       };
     },
     pinType: 'transform',
@@ -217,10 +217,11 @@ export function destroyLenisScroll() {
   ScrollTrigger.clearScrollMemory();
 }
 
+/** Ensure Lenis is running on pages that need smooth scroll. Do not destroy on unmount — main.tsx owns lifecycle. */
 export function useLenis() {
   useEffect(() => {
     initLenisScroll();
-    return () => destroyLenisScroll();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
   }, []);
 }
 

@@ -5,6 +5,7 @@ import { HeroScroll } from '../components/HeroScroll';
 import { CloseSection } from '../components/PageSections';
 import { SiteFooter } from '../components/SiteFooter';
 import { ApertureIntro } from '../components/ApertureIntro';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useLenis, setScrollLocked } from '../hooks/useLenis';
 import { isMobileViewport, prefersReducedMotion } from '../hooks/useMotionPreference';
 import { useProductDetail } from '../context/ProductDetailContext';
@@ -48,6 +49,14 @@ export function HomePage() {
     setScrollLocked(scrollLocked);
   }, [scrollLocked]);
 
+  useEffect(() => {
+    if (!introRevealed) return;
+    const id = requestAnimationFrame(() => {
+      ScrollTrigger.refresh(true);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [introRevealed]);
+
   return (
     <div className="relative bg-cream text-canvas min-h-screen">
       {!introRevealed && (
@@ -68,6 +77,7 @@ export function HomePage() {
       />
 
       <HeroScroll
+        scrollReady={introRevealed}
         onOpenDistiller={openDistiller}
         onOpenProductDetail={openProduct}
       />
