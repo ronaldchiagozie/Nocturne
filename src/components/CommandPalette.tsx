@@ -66,6 +66,7 @@ export function CommandPalette() {
           variantId: item.variantId,
           productLabel: item.label,
           productTitle: item.name,
+          image: item.image,
         }),
     }));
 

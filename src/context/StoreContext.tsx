@@ -74,7 +74,7 @@ function buildCartItem(input: AddToCartInput): CartItem {
     formulationLabel,
     priceNgn: UNIT_PRICE_NGN,
     qty: input.qty ?? 1,
-    image: variant.image,
+    image: input.override?.image ?? variant.image,
   };
 }
 

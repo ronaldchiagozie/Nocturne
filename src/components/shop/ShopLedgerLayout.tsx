@@ -166,6 +166,7 @@ export function ShopLedgerLayout() {
                       variantId: item.variantId,
                       productLabel: item.label,
                       productTitle: item.name,
+                      image: item.image,
                     })
                   }
                   className="mt-8 w-fit font-sans text-[9px] uppercase tracking-[0.22em] text-canvas border border-canvas/15 px-5 py-2.5 rounded-full hover:bg-canvas hover:text-cream transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"

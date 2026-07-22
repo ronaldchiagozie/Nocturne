@@ -12,6 +12,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProductDetail } from './ProductDetailContext';
 import { setScrollLocked } from '../hooks/useLenis';
+import { getDistillerBottleImage } from '../data/distiller';
 import type { CollectionItem } from '../data/collection';
 
 const CollectionsPanel = lazy(() =>
@@ -105,6 +106,7 @@ export function SiteModalsProvider({ children }: { children: ReactNode }) {
               variantId: item.variantId,
               productLabel: item.label,
               productTitle: item.name,
+              image: item.image,
             });
             closeCollections();
           }}
@@ -120,6 +122,7 @@ export function SiteModalsProvider({ children }: { children: ReactNode }) {
               formulationLabel: result.formulationLabel,
               productLabel: `No. ${result.formulationNumber}`,
               productTitle: result.formulationName,
+              image: getDistillerBottleImage(result.variantId),
             });
           }}
         />

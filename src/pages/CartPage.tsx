@@ -17,6 +17,7 @@ export function CartPage() {
       productLabel: item.productLabel,
       productTitle: item.productTitle,
       formulationLabel: item.formulationLabel,
+      image: item.image,
     });
 
   return (

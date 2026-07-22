@@ -46,6 +46,7 @@ export interface CheckoutOverride {
   formulationLabel?: string;
   productLabel?: string;
   productTitle?: string;
+  image?: string;
 }
 
 export interface CartItem {

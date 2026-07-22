@@ -8,6 +8,7 @@ import { FORMULATION_COUNT_WORD, ADDITIONAL_FORMULATION_COUNT_WORD } from '../da
 import { PRODUCTS, ProductId } from '../data/products';
 import type { CheckoutOverride } from '../types';
 import { preloadImages } from '../utils/preloadImages';
+import { buildCheckoutOverride } from '../utils/productDisplay';
 import { useStore } from '../context/StoreContext';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { BatchLedger } from './BatchLedger';
@@ -60,6 +61,18 @@ const MOBILE_EXTRA_CARDS = [
   },
 ] as const;
 
+function cardOverride(
+  card: (typeof CARDS)[number] | (typeof MOBILE_EXTRA_CARDS)[number],
+): CheckoutOverride {
+  return buildCheckoutOverride({
+    productId: card.productId,
+    label: card.label,
+    title: card.title,
+    image: card.image,
+    variantId: 'variantId' in card ? card.variantId : undefined,
+  });
+}
+
 function BottleSlot({
   imageSrc,
   imageAlt,
@@ -93,9 +106,11 @@ function BottleSlot({
 function CardFooter({
   price,
   productId,
+  checkoutOverride,
 }: {
   price: string;
   productId: ProductId;
+  checkoutOverride?: CheckoutOverride;
 }) {
   const { add } = useAddToCart();
   const { getStock } = useStore();
@@ -118,9 +133,9 @@ function CardFooter({
         disabled={soldOut}
         onClick={(e) => {
           e.stopPropagation();
-          add(productId);
+          add(productId, { override: checkoutOverride });
         }}
-        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 min-h-[44px] inline-flex items-center rounded-full hover:opacity-85 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {soldOut ? 'Sold out' : 'Add to cart'}
       </button>
@@ -608,7 +623,11 @@ export function HeroScroll({
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[0].detail}
               </p>
-              <CardFooter price={CARDS[0].price} productId={CARDS[0].productId} />
+              <CardFooter
+                price={CARDS[0].price}
+                productId={CARDS[0].productId}
+                checkoutOverride={cardOverride(CARDS[0])}
+              />
             </article>
 
             <article
@@ -633,7 +652,11 @@ export function HeroScroll({
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[1].detail}
               </p>
-              <CardFooter price={CARDS[1].price} productId={CARDS[1].productId} />
+              <CardFooter
+                price={CARDS[1].price}
+                productId={CARDS[1].productId}
+                checkoutOverride={cardOverride(CARDS[1])}
+              />
             </article>
 
             <article
@@ -656,7 +679,11 @@ export function HeroScroll({
               <p className="font-body-italic italic text-xs md:text-sm text-taupe-muted leading-relaxed font-light flex-1 mb-6">
                 {CARDS[2].detail}
               </p>
-              <CardFooter price={CARDS[2].price} productId={CARDS[2].productId} />
+              <CardFooter
+                price={CARDS[2].price}
+                productId={CARDS[2].productId}
+                checkoutOverride={cardOverride(CARDS[2])}
+              />
             </article>
           </div>
 
@@ -673,35 +700,38 @@ export function HeroScroll({
           )}
         </div>
 
-        {/* Mobile: spaced stack, normal document flow */}
-        <div className="md:hidden relative z-20 w-full px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
-          <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-5 px-1">
+        {/* Mobile: editorial ledger stack */}
+        <div className="md:hidden relative z-20 w-full px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          <p className="font-sans text-[9px] uppercase tracking-[0.28em] text-taupe-muted mb-2 px-1">
             The ledger
           </p>
+          <p className="font-body-italic italic text-xs text-taupe-muted/90 font-light mb-6 px-1 leading-relaxed">
+            Tap a formulation to view notes and add to cart.
+          </p>
 
-          <div className="mx-auto flex w-full max-w-lg flex-col gap-5">
+          <div className="mx-auto flex w-full max-w-lg flex-col gap-4">
             {[...CARDS, ...MOBILE_EXTRA_CARDS].map((card, index) => (
               <article
                 key={`${card.label}-${card.title}`}
-                onClick={() =>
-                  onOpenProductDetail?.(card.productId, {
-                    variantId: 'variantId' in card ? card.variantId : undefined,
-                    productLabel: card.label,
-                    productTitle: card.title,
-                  })
-                }
-                className="flex flex-col border border-neutral-300/80 bg-cream-plate p-5 cursor-pointer active:bg-cream/60"
+                onClick={() => onOpenProductDetail?.(card.productId, cardOverride(card))}
+                className="mobile-ledger-card group flex flex-col border border-neutral-300/70 bg-cream-plate p-5 cursor-pointer active:scale-[0.985] transition-transform duration-200"
+                style={{ animationDelay: `${index * 60}ms` }}
               >
-                <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted mb-5">
-                  {card.label}
-                </p>
+                <div className="flex items-center justify-between gap-3 mb-5">
+                  <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-taupe-muted">
+                    {card.label}
+                  </p>
+                  <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-taupe-muted/70">
+                    50ml extrait
+                  </span>
+                </div>
                 <BottleSlot
                   imageSrc={card.image}
                   imageAlt={card.imageAlt}
-                  imageClassName={BOTTLE_SLOT_CLASS}
+                  imageClassName={`${BOTTLE_SLOT_CLASS} transition-transform duration-500 group-active:scale-[0.98]`}
                   priority={index < 2}
                 />
-                <h3 className="font-serif text-lg text-canvas tracking-tight leading-snug mb-2">
+                <h3 className="font-serif text-[1.35rem] text-canvas tracking-tight leading-snug mb-2">
                   {card.title}
                 </h3>
                 <p className="font-body-italic italic text-xs text-taupe-muted leading-relaxed font-light mb-5">
@@ -710,6 +740,7 @@ export function HeroScroll({
                 <CardFooter
                   price={card.price}
                   productId={card.productId}
+                  checkoutOverride={cardOverride(card)}
                 />
               </article>
             ))}

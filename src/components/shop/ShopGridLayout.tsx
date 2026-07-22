@@ -12,6 +12,12 @@ import type { ProductId } from '../../data/products';
 
 type SortKey = 'featured' | 'name' | 'number';
 
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'featured', label: 'Featured' },
+  { key: 'number', label: 'No.' },
+  { key: 'name', label: 'Name' },
+];
+
 function variantsForProduct(productId: ProductId) {
   return BOTTLE_VARIANTS.filter((v) => v.productId === productId);
 }
@@ -35,7 +41,7 @@ function CollectionCard({
       type="button"
       disabled={soldOut}
       onClick={() => onOpen(item)}
-      className="group w-full text-left cursor-pointer disabled:cursor-not-allowed"
+      className="group w-full text-left cursor-pointer disabled:cursor-not-allowed active:scale-[0.98] transition-transform duration-200"
     >
       <div className="aspect-[4/5] bg-[#ebe7df] flex items-center justify-center overflow-hidden">
         <img
@@ -110,37 +116,47 @@ export function ShopGridLayout() {
       variantId: item.variantId,
       productLabel: item.label,
       productTitle: item.name,
+      image: item.image,
     });
   };
 
   return (
     <div className="w-full">
       {/* Toolbar — OSSOU: title left, meta right */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-8 sm:pt-10 pb-6 md:pb-8">
-        <div>
-          <h1 className="font-sans text-sm sm:text-[15px] font-normal text-canvas tracking-tight">
-            The Collection
-          </h1>
-          <p className="font-sans text-[11px] text-taupe-muted mt-1.5 hidden sm:block">
-            {formulationsCopy(true)}
-          </p>
-        </div>
+      <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-8 sm:pt-10 pb-6 md:pb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-sans text-sm sm:text-[15px] font-normal text-canvas tracking-tight">
+              The Collection
+            </h1>
+            <p className="font-sans text-[11px] text-taupe-muted mt-1.5">
+              {formulationsCopy(true)}
+            </p>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-sans text-[11px] sm:text-xs text-taupe-muted">
-          <span className="hidden md:inline">{items.length} Formulations</span>
-          <BatchLedger className="!font-sans !normal-case !tracking-normal !text-[11px]" />
-          <label className="inline-flex items-center gap-2 cursor-pointer">
-            <span>Sort:</span>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className="bg-transparent text-canvas outline-none cursor-pointer appearance-none pr-1"
-            >
-              <option value="featured">Featured</option>
-              <option value="number">Formulation No.</option>
-              <option value="name">Name</option>
-            </select>
-          </label>
+          <div className="flex flex-col gap-3 sm:items-end">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-sans text-[11px] sm:text-xs text-taupe-muted">
+              <span className="hidden md:inline">{items.length} Formulations</span>
+              <BatchLedger className="!font-sans !normal-case !tracking-normal !text-[11px]" />
+            </div>
+
+            <div className="shop-sort-pills" role="group" aria-label="Sort collection">
+              {SORT_OPTIONS.map((opt) => {
+                const active = sort === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setSort(opt.key)}
+                    className={`shop-sort-pill ${active ? 'shop-sort-pill-active' : ''}`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
