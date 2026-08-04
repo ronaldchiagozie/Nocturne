@@ -97,7 +97,7 @@ export function ShopLedgerLayout() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="px-4 sm:px-6 md:px-12 pt-10 sm:pt-12 pb-10 sm:pb-12 border-b border-canvas/10"
+          className="px-5 sm:px-6 md:px-12 pt-7 sm:pt-12 pb-8 sm:pb-12 border-b border-canvas/10"
         >
           <p className="font-mono text-[9px] tracking-[0.28em] uppercase text-taupe-muted">Shop</p>
           <h1 className="font-serif text-[clamp(2rem,5vw,3rem)] text-canvas tracking-tight leading-tight mt-2">
@@ -106,7 +106,7 @@ export function ShopLedgerLayout() {
           <p className="font-body-italic italic text-sm md:text-base text-taupe-muted font-light mt-3 max-w-lg leading-relaxed">
             {COLLECTION_TAGLINE} One formulation per scroll. The bottle follows.
           </p>
-          <div className="mt-5">
+          <div className="mt-5 hidden md:block">
             <BatchLedger />
           </div>
         </motion.header>
@@ -125,7 +125,7 @@ export function ShopLedgerLayout() {
                 key={item.variantId}
                 ref={setSectionRef(index)}
                 data-shop-ledger-section={index}
-                className="relative min-h-[88dvh] flex flex-col justify-center border-b border-canvas/10 px-4 sm:px-6 md:px-12 py-16 lg:py-20"
+                className="relative min-h-[auto] lg:min-h-[88dvh] flex flex-col justify-center border-b border-canvas/10 px-5 sm:px-6 md:px-12 py-10 sm:py-14 lg:py-20"
               >
                 <div className="flex items-start gap-5 max-w-md">
                   <motion.div
@@ -169,22 +169,22 @@ export function ShopLedgerLayout() {
                       image: item.image,
                     })
                   }
-                  className="mt-8 w-fit font-sans text-[9px] uppercase tracking-[0.22em] text-canvas border border-canvas/15 px-5 py-2.5 rounded-full hover:bg-canvas hover:text-cream transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="mt-7 w-fit font-sans text-[10px] uppercase tracking-[0.22em] text-canvas border border-canvas/15 px-5 py-3 min-h-[44px] inline-flex items-center rounded-full hover:bg-canvas hover:text-cream transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {soldOut ? 'Sold out' : 'View extrait'}
                 </button>
                   </div>
                 </div>
 
-                <div className="lg:hidden mt-12 flex flex-col items-center">
+                <div className="lg:hidden mt-8 flex flex-col items-center">
                   <div
-                    className="mb-5 h-px w-8 rounded-full"
+                    className="mb-4 h-px w-8 rounded-full"
                     style={{ backgroundColor: `rgba(${accent}, 0.5)` }}
                   />
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="h-[min(320px,44vh)] w-auto object-contain"
+                    className="h-[min(280px,40vh)] w-auto object-contain"
                   />
                 </div>
               </section>

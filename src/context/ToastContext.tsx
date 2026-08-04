@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 
-export type ToastVariant = 'added' | 'error';
+export type ToastVariant = 'added' | 'error' | 'scarcity';
 
 export interface ToastAction {
   label: string;

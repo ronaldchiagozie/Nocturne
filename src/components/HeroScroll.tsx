@@ -1,4 +1,4 @@
-import { useRef, type Ref } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -15,6 +15,7 @@ import {
   readScrollY,
   restoreHomeScrollPosition,
 } from '../hooks/useLenis';
+import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
 import { BatchLedger } from './BatchLedger';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -53,6 +54,164 @@ function cardOverride(card: (typeof CARDS)[number]): CheckoutOverride {
   });
 }
 
+type HeroCard = (typeof CARDS)[number];
+
+const MOBILE_ORBIT_RX_VW = 38;
+/** Symmetric vertical radius — equal arc above/below center */
+const MOBILE_ORBIT_RY_VH = 30;
+
+function orbitOffset(thetaRad: number) {
+  const sin = Math.sin(thetaRad);
+  const cos = Math.cos(thetaRad);
+  return { x: cos * MOBILE_ORBIT_RX_VW, y: sin * MOBILE_ORBIT_RY_VH, sin };
+}
+
+function focusWeights(cardCount: number, angleDeg: number, stepDeg: number) {
+  const raw = Array.from({ length: cardCount }, (_, i) => {
+    const { x, y } = orbitOffset(((angleDeg + i * stepDeg) * Math.PI) / 180);
+    return Math.exp(-Math.hypot(x, y) / 16);
+  });
+  const sum = raw.reduce((total, value) => total + value, 0) || 1;
+  return raw.map((value) => value / sum);
+}
+
+/** At most two layers — prevents ghosty triple-stack blur on the hero bottle. */
+function heroCrossfadeOpacities(weights: number[]): number[] {
+  const ranked = weights
+    .map((weight, index) => ({ weight, index }))
+    .sort((a, b) => b.weight - a.weight);
+  const primary = ranked[0];
+  const secondary = ranked[1];
+  if (!primary) return weights.map(() => 0);
+  if (!secondary || primary.weight > 0.9) {
+    return weights.map((_, index) => (index === primary.index ? 1 : 0));
+  }
+  const blendTotal = primary.weight + secondary.weight;
+  return weights.map((_, index) => {
+    if (index === primary.index) return primary.weight / blendTotal;
+    if (index === secondary.index) return secondary.weight / blendTotal;
+    return 0;
+  });
+}
+
+/** Slow orbit of thumbnail bottles; closest to center crossfades into the hero. */
+function MobileHeroOrbit({
+  cards,
+  onOpenProduct,
+}: {
+  cards: HeroCard[];
+  onOpenProduct?: (productId: ProductId, override?: CheckoutOverride) => void;
+}) {
+  const angleRef = useRef(0);
+  const smoothWeightsRef = useRef<number[]>(cards.map((_, i) => (i === 1 ? 1 : 0)));
+  const [frame, setFrame] = useState(0);
+  const reduced = prefersReducedMotion();
+
+  useEffect(() => {
+    if (reduced) return;
+    let raf = 0;
+    const step = () => {
+      angleRef.current += 0.042;
+      setFrame((n) => n + 1);
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [reduced]);
+
+  void frame;
+  const angle = angleRef.current;
+  const stepDeg = 360 / cards.length;
+  const weights = focusWeights(cards.length, angle, stepDeg);
+  const smoothWeights = weights.map(
+    (weight, i) =>
+      smoothWeightsRef.current[i] + (weight - smoothWeightsRef.current[i]) * 0.07,
+  );
+  smoothWeightsRef.current = smoothWeights;
+  const heroOpacities = heroCrossfadeOpacities(smoothWeights);
+  const featuredIndex = heroOpacities.indexOf(Math.max(...heroOpacities));
+  const featured = cards[featuredIndex];
+
+  return (
+    <div
+      data-mobile-hero-bottle
+      className="md:hidden absolute inset-x-0 z-[20]"
+      style={{
+        top: 'max(4.5rem, calc(env(safe-area-inset-top) + 3.25rem))',
+        bottom: 'max(4.5rem, calc(env(safe-area-inset-bottom) + 3.25rem))',
+      }}
+    >
+      {/* Thumbnails orbit on a centered ellipse */}
+      <div
+        className="absolute left-1/2 top-[51%] h-0 w-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[10]"
+        aria-hidden
+      >
+        {cards.map((card, i) => {
+          const theta = ((angle + i * stepDeg) * Math.PI) / 180;
+          const { x, y, sin } = orbitOffset(theta);
+          const focus = smoothWeights[i];
+          const behindHero = sin > 0.15;
+          const thumbOpacity = Math.max(0.28, 0.92 - focus * 0.72);
+          const thumbScale = Math.max(0.72, 1 - focus * 0.28);
+
+          return (
+            <button
+              key={card.label}
+              type="button"
+              onClick={() => onOpenProduct?.(card.productId, cardOverride(card))}
+              className="absolute pointer-events-auto flex flex-col items-center cursor-pointer active:scale-95"
+              style={{
+                left: `${x}vw`,
+                top: `${y}vh`,
+                transform: `translate(-50%, -50%) scale(${thumbScale})`,
+                opacity: thumbOpacity,
+                zIndex: behindHero ? 1 : 12,
+              }}
+              aria-label={`${card.label} ${card.title}`}
+            >
+              <span className="flex h-[3.25rem] w-[2.75rem] items-end justify-center rounded-sm border border-canvas/[0.08] bg-cream/60 shadow-[0_8px_24px_rgba(13,11,10,0.06)]">
+                <img
+                  src={card.image}
+                  alt=""
+                  className="h-[2.85rem] w-auto max-w-[2.35rem] object-contain object-bottom"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+              <p
+                className="font-mono text-[7px] uppercase tracking-[0.14em] text-taupe-muted mt-1.5 whitespace-nowrap"
+                style={{ opacity: Math.max(0.35, 1 - focus * 0.55) }}
+              >
+                {card.label}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Center hero — one bottle at a time for sharp rendering */}
+      <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center pointer-events-none px-6">
+        <div className="relative h-[min(320px,46dvh)] w-full max-w-[72vw] flex items-end justify-center">
+          <img
+            key={featured.label}
+            src={featured.image}
+            alt={featured.imageAlt}
+            width={671}
+            height={1200}
+            className="mobile-hero-bottle-img h-[min(320px,46dvh)] w-auto max-w-[72vw] object-contain object-bottom"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+          />
+        </div>
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted mt-3">
+          {featured.label} · {featured.title}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function MobileLedgerRow({
   card,
   onOpen,
@@ -70,32 +229,32 @@ function MobileLedgerRow({
   return (
     <article
       onClick={onOpen}
-      className="mobile-ledger-row group flex items-center gap-4 py-5 cursor-pointer active:opacity-80 transition-opacity duration-200"
+      className="mobile-ledger-row group flex items-center gap-3.5 sm:gap-4 py-5 cursor-pointer active:opacity-80 transition-opacity duration-200"
     >
-      <div className="relative h-[5.5rem] w-[4.25rem] shrink-0 flex items-end justify-center">
+      <div className="relative h-[5.75rem] w-[4.5rem] shrink-0 flex items-end justify-center">
         <img
           src={card.image}
           alt={card.imageAlt}
-          className="h-[5rem] w-auto max-w-full object-contain object-bottom"
+          className="h-[5.25rem] w-auto max-w-full object-contain object-bottom"
           loading="lazy"
           decoding="async"
         />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="font-sans text-[8px] uppercase tracking-[0.26em] text-taupe-muted">
+        <p className="font-sans text-[9px] uppercase tracking-[0.22em] text-taupe-muted">
           {card.label}
         </p>
-        <h3 className="font-serif text-[1.15rem] text-canvas tracking-tight leading-snug mt-1">
+        <h3 className="font-serif text-[1.2rem] text-canvas tracking-tight leading-snug mt-1">
           {card.title}
         </h3>
-        <p className="font-body-italic italic text-[11px] text-taupe-muted leading-relaxed font-light mt-1.5 line-clamp-2">
+        <p className="font-body-italic italic text-[12px] text-taupe-muted leading-relaxed font-light mt-1.5 line-clamp-2">
           {card.detail}
         </p>
         <div className="mt-3 flex items-center justify-between gap-3">
-          <p className="font-mono text-[10px] tabular-nums text-canvas">{card.price}</p>
+          <p className="font-mono text-[11px] tabular-nums text-canvas">{card.price}</p>
           {stock && (
-            <p className="font-mono text-[7px] tracking-[0.12em] text-taupe-muted/75 uppercase">
+            <p className="font-mono text-[8px] tracking-[0.12em] text-taupe-muted/75 uppercase">
               {soldOut ? 'Sold out' : `${left} left`}
             </p>
           )}
@@ -109,7 +268,7 @@ function MobileLedgerRow({
           e.stopPropagation();
           add(card.productId, { override });
         }}
-        className="pointer-events-auto shrink-0 font-sans text-[8px] uppercase tracking-[0.18em] bg-canvas text-cream px-4 py-2.5 min-h-[40px] inline-flex items-center rounded-full hover:opacity-85 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        className="pointer-events-auto shrink-0 font-sans text-[9px] uppercase tracking-[0.18em] bg-canvas text-cream px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-full hover:opacity-85 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {soldOut ? 'Sold out' : 'Add'}
       </button>
@@ -197,7 +356,7 @@ function HeroEditorial({
   className = '',
 }: {
   title: string;
-  body: string;
+  body?: string;
   align?: 'left' | 'right';
   className?: string;
 }) {
@@ -207,12 +366,14 @@ function HeroEditorial({
         align === 'right' ? 'text-right ml-auto' : 'text-left'
       } ${className}`}
     >
-      <h2 className="font-serif text-[clamp(1.35rem,3vw,2rem)] text-canvas tracking-tight leading-snug">
+      <h2 className="font-serif text-[clamp(1.5rem,5.5vw,2rem)] text-canvas tracking-tight leading-snug">
         {title}
       </h2>
-      <p className="font-body-italic italic text-sm md:text-base text-taupe-muted leading-relaxed font-light mt-6 md:mt-8">
-        {body}
-      </p>
+      {body ? (
+        <p className="font-body-italic italic text-[0.9375rem] md:text-base text-taupe-muted leading-relaxed font-light mt-4 md:mt-8">
+          {body}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -323,7 +484,7 @@ export function HeroScroll({
         rotateY: 0,
         transformOrigin: '50% 90%',
         force3D: !mobileMq.matches,
-        autoRound: true,
+        autoRound: false, // subpixel — avoids vertical shimmer during Lenis scrub
         transformPerspective: mobileMq.matches ? 0 : 1200,
       });
 
@@ -361,10 +522,12 @@ export function HeroScroll({
         gsap.set(bottleAnimRef.current, { opacity: 0 });
       }
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (prefersReducedMotion()) {
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], { opacity: 1 });
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
-        gsap.set(bottleAnimRef.current, { opacity: 0 });
+        if (!shouldDisableScrollPinning()) {
+          gsap.set(bottleAnimRef.current, { opacity: 0 });
+        }
         return;
       }
 
@@ -454,7 +617,6 @@ export function HeroScroll({
             transformOrigin: '50% 50%',
             ease: 'none',
             duration: 0.55,
-            roundProps: 'x,y',
           },
           2.22,
         );
@@ -538,17 +700,7 @@ export function HeroScroll({
       window.addEventListener('nocturne-hero-ready', onHeroReady);
 
       mm.add('(max-width: 768px)', () => {
-        // Mobile: pin through hero, fully fade out before "Worn after dark" enters.
-        gsap.set(bottleAnimRef.current, {
-          rotateY: 0,
-          rotation: 0,
-          transformPerspective: 0,
-          force3D: true,
-          x: 0,
-          y: 0,
-          scale: 1,
-          opacity: 1,
-        });
+        // Mobile: static in-flow bottle — GSAP fixed-pin breaks visibility on iOS Safari.
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
           opacity: 1,
           clearProps: 'xPercent',
@@ -556,54 +708,36 @@ export function HeroScroll({
         gsap.set(centerBottleImgRef.current, { opacity: 1 });
 
         const chapter1 = containerRef.current?.querySelector('[data-hero-chapter="1"]');
+        const mobileBottle = containerRef.current?.querySelector('[data-mobile-hero-bottle]');
 
-        const mobileTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: chapter1 || containerRef.current,
-            start: 'top top',
-            // End while ch1 bottom is still at viewport bottom — before ch2 text
-            end: 'bottom bottom',
-            scrub: true,
-            pin: bottleRef.current,
-            pinSpacing: false,
-            pinType: 'fixed',
-            anticipatePin: 0,
-            invalidateOnRefresh: true,
-            fastScrollEnd: true,
-          },
-        });
-
-        // Hold hero bottle visible through most of chapter 1, then fade once
-        mobileTl.to(bottleAnimRef.current, {
-          scale: 1,
-          opacity: 1,
-          ease: 'none',
-          duration: 0.55,
-        })
-          .to(bottleAnimRef.current, {
-            opacity: 0,
-            scale: 0.96,
-            y: -18,
-            ease: 'power1.out',
-            duration: 0.28,
-          })
-          .to(bottleAnimRef.current, {
-            opacity: 0,
-            ease: 'none',
-            duration: 0.12,
+        if (chapter1 && mobileBottle) {
+          const mobileTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: chapter1,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
           });
 
-        syncMobileHero = () => {
-          ensurePinVisible();
-          mobileTl.scrollTrigger?.refresh();
-          mobileTl.scrollTrigger?.update();
-        };
+          mobileTl
+            .to(mobileBottle, { opacity: 1, y: 0, ease: 'none', duration: 0.55 })
+            .to(mobileBottle, {
+              opacity: 0,
+              y: -14,
+              ease: 'none',
+              duration: 0.35,
+            });
 
-        requestAnimationFrame(() => syncMobileHero?.());
+          syncMobileHero = () => {
+            mobileTl.scrollTrigger?.refresh();
+            mobileTl.scrollTrigger?.update();
+          };
+
+          requestAnimationFrame(() => syncMobileHero?.());
+        }
       });
-
-      const onRefreshInit = () => refreshMetrics();
-      ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
 
       let resizeTimer: ReturnType<typeof setTimeout>;
       const onResize = () => {
@@ -611,7 +745,7 @@ export function HeroScroll({
         resizeTimer = setTimeout(() => {
           refreshMetrics();
           ScrollTrigger.refresh();
-        }, 150);
+        }, 200);
       };
 
       window.addEventListener('resize', onResize);
@@ -641,7 +775,7 @@ export function HeroScroll({
         window.removeEventListener('nocturne-scroll-restored', onScrollRestored);
         window.removeEventListener('nocturne-hero-ready', onHeroReady);
         clearTimeout(resizeTimer);
-        ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
+        window.removeEventListener('resize', onResize);
         document.documentElement.classList.remove('hero-ledger-visible');
         document.documentElement.classList.remove('hero-restore-pending');
         syncDesktopHero = null;
@@ -657,7 +791,7 @@ export function HeroScroll({
       <div
         ref={bottleRef}
         data-hero-object
-        className="absolute top-0 left-0 z-30 flex h-[100dvh] w-full items-center justify-center pointer-events-none hero-bottle-pin md:[perspective:1200px]"
+        className="absolute top-0 left-0 z-30 hidden md:flex h-[100dvh] w-full items-center justify-center pointer-events-none hero-bottle-pin md:[perspective:1200px]"
       >
         <div ref={bottleAnimRef} className="relative hero-bottle-layer md:will-change-transform">
           <div
@@ -679,9 +813,12 @@ export function HeroScroll({
       {/* Chapter 1: hero — shorter runway on mobile */}
       <section
         data-hero-chapter="1"
-        className="relative min-h-[115dvh] md:min-h-[100dvh] w-full bg-cream-plate"
+        className="relative min-h-[100dvh] md:min-h-[100dvh] w-full bg-cream-plate"
       >
         <div className="absolute inset-0 z-0 overflow-hidden bg-cream-plate" />
+
+        {/* Mobile: static hero bottle — pinned GSAP layer is desktop-only */}
+        <MobileHeroOrbit cards={CARDS} onOpenProduct={onOpenProductDetail} />
 
         <p
           aria-hidden
@@ -715,9 +852,9 @@ export function HeroScroll({
 
           <HeroEditorial
             title="After dark."
-            body="Cracked pepper up front, smoked cedar through the heart, aged oud in the dry-down."
+            body=""
             align="left"
-            className="absolute left-5 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-w-[15rem] md:hidden z-[25]"
+            className="absolute left-5 bottom-[calc(2.75rem+env(safe-area-inset-bottom))] max-w-[15rem] md:hidden z-[25]"
           />
 
           <HeroEditorial
@@ -727,8 +864,8 @@ export function HeroScroll({
             className="absolute right-6 md:right-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
           />
 
-          <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 px-4">
-            <BatchLedger className="md:hidden text-center" />
+          <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-3 px-4">
+            <BatchLedger className="text-center" />
           </div>
         </div>
       </section>
@@ -741,6 +878,13 @@ export function HeroScroll({
         <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
           EXTRAIT DE PARFUM // 50ML
         </p>
+
+        <HeroEditorial
+          title="Compounded to order."
+          body={`No. 03, 05, and 07, plus ${ADDITIONAL_FORMULATION_COUNT_WORD} more on the ledger. Each extrait distilled for a different hour, a different intent.`}
+          align="left"
+          className="relative z-[20] md:hidden mb-8 max-w-md"
+        />
 
         <HeroEditorial
           title="Compounded to order."

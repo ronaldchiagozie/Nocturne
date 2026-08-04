@@ -9,24 +9,26 @@ import { getProduct, PRODUCTS, ProductId } from '../data/products';
 import { getDb, isFirebaseConfigured, getFirebaseInitError } from '../lib/firebase';
 import type { CartItem } from '../types';
 
-const CYCLE_MS = 24 * 60 * 60 * 1000;
-const PHANTOM_MIN_MS = 2 * 60 * 1000;
-const PHANTOM_MAX_MS = 5 * 60 * 1000;
-
-const DEFAULT_STOCK: Record<ProductId, { max: number }> = {
-  no03: { max: 8 },
-  no05: { max: 6 },
-  no07: { max: 12 },
-};
-
-import type { ProductStock, StoreMeta } from './storeLedger';
+import { getLagosDayStart, type ProductStock, type StoreMeta } from './storeLedger';
 export type { ProductStock, StoreMeta } from './storeLedger';
 export {
   formatTimeRemaining,
   getCycleTimeRemaining,
+  getLagosDayStart,
   getTotalMaxStock,
   getTotalStock,
 } from './storeLedger';
+
+const PHANTOM_MIN_MS = 2 * 60 * 1000;
+const PHANTOM_MAX_MS = 5 * 60 * 1000;
+/** Phantom sales never drain a SKU below this floor */
+const PHANTOM_STOCK_FLOOR = 7;
+
+const DEFAULT_STOCK: Record<ProductId, { max: number }> = {
+  no03: { max: 12 },
+  no05: { max: 12 },
+  no07: { max: 14 },
+};
 
 export type StoreSnapshot = {
   meta: StoreMeta;
@@ -52,7 +54,7 @@ export function freshInventory(): Record<ProductId, ProductStock> {
 
 function freshMeta(): StoreMeta {
   const now = Date.now();
-  return { cycleStartedAt: now, lastPhantomAt: now, totalSoldThisCycle: 0 };
+  return { cycleStartedAt: getLagosDayStart(now), lastPhantomAt: now, totalSoldThisCycle: 0 };
 }
 
 function randomPhantomDelay() {
@@ -60,14 +62,31 @@ function randomPhantomDelay() {
 }
 
 function maybeRefreshCycle(meta: StoreMeta, inventory: Record<ProductId, ProductStock>) {
-  const now = Date.now();
-  if (now - meta.cycleStartedAt < CYCLE_MS) return { meta, inventory, refreshed: false };
+  const todayStart = getLagosDayStart();
+  const lagosAligned = meta.cycleStartedAt === getLagosDayStart(meta.cycleStartedAt);
+  const capsMismatch = (Object.keys(PRODUCTS) as ProductId[]).some(
+    (id) => inventory[id].maxStock !== DEFAULT_STOCK[id].max,
+  );
+
+  if (meta.cycleStartedAt >= todayStart && lagosAligned && !capsMismatch) {
+    return { meta, inventory, refreshed: false };
+  }
 
   return {
-    meta: { cycleStartedAt: now, lastPhantomAt: now, totalSoldThisCycle: 0 },
+    meta: { cycleStartedAt: todayStart, lastPhantomAt: Date.now(), totalSoldThisCycle: 0 },
     inventory: freshInventory(),
     refreshed: true,
   };
+}
+
+/** When batch caps change in code, realign Firebase/local inventory once */
+function syncInventoryCaps(inventory: Record<ProductId, ProductStock>) {
+  for (const id of Object.keys(PRODUCTS) as ProductId[]) {
+    const cap = DEFAULT_STOCK[id].max;
+    if (inventory[id].maxStock !== cap) {
+      inventory[id] = { productId: id, stock: cap, maxStock: cap };
+    }
+  }
 }
 
 function maybePhantomPurchase(
@@ -78,7 +97,7 @@ function maybePhantomPurchase(
   if (now - meta.lastPhantomAt < randomPhantomDelay()) return { meta, inventory };
 
   const candidates = (Object.keys(inventory) as ProductId[]).filter(
-    (id) => inventory[id].stock > 2,
+    (id) => inventory[id].stock > PHANTOM_STOCK_FLOOR,
   );
   if (candidates.length === 0) return { meta, inventory };
 
@@ -101,6 +120,7 @@ function loadLocal(): StoreSnapshot {
     if (raw) {
       const parsed = JSON.parse(raw) as StoreSnapshot;
       let { meta, inventory } = parsed;
+      syncInventoryCaps(inventory);
       const refreshed = maybeRefreshCycle(meta, inventory);
       meta = refreshed.meta;
       inventory = refreshed.inventory;
@@ -282,6 +302,7 @@ async function runPhantomTick() {
     const refreshed = maybeRefreshCycle(meta, inventory);
     meta = refreshed.meta;
     Object.assign(inventory, refreshed.inventory);
+    syncInventoryCaps(inventory);
 
     if (!refreshed.refreshed) {
       const phantom = maybePhantomPurchase(meta, inventory);
@@ -314,9 +335,7 @@ export function applyPurchase(
   | { ok: true; meta: StoreMeta; inventory: Record<ProductId, ProductStock> }
   | { ok: false; reason: string } {
   const counts = qtyByProduct(items);
-  const refreshed = maybeRefreshCycle(meta, inventory);
-  meta = refreshed.meta;
-  inventory = refreshed.inventory;
+  const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
 
   for (const [productId, qty] of Object.entries(counts) as [ProductId, number][]) {
     if (inventory[productId].stock < qty) {
@@ -331,7 +350,7 @@ export function applyPurchase(
     };
   }
 
-  meta = { ...meta, totalSoldThisCycle: meta.totalSoldThisCycle + items.length };
+  meta = { ...meta, totalSoldThisCycle: meta.totalSoldThisCycle + totalQty };
   return { ok: true, meta, inventory };
 }
 

@@ -136,7 +136,7 @@ export function HomePage() {
         onOpenProductDetail={openProduct}
       />
 
-      <CloseSection line={REPEATED_LINE} onOpenDistiller={openDistiller} />
+      <CloseSection line={REPEATED_LINE} onOpenDistiller={openDistiller} onOpenProduct={openProduct} />
 
       <SiteFooter />
     </div>

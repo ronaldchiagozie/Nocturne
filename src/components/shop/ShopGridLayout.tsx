@@ -52,12 +52,12 @@ function CollectionCard({
         />
       </div>
 
-      <div className="mt-3 flex items-baseline justify-between gap-4">
-        <p className="font-sans text-[11px] sm:text-xs text-canvas tracking-tight truncate min-w-0">
-          {item.name}
+      <div className="mt-3.5 flex items-baseline justify-between gap-3">
+        <p className="font-sans text-[12px] sm:text-xs text-canvas tracking-tight leading-snug min-w-0">
+          <span className="line-clamp-2">{item.name}</span>
           <span className="text-taupe-muted"> · {item.label}</span>
         </p>
-        <p className="font-sans text-[11px] sm:text-xs text-canvas tabular-nums shrink-0">
+        <p className="font-sans text-[11px] sm:text-xs text-canvas tabular-nums shrink-0 pt-0.5">
           {soldOut ? 'Sold out' : formatNgn(UNIT_PRICE_NGN)}
         </p>
       </div>
@@ -123,13 +123,13 @@ export function ShopGridLayout() {
   return (
     <div className="w-full">
       {/* Toolbar — OSSOU: title left, meta right */}
-      <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-8 sm:pt-10 pb-6 md:pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-6 sm:pt-10 pb-5 md:pb-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-sans text-sm sm:text-[15px] font-normal text-canvas tracking-tight">
+            <h1 className="font-sans text-[15px] sm:text-[15px] font-normal text-canvas tracking-tight">
               The Collection
             </h1>
-            <p className="font-sans text-[11px] text-taupe-muted mt-1.5">
+            <p className="font-sans text-[12px] text-taupe-muted mt-1.5 leading-snug">
               {formulationsCopy(true)}
             </p>
           </div>
@@ -137,7 +137,7 @@ export function ShopGridLayout() {
           <div className="flex flex-col gap-3 sm:items-end">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-sans text-[11px] sm:text-xs text-taupe-muted">
               <span className="hidden md:inline">{items.length} Formulations</span>
-              <BatchLedger className="!font-sans !normal-case !tracking-normal !text-[11px]" />
+              <BatchLedger className="hidden md:inline !font-sans !normal-case !tracking-normal !text-[11px]" />
             </div>
 
             <div className="shop-sort-pills" role="group" aria-label="Sort collection">
@@ -161,8 +161,8 @@ export function ShopGridLayout() {
       </div>
 
       {/* Product grid */}
-      <section className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pb-16 md:pb-20">
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-5 md:gap-x-6 gap-y-10 sm:gap-y-12 md:gap-y-14">
+      <section className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pb-14 md:pb-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-3.5 sm:gap-x-5 md:gap-x-6 gap-y-8 sm:gap-y-12 md:gap-y-14">
           {items.map((item, index) => (
             <CollectionCard key={item.variantId} item={item} index={index} onOpen={openItem} />
           ))}

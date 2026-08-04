@@ -126,16 +126,22 @@ export function SiteFooter(_props: SiteFooterProps = {}) {
     link.type === 'route' && link.to === location.pathname;
 
   return (
-    <footer className="site-footer w-full bg-cream mt-auto border-t border-canvas/[0.08]">
+    <footer
+      className={`site-footer w-full bg-cream mt-auto border-t border-canvas/[0.08] ${
+        location.pathname.startsWith('/cart')
+          ? 'pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-0'
+          : ''
+      }`}
+    >
       {/* Tier 1 — subscribe + link columns */}
-      <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-16 sm:pb-20 md:pb-24 lg:pb-28">
-        <div className="flex flex-col gap-14 lg:flex-row lg:items-start lg:justify-between lg:gap-16 xl:gap-24">
+      <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-10 sm:pt-16 md:pt-24 lg:pt-28 pb-10 sm:pb-16 md:pb-24 lg:pb-28">
+        <div className="flex flex-col gap-10 sm:gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16 xl:gap-24">
           <div className="w-full lg:max-w-[22rem] xl:max-w-[24rem] shrink-0">
             <p className="font-sans text-[13px] sm:text-[14px] text-canvas">
               Subscribe for updates
             </p>
 
-            <form onSubmit={onSubscribe} className="mt-5 border-b border-canvas/25 pb-2">
+            <form onSubmit={onSubscribe} className="mt-4 sm:mt-5 border-b border-canvas/25 pb-2">
               <div className="flex items-baseline justify-between gap-4">
                 <input
                   type="email"
@@ -156,7 +162,7 @@ export function SiteFooter(_props: SiteFooterProps = {}) {
               </div>
             </form>
 
-            <p className="font-sans text-[10px] sm:text-[11px] text-taupe-muted leading-[1.55] mt-4 max-w-[20rem]">
+            <p className="font-sans text-[10px] sm:text-[11px] text-taupe-muted leading-[1.55] mt-3 sm:mt-4 max-w-[20rem]">
               {subscribed ? (
                 'You are on the ledger. Batch drops and restocks only.'
               ) : (
@@ -181,9 +187,14 @@ export function SiteFooter(_props: SiteFooterProps = {}) {
             </p>
           </div>
 
-          <div className="flex-1 grid grid-cols-2 gap-x-10 gap-y-10 sm:grid-cols-3 sm:gap-x-12 md:gap-x-14 lg:gap-x-16 xl:gap-x-20 min-w-0">
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-8 sm:gap-x-12 sm:gap-y-10 md:gap-x-14 lg:gap-x-16 xl:gap-x-20 min-w-0">
             {LINK_COLUMNS.map((col, colIndex) => (
-              <ul key={colIndex} className="space-y-3 sm:space-y-3.5 min-w-0">
+              <ul
+                key={colIndex}
+                className={`space-y-2.5 sm:space-y-3.5 min-w-0 ${
+                  colIndex === 2 ? 'col-span-2 sm:col-span-1' : ''
+                }`}
+              >
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <FooterLink

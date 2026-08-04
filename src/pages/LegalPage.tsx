@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { isLegalSlug, ROUTES } from '../data/routes';
+import { isLegalSlug, LEGAL_LINKS, legalPath, ROUTES } from '../data/routes';
 
 const LEGAL: Record<
   string,
@@ -54,20 +54,14 @@ export function LegalPage() {
 
   if (!page) {
     return (
-      <div className="bg-cream text-canvas min-h-screen px-6 md:px-12 py-16 max-w-2xl mx-auto">
-        <Link
-          to={ROUTES.home}
-          className="font-sans text-[9px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors"
-        >
-          ← Back
-        </Link>
-        <h1 className="font-serif text-2xl mt-8">Page not found</h1>
-        <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-4 leading-relaxed">
+      <div className="bg-cream text-canvas min-h-screen px-5 sm:px-6 md:px-12 py-10 max-w-2xl mx-auto">
+        <h1 className="font-serif text-2xl tracking-tight">Page not found</h1>
+        <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 leading-relaxed">
           This policy does not exist. Explore the collection or return home.
         </p>
         <Link
           to={ROUTES.shop}
-          className="inline-block mt-8 font-sans text-[9px] uppercase tracking-[0.26em] text-canvas border-b border-canvas/30 pb-px hover:border-canvas transition-colors"
+          className="inline-flex items-center mt-6 min-h-[44px] font-sans text-[10px] uppercase tracking-[0.26em] text-canvas border-b border-canvas/30 pb-px hover:border-canvas transition-colors"
         >
           Shop the collection →
         </Link>
@@ -77,24 +71,50 @@ export function LegalPage() {
 
   return (
     <div className="bg-cream text-canvas min-h-screen">
-      <div className="px-6 md:px-12 pt-12 pb-8 border-b border-canvas/10 max-w-2xl mx-auto">
-        <Link
-          to={ROUTES.home}
-          className="font-sans text-[9px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors"
-        >
-          ← Nocturne
-        </Link>
-        <h1 className="font-serif text-[clamp(1.75rem,4vw,2.5rem)] tracking-tight mt-6">{page.title}</h1>
+      <div className="px-5 sm:px-6 md:px-12 pt-7 sm:pt-10 pb-6 border-b border-canvas/10 max-w-2xl mx-auto">
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted mb-3">
+          Legal
+        </p>
+        <h1 className="font-serif text-[clamp(1.65rem,5vw,2.35rem)] tracking-tight leading-tight">
+          {page.title}
+        </h1>
       </div>
-      <div className="px-6 md:px-12 py-10 max-w-2xl mx-auto space-y-6">
+
+      <div className="px-5 sm:px-6 md:px-12 py-8 sm:py-10 max-w-2xl mx-auto space-y-5">
         {page.body.map((paragraph) => (
           <p
             key={paragraph.slice(0, 24)}
-            className="font-body-italic italic text-sm md:text-base text-taupe-muted font-light leading-relaxed"
+            className="font-body-italic italic text-[0.9375rem] md:text-base text-taupe-muted font-light leading-[1.75]"
           >
             {paragraph}
           </p>
         ))}
+      </div>
+
+      <div className="px-5 sm:px-6 md:px-12 pb-12 sm:pb-16 max-w-2xl mx-auto border-t border-canvas/10 pt-8">
+        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-taupe-muted mb-4">
+          More policies
+        </p>
+        <ul className="flex flex-col gap-1">
+          {LEGAL_LINKS.map(({ slug, label }) => {
+            const active = slug === topic;
+            return (
+              <li key={slug}>
+                <Link
+                  to={legalPath(slug)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`inline-flex items-center min-h-[44px] font-sans text-[13px] transition-colors ${
+                    active
+                      ? 'text-canvas underline underline-offset-[5px] decoration-canvas/35'
+                      : 'text-taupe-muted hover:text-canvas'
+                  }`}
+                >
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

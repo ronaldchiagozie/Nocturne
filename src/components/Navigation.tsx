@@ -29,7 +29,7 @@ export function Navigation({
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 px-4 py-4 sm:px-6 sm:py-5 md:px-12 md:py-6 flex justify-between items-center pointer-events-none bg-cream-plate border-b border-canvas/[0.06] safe-pt">
+      <nav className="fixed top-0 left-0 w-full z-50 px-4 py-4 sm:px-6 sm:py-5 md:px-12 md:py-6 flex justify-between  items-center pointer-events-none bg-cream-plate border-b border-canvas/[0.06]">
         <div className="pointer-events-auto flex items-center">
           <button
             type="button"
@@ -49,7 +49,7 @@ export function Navigation({
           </button>
         </div>
 
-        <div className="pointer-events-auto flex items-center gap-5 sm:gap-7">
+        <div className="pointer-events-auto flex items-center gap-3.5 sm:gap-7">
           {isActive && (
             <button
               type="button"
@@ -70,12 +70,12 @@ export function Navigation({
           <button
             type="button"
             onClick={onOpenCart}
-            className="relative font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer"
+            className="relative font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer min-h-[44px] inline-flex items-center"
             aria-label={`Cart, ${cartCount} items`}
           >
             Cart
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-3 font-mono text-[8px] tabular-nums text-taupe-muted">
+              <span className="absolute top-2.5 -right-3 font-mono text-[8px] tabular-nums text-taupe-muted">
                 {cartCount}
               </span>
             )}

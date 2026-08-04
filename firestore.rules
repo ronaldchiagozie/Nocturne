@@ -16,13 +16,47 @@ service cloud.firestore {
         && data.stock <= data.maxStock;
     }
 
+    function inventoryRestockValid() {
+      return request.resource.data.stock == request.resource.data.maxStock
+        && request.resource.data.maxStock == resource.data.maxStock
+        && request.resource.data.productId == resource.data.productId
+        && request.resource.data.stock > resource.data.stock;
+    }
+
+    function inventoryCapSyncValid() {
+      return request.resource.data.stock == request.resource.data.maxStock
+        && request.resource.data.productId == resource.data.productId
+        && request.resource.data.stock > resource.data.stock;
+    }
+
     function inventoryUpdateValid() {
       return validProductStock(request.resource.data)
         && validProductStock(resource.data)
         && request.resource.data.productId == resource.data.productId
-        && request.resource.data.maxStock == resource.data.maxStock
-        && request.resource.data.stock <= resource.data.stock
-        && resource.data.stock - request.resource.data.stock <= 12;
+        && (
+          inventoryCapSyncValid()
+          || (
+            request.resource.data.maxStock == resource.data.maxStock
+            && (
+              inventoryRestockValid()
+              || (
+                request.resource.data.stock <= resource.data.stock
+                && resource.data.stock - request.resource.data.stock <= 12
+              )
+            )
+          )
+        );
+    }
+
+    function metaCycleResetValid() {
+      return request.resource.data.totalSoldThisCycle == 0
+        && (
+          request.resource.data.cycleStartedAt > resource.data.cycleStartedAt
+          || (
+            request.resource.data.cycleStartedAt != resource.data.cycleStartedAt
+            && resource.data.totalSoldThisCycle > 0
+          )
+        );
     }
 
     function validStoreMeta(data) {
@@ -36,8 +70,13 @@ service cloud.firestore {
     function metaUpdateValid() {
       return validStoreMeta(request.resource.data)
         && validStoreMeta(resource.data)
-        && request.resource.data.totalSoldThisCycle >= resource.data.totalSoldThisCycle
-        && request.resource.data.totalSoldThisCycle <= resource.data.totalSoldThisCycle + 24;
+        && (
+          metaCycleResetValid()
+          || (
+            request.resource.data.totalSoldThisCycle >= resource.data.totalSoldThisCycle
+            && request.resource.data.totalSoldThisCycle <= resource.data.totalSoldThisCycle + 240
+          )
+        );
     }
 
     function validLineItem(item) {

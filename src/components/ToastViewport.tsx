@@ -14,6 +14,17 @@ function ToastIcon({ variant }: { variant: ToastVariant }) {
     );
   }
 
+  if (variant === 'scarcity') {
+    return (
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas/[0.06]" aria-hidden>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.1" className="text-canvas/35" />
+          <circle cx="7" cy="7" r="2" fill="currentColor" className="text-amber-accent" />
+        </svg>
+      </span>
+    );
+  }
+
   return (
     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas/[0.06]" aria-hidden>
       <svg width="12" height="16" viewBox="0 0 12 16" fill="none">
@@ -63,6 +74,11 @@ export function ToastViewport() {
                 {variant === 'added' && (
                   <p className="font-mono text-[7px] uppercase tracking-[0.18em] text-taupe-muted mt-0.5">
                     Added to cart
+                  </p>
+                )}
+                {variant === 'scarcity' && toast.message && (
+                  <p className="font-mono text-[7px] uppercase tracking-[0.16em] text-taupe-muted mt-0.5 truncate">
+                    {toast.message}
                   </p>
                 )}
               </div>

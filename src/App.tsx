@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext';
 import { ProductDetailProvider } from './context/ProductDetailContext';
 import { SiteModalsProvider } from './context/SiteModalsContext';
 import { CommandPalette } from './components/CommandPalette';
+import { BatchLedgerToasts } from './components/BatchLedgerToasts';
 import { AnalyticsTracker } from './components/AnalyticsTracker';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { StoreLayout } from './components/StoreLayout';
@@ -57,6 +58,7 @@ export default function App() {
                 </StoreLayout>
               </ErrorBoundary>
               <CommandPalette />
+              <BatchLedgerToasts />
               <Analytics />
             </SiteModalsProvider>
           </ProductDetailProvider>

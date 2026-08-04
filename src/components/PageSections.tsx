@@ -1,9 +1,11 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images, type ImageKey } from '../assets/images';
+import { COLLECTION_ITEMS, type CollectionItem } from '../data/collection';
+import type { ProductId } from '../data/products';
 import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -106,37 +108,207 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   );
 }
 
+const CLOSE_CAROUSEL_COUNT = 5;
+const CLOSE_CAROUSEL_INTERVAL_MS = 4800;
+const CLOSE_CAROUSEL_FADE_MS = 900;
+
+function shuffleCollectionItems(items: CollectionItem[], count: number): CollectionItem[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, count);
+}
+
+function CloseCarouselCard({
+  item,
+  index,
+  isActive,
+  onOpenProduct,
+  bottleClassName,
+}: {
+  item: CollectionItem;
+  index: number;
+  isActive: boolean;
+  onOpenProduct?: (id: ProductId) => void;
+  bottleClassName: string;
+}) {
+  return (
+    <div
+      aria-hidden={!isActive}
+      className="absolute inset-0 flex flex-col items-center justify-end transition-[opacity,transform] ease-in-out"
+      style={{
+        opacity: isActive ? 1 : 0,
+        transform: isActive ? 'translateY(0)' : 'translateY(10px)',
+        transitionDuration: `${CLOSE_CAROUSEL_FADE_MS}ms`,
+        pointerEvents: isActive ? 'auto' : 'none',
+      }}
+    >
+      <div className="relative w-full flex items-end justify-center min-h-[200px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[320px]">
+        <img
+          src={item.image}
+          alt={`Nocturne No. ${item.formulationNumber} ${item.name}`}
+          className={bottleClassName}
+          loading={index === 0 ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      </div>
+      <div className="w-full mt-5 md:mt-6 pt-5 md:pt-6 border-t border-canvas/10 space-y-2 text-center">
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted">
+          No. {item.formulationNumber} · {item.name}
+        </p>
+        <p className="font-body-italic italic text-sm text-taupe-muted font-light leading-relaxed">
+          Extrait de parfum · 50ml · compounded to order
+        </p>
+        {onOpenProduct ? (
+          <button
+            type="button"
+            onClick={() => onOpenProduct(item.productId)}
+            className="inline-block mt-3 font-sans text-[10px] uppercase tracking-[0.22em] text-canvas hover:text-canvas/70 transition-colors cursor-pointer min-h-[44px]"
+          >
+            View No. {item.formulationNumber} →
+          </button>
+        ) : (
+          <Link
+            to="/shop"
+            className="inline-flex items-center justify-center mt-3 font-sans text-[10px] uppercase tracking-[0.22em] text-canvas hover:text-canvas/70 transition-colors min-h-[44px]"
+          >
+            View No. {item.formulationNumber} →
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CloseSectionCarousel({
+  onOpenProduct,
+}: {
+  onOpenProduct?: (id: ProductId) => void;
+}) {
+  const [slides] = useState(() => shuffleCollectionItems(COLLECTION_ITEMS, CLOSE_CAROUSEL_COUNT));
+  const [activeIndex, setActiveIndex] = useState(0);
+  const pausedRef = useRef(false);
+  const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (prefersReducedMotion() || slides.length <= 1) return;
+
+    const id = window.setInterval(() => {
+      if (pausedRef.current) return;
+      setActiveIndex((current) => (current + 1) % slides.length);
+    }, CLOSE_CAROUSEL_INTERVAL_MS);
+
+    return () => window.clearInterval(id);
+  }, [slides.length]);
+
+  const goTo = (index: number) => {
+    setActiveIndex((index + slides.length) % slides.length);
+  };
+
+  const onTouchStart = (event: TouchEvent) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+    pausedRef.current = true;
+  };
+
+  const onTouchEnd = (event: TouchEvent) => {
+    const startX = touchStartX.current;
+    touchStartX.current = null;
+    pausedRef.current = false;
+    if (startX == null) return;
+
+    const endX = event.changedTouches[0]?.clientX ?? startX;
+    const delta = endX - startX;
+    if (Math.abs(delta) < 36) return;
+
+    if (delta < 0) goTo(activeIndex + 1);
+    else goTo(activeIndex - 1);
+  };
+
+  const bottleClassName =
+    'h-[min(220px,34dvh)] sm:h-[min(260px,38dvh)] md:h-[min(300px,36vh)] lg:h-[min(340px,40vh)] w-auto object-contain product-detail-bottle';
+
+  return (
+    <aside
+      className="mt-10 md:mt-0 flex flex-col items-center justify-end bg-cream-plate/70 border border-canvas/[0.06] px-6 sm:px-8 lg:px-10 py-8 sm:py-10 lg:py-12"
+      aria-label="Featured formulations"
+      aria-live="polite"
+      onMouseEnter={() => {
+        pausedRef.current = true;
+      }}
+      onMouseLeave={() => {
+        pausedRef.current = false;
+      }}
+      onFocusCapture={() => {
+        pausedRef.current = true;
+      }}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          pausedRef.current = false;
+        }
+      }}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      <div className="relative w-full min-h-[19rem] sm:min-h-[21rem] md:min-h-[22rem] lg:min-h-[24rem]">
+        {slides.map((item, index) => (
+          <CloseCarouselCard
+            key={item.variantId}
+            item={item}
+            index={index}
+            isActive={index === activeIndex}
+            onOpenProduct={onOpenProduct}
+            bottleClassName={bottleClassName}
+          />
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 export function CloseSection({
   line,
   onOpenDistiller,
+  onOpenProduct,
 }: {
   line: string;
   onOpenDistiller?: () => void;
+  onOpenProduct?: (id: ProductId) => void;
 }) {
   return (
-    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 pt-12 pb-28 md:min-h-[70vh] md:flex md:flex-col md:justify-end md:pt-0 md:pb-32">
-      <p className="font-serif text-[clamp(1.5rem,3.5vw,2.5rem)] text-canvas tracking-tight leading-snug max-w-lg">
-        Nocturne No. 07. Limited batch.
-      </p>
-      <p className="font-serif text-base md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-8 md:mt-24">
-        {line}
-      </p>
-      <div className="mt-10 md:mt-12 flex flex-wrap items-center gap-x-8 gap-y-4">
-        <Link
-          to="/shop"
-          className="font-sans text-[10px] uppercase tracking-[0.22em] text-canvas border-b border-canvas/30 pb-px hover:border-canvas transition-colors"
-        >
-          Shop the collection →
-        </Link>
-        {onOpenDistiller && (
-          <button
-            type="button"
-            onClick={onOpenDistiller}
-            className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer"
-          >
-            Find your formulation →
-          </button>
-        )}
+    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 lg:px-14 xl:px-16 pt-10 pb-16 sm:pb-20 md:py-20 lg:py-24">
+      <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] md:items-end md:gap-12 lg:gap-16 xl:gap-20">
+        <div className="md:pb-2 lg:pb-4">
+          <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-taupe-muted mb-4 md:mb-5">
+            Flagship extrait
+          </p>
+          <p className="font-serif text-[clamp(1.5rem,3.5vw,2.5rem)] text-canvas tracking-tight leading-snug max-w-lg">
+            Nocturne No. 07. Limited batch.
+          </p>
+          <p className="font-serif text-base md:text-xl text-canvas tracking-tight leading-snug max-w-md mt-6 md:mt-10">
+            {line}
+          </p>
+          <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <Link
+              to="/shop"
+              className="font-sans text-[10px] uppercase tracking-[0.22em] text-canvas border-b border-canvas/30 pb-px hover:border-canvas transition-colors"
+            >
+              Shop the collection →
+            </Link>
+            {onOpenDistiller && (
+              <button
+                type="button"
+                onClick={onOpenDistiller}
+                className="font-sans text-[10px] uppercase tracking-[0.22em] text-taupe-muted hover:text-canvas transition-colors cursor-pointer"
+              >
+                Find your formulation →
+              </button>
+            )}
+          </div>
+        </div>
+
+        <CloseSectionCarousel onOpenProduct={onOpenProduct} />
       </div>
     </section>
   );
