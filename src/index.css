@@ -956,11 +956,15 @@ option {
     min-height: calc(100dvh - 8.5rem);
   }
 
+  /* `align-self: start` is what keeps the stamp on the first screen. Stretched
+     to the row, it centred against the details column's full content height,
+     which put it below the fold as soon as an order ran past one screen. Now it
+     centres inside the first screenful and scrolls away with the page. */
   .checkout-confirmation-stamp {
+    align-self: start;
     min-height: calc(100dvh - 8.5rem);
-    position: sticky;
-    top: 0;
-    align-self: stretch;
+    /* The SECURED watermark is deliberately wider than its column. */
+    overflow: hidden;
   }
 
   .checkout-confirmation-aside {
@@ -970,7 +974,7 @@ option {
 
 @media (min-width: 1024px) {
   .checkout-confirmation-stage {
-    min-height: calc(100dvh - 9rem);
+    min-height: calc(100dvh - 11.75rem);
   }
 
   .checkout-confirmation-stage--wide {
@@ -978,8 +982,9 @@ option {
     margin-inline: auto;
   }
 
+  /* Banner plus header measure ~188px through the lg range. */
   .checkout-confirmation-stamp {
-    min-height: calc(100dvh - 9rem);
+    min-height: calc(100dvh - 11.75rem);
   }
 
   .checkout-confirmation-stamp-glow {
@@ -992,7 +997,7 @@ option {
   }
 
   .checkout-confirmation-aside {
-    min-height: calc(100dvh - 9rem);
+    min-height: calc(100dvh - 11.75rem);
   }
 
   .checkout-confirmation-aside-inner {
