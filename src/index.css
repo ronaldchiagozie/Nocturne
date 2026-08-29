@@ -967,8 +967,33 @@ option {
     overflow: hidden;
   }
 
+  /* `overflow-x: hidden` on body makes body a scroll container, and a sticky
+     element inside one never engages against the viewport. `clip` clips
+     identically without creating that container. Scoped to this page so the
+     rest of the site keeps the behaviour it was written against. */
+  html:has(.checkout-confirmation) body {
+    overflow-x: clip;
+  }
+
+  /* The details panel is pinned to the viewport and never travels with the
+     page — the stamp scrolls past it. Anything the panel cannot fit scrolls
+     inside the panel rather than lengthening the page. */
   .checkout-confirmation-aside {
-    min-height: calc(100dvh - 8.5rem);
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    justify-content: flex-start;
+  }
+
+  /* Centres while it fits, pins to the top once it overflows. Leaving this to
+     `justify-content: center` puts the first lines above the scroll range,
+     where they cannot be reached. */
+  .checkout-confirmation-aside-inner {
+    margin-block: auto;
   }
 }
 
@@ -994,10 +1019,6 @@ option {
       rgba(127, 29, 29, 0.09) 0%,
       transparent 72%
     );
-  }
-
-  .checkout-confirmation-aside {
-    min-height: calc(100dvh - 11.75rem);
   }
 
   .checkout-confirmation-aside-inner {

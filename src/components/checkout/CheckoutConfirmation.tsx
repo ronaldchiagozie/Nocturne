@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { formatNgn, formatUsd } from '../../data/pricing';
@@ -142,6 +142,23 @@ export function CheckoutConfirmation({
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
   const allocationDate = new Date(order.createdAt).toLocaleDateString('en-GB').replace(/\//g, '.');
 
+  // Lenis owns the wheel globally, so the pinned panel only gets it back when
+  // it actually has hidden content. Claiming it unconditionally would make the
+  // panel a dead zone whenever the order is short enough to fit.
+  const asideRef = useRef<HTMLElement>(null);
+  const [panelOverflows, setPanelOverflows] = useState(false);
+
+  useEffect(() => {
+    const el = asideRef.current;
+    if (!el) return;
+    const sync = () => setPanelOverflows(el.scrollHeight > el.clientHeight + 1);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(el);
+    Array.from(el.children).forEach((child) => observer.observe(child));
+    return () => observer.disconnect();
+  }, [items.length]);
+
   useLayoutEffect(() => {
     scrollToTopImmediate();
     requestAnimationFrame(() => scrollToTopImmediate());
@@ -196,7 +213,10 @@ export function CheckoutConfirmation({
           </motion.div>
         </section>
 
-        <aside className="checkout-confirmation-aside flex flex-col justify-start lg:justify-center bg-cream-plate border-t md:border-t-0 md:border-l border-canvas/10 px-5 sm:px-8 md:px-8 lg:px-12 xl:px-14 2xl:px-16 pt-8 sm:pt-10 md:pt-12 lg:py-16 xl:py-20 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[max(2rem,env(safe-area-inset-bottom))]">
+        <aside
+          ref={asideRef}
+          {...(panelOverflows ? { 'data-lenis-prevent': '' } : {})}
+          className="checkout-confirmation-aside flex flex-col justify-start lg:justify-center bg-cream-plate border-t md:border-t-0 md:border-l border-canvas/10 px-5 sm:px-8 md:px-8 lg:px-12 xl:px-14 2xl:px-16 pt-8 sm:pt-10 md:pt-12 lg:py-16 xl:py-20 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[max(2rem,env(safe-area-inset-bottom))]">
           <ConfirmationDetails
             shipping={shipping}
             items={items}
