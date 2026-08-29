@@ -270,8 +270,9 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
                             const added = add(result.productId, {
+                              from: e.currentTarget,
                               override: {
                                 variantId: result.variantId,
                                 formulationLabel: result.formulationLabel,

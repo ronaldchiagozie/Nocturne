@@ -1,7 +1,10 @@
+import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { getProduct, ProductId } from '../data/products';
 import { useStore } from '../context/StoreContext';
 import { useAddToCart } from '../hooks/useAddToCart';
+import { cartTargetProps, useCartArrival } from '../context/CartFlightContext';
 import { resolveProductImage } from '../utils/productDisplay';
 import type { CheckoutOverride } from '../types';
 
@@ -13,10 +16,13 @@ interface ProductDetailPanelProps {
 
 export function ProductDetailPanel({ productId, override, onClose }: ProductDetailPanelProps) {
   const product = productId ? getProduct(productId) : null;
-  const { getStock } = useStore();
+  const { getStock, getAvailable, cartCount } = useStore();
   const { add, buyNow } = useAddToCart();
+  const bottleRef = useRef<HTMLImageElement>(null);
+  const cartPulsing = useCartArrival();
   const stock = productId ? getStock(productId) : null;
-  const soldOut = stock ? stock.stock === 0 : false;
+  const available = productId ? getAvailable(productId) : null;
+  const soldOut = available === 0;
 
   const label = override?.productLabel ?? product?.label ?? '';
   const title =
@@ -44,33 +50,59 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
           />
 
           {/* Hero bottle — floats above sheet */}
+          {/* Tween, not spring: springs overshoot, and the bottle should land and
+              stay landed. Same curve as the sheet below, so the two read as one
+              gesture rather than two competing bounces. */}
           <motion.div
-            initial={{ opacity: 0, y: 36, scale: 0.88, rotate: -3 }}
-            animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-            exit={{ opacity: 0, y: 20, scale: 0.94, rotate: -1 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 26, mass: 0.9 }}
+            initial={{ opacity: 0, y: 28, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ type: 'tween', duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
             className="pointer-events-none absolute inset-x-0 top-[max(2.5rem,env(safe-area-inset-top))] bottom-[min(52dvh,460px)] sm:bottom-[min(50dvh,440px)] flex items-end justify-center px-4 sm:px-6 pb-0"
           >
             <motion.img
               key={imageKey}
+              ref={bottleRef}
               src={image}
               alt={title}
-              initial={{ y: 16, opacity: 0.85 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 22, delay: 0.06 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.34, ease: 'easeOut' }}
               className="product-detail-bottle h-full w-auto max-w-[min(92vw,340px)] sm:max-w-[min(88vw,360px)] object-contain object-bottom drop-shadow-[0_24px_48px_rgba(13,11,10,0.22)]"
               fetchPriority="high"
             />
           </motion.div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-[222] font-mono text-xl text-canvas/60 hover:text-canvas transition-colors cursor-pointer leading-none"
-            aria-label="Close"
-          >
-            ×
-          </button>
+          {/* Cart and close share the top bar. The bottle flies to this cart
+              rather than the page header's: the backdrop covers that one, and
+              because the modal locks scrolling — which disables `position:
+              sticky` — it can be scrolled off-screen entirely. */}
+          <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-[222] flex items-center gap-6 sm:gap-7">
+            <Link
+              to="/cart"
+              onClick={onClose}
+              {...cartTargetProps}
+              className={`relative font-sans text-[10px] uppercase tracking-[0.24em] leading-none text-canvas hover:text-taupe-muted transition-colors min-h-[44px] inline-flex items-center${
+                cartPulsing ? ' cart-receive' : ''
+              }`}
+              aria-label={`Cart, ${cartCount} items`}
+            >
+              Cart
+              {cartCount > 0 && (
+                <span className="cart-count absolute top-2 -right-3 font-mono text-[8px] tabular-nums text-taupe-muted">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="font-mono text-xl text-canvas/60 hover:text-canvas transition-colors cursor-pointer leading-none min-h-[44px] inline-flex items-center"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
 
           {/* Detail sheet */}
           <motion.aside
@@ -111,7 +143,7 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
                     </p>
                     {stock && (
                       <p className="font-mono text-[8px] uppercase tracking-[0.16em] text-taupe-muted mt-1.5">
-                        {soldOut ? 'Sold out today' : `${stock.stock} left today`}
+                        {soldOut ? 'Sold out today' : `${available} left today`}
                       </p>
                     )}
                   </div>
@@ -120,7 +152,7 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
                     <button
                       type="button"
                       disabled={soldOut}
-                      onClick={() => add(product.id, { override })}
+                      onClick={() => add(product.id, { override, from: bottleRef.current })}
                       className="font-sans text-[9px] uppercase tracking-[0.24em] text-canvas hover:text-taupe-muted transition-colors cursor-pointer disabled:opacity-40 min-h-[44px] inline-flex items-center justify-center"
                     >
                       Add to cart

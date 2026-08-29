@@ -112,7 +112,7 @@ export function ApertureIntro({ onRevealed }: ApertureIntroProps) {
         className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-opacity duration-500 ${isShutterOpen ? 'opacity-0' : 'opacity-100'
           }`}
       >
-        {/* Load timer: top right, Canela header weight */}
+        {/* Load timer: top right, display serif weight */}
         <p
           className="pointer-events-none absolute top-6 right-6 sm:top-8 sm:right-8 md:top-10 md:right-12 z-30 font-serif text-[clamp(3.5rem,9vw,6.5rem)] font-bold tracking-[0.06em] tabular-nums text-[#ECE6D8]/90 leading-none"
           aria-live="polite"

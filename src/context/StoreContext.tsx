@@ -35,6 +35,12 @@ interface StoreContextValue {
   meta: StoreMeta | null;
   storeReady: boolean;
   getStock: (productId: ProductId) => ProductStock | null;
+  /**
+   * Today's stock less whatever this shopper is already holding, so the count
+   * on screen falls as they add. Real inventory is untouched — it only moves
+   * at purchase.
+   */
+  getAvailable: (productId: ProductId) => number | null;
   isInStock: (productId: ProductId, qty?: number) => boolean;
   addToCart: (input: AddToCartInput) => { ok: true } | { ok: false; reason: string };
   updateCartQty: (cartKey: string, qty: number) => void;
@@ -154,6 +160,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [inventory],
   );
 
+  /** Units of a product held in the cart, summed across bottle variants. */
+  const heldInCart = useCallback(
+    (productId: ProductId) =>
+      cart.reduce((n, c) => (c.productId === productId ? n + c.qty : n), 0),
+    [cart],
+  );
+
+  const getAvailable = useCallback(
+    (productId: ProductId) => {
+      const stock = getStock(productId);
+      if (!stock) return null;
+      return Math.max(0, stock.stock - heldInCart(productId));
+    },
+    [getStock, heldInCart],
+  );
+
   const isInStock = useCallback(
     (productId: ProductId, qty = 1) => {
       const stock = getStock(productId);
@@ -164,9 +186,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const addToCart = useCallback(
     (input: AddToCartInput): { ok: true } | { ok: false; reason: string } => {
-      const needed =
-        (input.qty ?? 1) +
-        (cart.find((c) => c.productId === input.productId)?.qty ?? 0);
+      const needed = (input.qty ?? 1) + heldInCart(input.productId);
 
       if (inventory && !isInStock(input.productId, needed)) {
         const product = getProduct(input.productId);
@@ -192,7 +212,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       return { ok: true };
     },
-    [cart, inventory, isInStock, getStock],
+    [heldInCart, inventory, isInStock, getStock],
   );
 
   const updateCartQty = useCallback(
@@ -245,6 +265,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       meta,
       storeReady,
       getStock,
+      getAvailable,
       isInStock,
       addToCart,
       updateCartQty,
@@ -262,6 +283,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       meta,
       storeReady,
       getStock,
+      getAvailable,
       isInStock,
       addToCart,
       updateCartQty,

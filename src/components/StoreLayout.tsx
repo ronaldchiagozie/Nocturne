@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { cartTargetProps, useCartArrival } from '../context/CartFlightContext';
 import { ToastViewport } from './ToastViewport';
 import { ShopLayoutToggle } from './shop/ShopLayoutToggle';
 import { SiteFooter } from './SiteFooter';
@@ -10,6 +11,7 @@ interface StoreLayoutProps {
 
 function EditorialHeader({ cartCount }: { cartCount: number }) {
   const location = useLocation();
+  const cartPulsing = useCartArrival();
   const isShop = location.pathname === '/shop';
   const isAbout = location.pathname === '/about';
 
@@ -41,10 +43,14 @@ function EditorialHeader({ cartCount }: { cartCount: number }) {
 
       <nav className="flex items-center gap-3 sm:gap-6 md:gap-8 justify-self-end">
         {isShop && <ShopLayoutToggle />}
-        <Link to="/cart" className={`${navLink(true)} relative text-canvas`}>
+        <Link
+          to="/cart"
+          {...cartTargetProps}
+          className={`${navLink(true)} relative text-canvas${cartPulsing ? ' cart-receive' : ''}`}
+        >
           Bag
           {cartCount > 0 && (
-            <span className="absolute top-2 -right-3 font-sans text-[10px] tabular-nums text-taupe-muted">
+            <span className="cart-count absolute top-2 -right-3 font-sans text-[10px] tabular-nums text-taupe-muted">
               {cartCount}
             </span>
           )}
@@ -56,6 +62,7 @@ function EditorialHeader({ cartCount }: { cartCount: number }) {
 
 export function StoreLayout({ children }: StoreLayoutProps) {
   const { cartCount } = useStore();
+  const cartPulsing = useCartArrival();
   const location = useLocation();
   const isEditorial = location.pathname === '/shop' || location.pathname === '/about';
   const isStoreRoute =
@@ -106,11 +113,14 @@ export function StoreLayout({ children }: StoreLayoutProps) {
                 </Link>
                 <Link
                   to="/cart"
-                  className={`${storeLink(location.pathname.startsWith('/cart'))} relative`}
+                  {...cartTargetProps}
+                  className={`${storeLink(location.pathname.startsWith('/cart'))} relative${
+                    cartPulsing ? ' cart-receive' : ''
+                  }`}
                 >
                   Cart
                   {cartCount > 0 && (
-                    <span className="absolute top-2 -right-3 font-mono text-[8px] tabular-nums text-[#8a5a2e]">
+                    <span className="cart-count absolute top-2 -right-3 font-mono text-[8px] tabular-nums text-[#8a5a2e]">
                       {cartCount}
                     </span>
                   )}

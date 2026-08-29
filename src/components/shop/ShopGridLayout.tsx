@@ -31,8 +31,8 @@ function CollectionCard({
   index: number;
   onOpen: (item: CollectionItem, variantId?: string) => void;
 }) {
-  const { getStock } = useStore();
-  const soldOut = (getStock(item.productId)?.stock ?? 0) === 0;
+  const { getAvailable } = useStore();
+  const soldOut = getAvailable(item.productId) === 0;
   const variant = getBottleVariant(item.variantId);
   const siblings = variantsForProduct(item.productId);
 
@@ -162,7 +162,7 @@ export function ShopGridLayout() {
 
       {/* Product grid */}
       <section className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pb-14 md:pb-20">
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-3.5 sm:gap-x-5 md:gap-x-6 gap-y-8 sm:gap-y-12 md:gap-y-14">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3.5 sm:gap-x-5 md:gap-x-6 gap-y-8 sm:gap-y-12 md:gap-y-14">
           {items.map((item, index) => (
             <CollectionCard key={item.variantId} item={item} index={index} onOpen={openItem} />
           ))}

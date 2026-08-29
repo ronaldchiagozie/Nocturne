@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { NavDrawer } from './NavDrawer';
 import { useSoundscape } from '../context/SoundscapeContext';
 import { useStore } from '../context/StoreContext';
+import { cartTargetProps, useCartArrival } from '../context/CartFlightContext';
 import { scrollToTop } from '../hooks/useLenis';
 
 interface NavigationProps {
@@ -21,6 +22,7 @@ export function Navigation({
   const [menuOpen, setMenuOpen] = useState(false);
   const { isActive, isAudible, toggleMute } = useSoundscape();
   const { cartCount } = useStore();
+  const cartPulsing = useCartArrival();
 
   const setOpen = (open: boolean) => {
     setMenuOpen(open);
@@ -70,12 +72,15 @@ export function Navigation({
           <button
             type="button"
             onClick={onOpenCart}
-            className="relative font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer min-h-[44px] inline-flex items-center"
+            {...cartTargetProps}
+            className={`relative font-sans text-[10px] uppercase tracking-[0.28em] leading-none text-canvas hover:text-canvas/70 transition-colors duration-300 cursor-pointer min-h-[44px] inline-flex items-center${
+              cartPulsing ? ' cart-receive' : ''
+            }`}
             aria-label={`Cart, ${cartCount} items`}
           >
             Cart
             {cartCount > 0 && (
-              <span className="absolute top-2.5 -right-3 font-mono text-[8px] tabular-nums text-taupe-muted">
+              <span className="cart-count absolute top-2.5 -right-3 font-mono text-[8px] tabular-nums text-taupe-muted">
                 {cartCount}
               </span>
             )}

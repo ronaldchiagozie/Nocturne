@@ -1,111 +1,134 @@
 @import "tailwindcss";
 
-/* ── Display headings: Canela ── */
+/* ═══════════════════════════════════════════════════════════════════════
+   NOCTURNE TYPE SYSTEM
+
+   UI, labels, buttons ....  Switzer         Fontshare — ITF Free Font License
+   Ledger, batch data .....  IBM Plex Mono   SIL OFL 1.1
+   Display headings .......  Fraunces        SIL OFL 1.1
+   Editorial italic .......  Spectral        SIL OFL 1.1
+
+   All four are cleared for commercial web use and self-hosted from
+   /public/fonts — no third-party font CDN is contacted at runtime.
+
+   Canela and GT Sectra are NOT loaded. The files still sitting in
+   assets/fonts are a Canela TRIAL and GT Sectra desktop .ttf; neither
+   license permits web embedding. See LICENSED SERIFS at the end of this
+   block to switch back once webfont licenses are purchased.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── UI sans: Switzer ── */
 @font-face {
-  font-family: "Canela";
-  src: url("../assets/fonts/canela/canela-Light-TRIAL.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("../assets/fonts/canela/canela-Regular-TRIAL.otf") format("opentype");
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Canela";
-  src: url("../assets/fonts/canela/canela-Bold-TRIAL.otf") format("opentype");
-  font-weight: 700;
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/Switzer-Semibold.woff2") format("woff2");
+  font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
-/* ── Body serif: GT Sectra Fine ── */
+/* ── Ledger mono: IBM Plex Mono ── */
 @font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Book.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Regular.ttf") format("truetype");
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Medium.ttf") format("truetype");
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
+
+/* ── Display serif: Fraunces (variable, 300–700) ── */
 @font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Bold.ttf") format("truetype");
-  font-weight: 700;
+  font-family: "Fraunces";
+  src: url("/fonts/Fraunces-Variable.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Editorial serif: Spectral ── */
+@font-face {
+  font-family: "Spectral";
+  src: url("/fonts/Spectral-Light.woff2") format("woff2");
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Black.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Book-Italic.ttf") format("truetype");
+  font-family: "Spectral";
+  src: url("/fonts/Spectral-LightItalic.woff2") format("woff2");
   font-weight: 300;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Regular-Italic.ttf") format("truetype");
+  font-family: "Spectral";
+  src: url("/fonts/Spectral-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Spectral";
+  src: url("/fonts/Spectral-RegularItalic.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
-@font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Medium-Italic.ttf") format("truetype");
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Bold-Italic.ttf") format("truetype");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "GT Sectra";
-  src: url("../assets/fonts/Gt-sectra/GT-Sectra-Fine-Black-Italic.ttf") format("truetype");
-  font-weight: 900;
-  font-style: italic;
-  font-display: swap;
-}
+
+/* ═══ LICENSED SERIFS (inactive) ═══════════════════════════════════════
+   Canela (Commercial Type) and GT Sectra Fine (Grilli Type) are the
+   originally-specified serifs. To switch back after buying webfont
+   licenses:
+
+     1. Put the licensed .woff2 files in public/fonts/
+     2. Uncomment the two @font-face groups in this file's git history
+        (commit "Replace system fonts…"), pointing src at those files
+     3. In @theme below, restore:
+          --font-serif:       "Canela", "Georgia", serif;
+          --font-body-italic: "GT Sectra", "Georgia", serif;
+     4. Delete the .font-serif font-variation-settings rule below —
+        opsz/SOFT/WONK are Fraunces axes and mean nothing to Canela
+   ═══════════════════════════════════════════════════════════════════ */
 
 @theme {
-  --font-serif: "Canela", "Georgia", serif;
-  --font-body-italic: "GT Sectra", "Georgia", serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+  --font-serif: "Fraunces", "Georgia", serif;
+  --font-body-italic: "Spectral", "Georgia", serif;
+  --font-sans: "Switzer", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Code", monospace;
 
   --color-canvas: #0d0b0a;
   --color-cream: #efe9df;
   --color-cream-plate: #efe9df;
   --color-amber-accent: #8a5a2e;
   --color-taupe-muted: #6b655c;
+}
+
+/* Fraunces defaults to its "wonky" display instance (WONK 1, opsz 9), which
+   reads playful rather than composed. Pin it to the high-contrast cut with
+   crisp serifs and no swash forms. wght is deliberately left out so
+   Tailwind's font-weight utilities still drive the weight axis. */
+.font-serif {
+  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
 }
 
 html {
@@ -402,6 +425,7 @@ option {
   margin: 0;
   transform: translateY(18%);
   font-family: var(--font-serif);
+  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0;
   font-weight: 700;
   font-size: clamp(3.25rem, 15vw, 15rem);
   line-height: 0.92;
@@ -1240,7 +1264,7 @@ option {
   border: none;
   border-bottom: 1px solid color-mix(in srgb, var(--color-canvas) 22%, transparent);
   padding: 0.625rem 0 0.875rem;
-  font-family: "GT Sectra", Georgia, serif;
+  font-family: var(--font-body-italic);
   font-size: clamp(1.2rem, 3vw, 1.5rem);
   font-style: italic;
   color: var(--color-canvas);
@@ -1598,6 +1622,58 @@ option {
   }
 
   .shop-skeleton-card {
+    animation: none;
+  }
+}
+
+/* ── Add-to-cart receive pulse ───────────────────────────────────────────
+   Plays on whichever cart affordance a flying bottle just landed in. The
+   flight itself lives in CartFlightContext; this is only the acknowledgement.
+   ───────────────────────────────────────────────────────────────────── */
+@keyframes cart-receive {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.13);
+  }
+  62% {
+    transform: scale(0.985);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cart-count-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.45);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-receive {
+  animation: cart-receive 0.52s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* The count flashes to the brand accent, then eases back when the class drops. */
+.cart-count {
+  transition: color 0.45s ease;
+}
+
+.cart-receive .cart-count {
+  animation: cart-count-pop 0.52s cubic-bezier(0.33, 1, 0.68, 1);
+  color: var(--color-amber-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-receive,
+  .cart-receive .cart-count {
     animation: none;
   }
 }

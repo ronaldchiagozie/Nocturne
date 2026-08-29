@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { SoundscapeProvider } from './context/SoundscapeContext';
 import { StoreProvider } from './context/StoreContext';
 import { ToastProvider } from './context/ToastContext';
+import { CartFlightProvider } from './context/CartFlightContext';
 import { ProductDetailProvider } from './context/ProductDetailContext';
 import { SiteModalsProvider } from './context/SiteModalsContext';
 import { CommandPalette } from './components/CommandPalette';
@@ -37,6 +38,7 @@ export default function App() {
   return (
     <SoundscapeProvider>
       <StoreProvider>
+        <CartFlightProvider>
         <ToastProvider>
           <ProductDetailProvider>
             <SiteModalsProvider>
@@ -63,6 +65,7 @@ export default function App() {
             </SiteModalsProvider>
           </ProductDetailProvider>
         </ToastProvider>
+        </CartFlightProvider>
       </StoreProvider>
     </SoundscapeProvider>
   );

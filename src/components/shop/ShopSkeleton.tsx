@@ -61,7 +61,7 @@ export function ShopGridSkeleton() {
       </div>
 
       <section className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pb-16 md:pb-20">
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-5 md:gap-x-6 gap-y-10 sm:gap-y-12 md:gap-y-14">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-5 md:gap-x-6 gap-y-10 sm:gap-y-12 md:gap-y-14">
           {Array.from({ length: GRID_CARD_COUNT }, (_, i) => (
             <GridCardSkeleton key={i} index={i} />
           ))}

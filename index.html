@@ -45,6 +45,11 @@
       }
     </script>
 
+    <!-- Fonts that gate first paint: nav/labels (Switzer) and the hero display (Fraunces).
+         crossorigin is required on font preloads even same-origin, or the browser refetches. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Switzer-Regular.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Fraunces-Variable.woff2" crossorigin />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="preload" as="image" href="/bottle-07-nocturne.png" fetchpriority="high" />

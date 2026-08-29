@@ -19,18 +19,18 @@ import { glowRgb, type LedgerBottleItem } from './shopLedgerUtils';
 gsap.registerPlugin(ScrollTrigger);
 
 function StockLine({ productId }: { productId: keyof typeof PRODUCTS }) {
-  const { getStock } = useStore();
-  const stock = getStock(productId);
-  if (!stock) return null;
+  const { getAvailable } = useStore();
+  const left = getAvailable(productId);
+  if (left === null) return null;
 
-  const soldOut = stock.stock === 0;
+  const soldOut = left === 0;
   return (
     <span
       className={`font-mono text-[8px] uppercase tracking-[0.14em] tabular-nums ${
         soldOut ? 'text-red-800/70' : 'text-taupe-muted'
       }`}
     >
-      {soldOut ? 'Sold out' : `${stock.stock} left`}
+      {soldOut ? 'Sold out' : `${left} left`}
     </span>
   );
 }
@@ -40,7 +40,7 @@ export function ShopLedgerLayout() {
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const { openProduct } = useProductDetail();
-  const { getStock } = useStore();
+  const { getAvailable } = useStore();
   const { openDistiller } = useSiteModals();
 
   const ledgerItems = useMemo<LedgerBottleItem[]>(
@@ -115,7 +115,7 @@ export function ShopLedgerLayout() {
           {COLLECTION_ITEMS.map((item, index) => {
             const product = PRODUCTS[item.productId];
             const variant = getBottleVariant(item.variantId);
-            const soldOut = (getStock(item.productId)?.stock ?? 0) === 0;
+            const soldOut = getAvailable(item.productId) === 0;
             const blurb = VARIANT_SUMMARIES[item.variantId];
             const accent = glowRgb(variant.glow);
             const isActive = index === activeIndex;

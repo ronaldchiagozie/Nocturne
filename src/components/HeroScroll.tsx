@@ -220,9 +220,10 @@ function MobileLedgerRow({
   onOpen: () => void;
 }) {
   const { add } = useAddToCart();
-  const { getStock } = useStore();
+  const { getStock, getAvailable } = useStore();
+  const bottleRef = useRef<HTMLImageElement>(null);
   const stock = getStock(card.productId);
-  const left = stock?.stock ?? 0;
+  const left = getAvailable(card.productId) ?? 0;
   const soldOut = left === 0;
   const override = cardOverride(card);
 
@@ -233,6 +234,7 @@ function MobileLedgerRow({
     >
       <div className="relative h-[5.75rem] w-[4.5rem] shrink-0 flex items-end justify-center">
         <img
+          ref={bottleRef}
           src={card.image}
           alt={card.imageAlt}
           className="h-[5.25rem] w-auto max-w-full object-contain object-bottom"
@@ -266,7 +268,7 @@ function MobileLedgerRow({
         disabled={soldOut}
         onClick={(e) => {
           e.stopPropagation();
-          add(card.productId, { override });
+          add(card.productId, { override, from: bottleRef.current });
         }}
         className="pointer-events-auto shrink-0 font-sans text-[9px] uppercase tracking-[0.18em] bg-canvas text-cream px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-full hover:opacity-85 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
@@ -316,9 +318,9 @@ function CardFooter({
   checkoutOverride?: CheckoutOverride;
 }) {
   const { add } = useAddToCart();
-  const { getStock } = useStore();
+  const { getStock, getAvailable } = useStore();
   const stock = getStock(productId);
-  const left = stock?.stock ?? 0;
+  const left = getAvailable(productId) ?? 0;
   const soldOut = left === 0;
 
   return (
@@ -336,7 +338,7 @@ function CardFooter({
         disabled={soldOut}
         onClick={(e) => {
           e.stopPropagation();
-          add(productId, { override: checkoutOverride });
+          add(productId, { override: checkoutOverride, from: e.currentTarget });
         }}
         className="pointer-events-auto font-sans text-[9px] uppercase tracking-[0.2em] bg-canvas text-cream px-5 py-2.5 min-h-[44px] inline-flex items-center rounded-full hover:opacity-85 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
