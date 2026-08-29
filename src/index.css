@@ -967,33 +967,35 @@ option {
     overflow: hidden;
   }
 
-  /* `overflow-x: hidden` on body makes body a scroll container, and a sticky
-     element inside one never engages against the viewport. `clip` clips
-     identically without creating that container. Scoped to this page so the
-     rest of the site keeps the behaviour it was written against. */
-  html:has(.checkout-confirmation) body {
-    overflow-x: clip;
+  /* The document itself is held still. The stage below is the one and only
+     scroll container, so the details are the only thing that ever moves. */
+  .checkout-confirmation {
+    height: 100dvh;
+    overflow: hidden;
   }
 
-  /* The details panel is pinned to the viewport and never travels with the
-     page — the stamp scrolls past it. Anything the panel cannot fit scrolls
-     inside the panel rather than lengthening the page. */
-  .checkout-confirmation-aside {
-    position: sticky;
-    top: 0;
-    align-self: start;
-    height: 100dvh;
+  .checkout-confirmation-stage {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    justify-content: flex-start;
   }
 
-  /* Centres while it fits, pins to the top once it overflows. Leaving this to
-     `justify-content: center` puts the first lines above the scroll range,
-     where they cannot be reached. */
-  .checkout-confirmation-aside-inner {
-    margin-block: auto;
+  /* Sticky inside that container rather than a second scroll container of its
+     own. That is what lets a wheel or a drag over the stamp scroll the details
+     beside it — as its own scroller the stamp would be a dead zone. */
+  .checkout-confirmation-stamp {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Flows at its natural height inside the stage; the stage scrolls it. */
+  .checkout-confirmation-aside {
+    min-height: 0;
+    overflow: visible;
   }
 }
 
