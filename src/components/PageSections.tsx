@@ -183,8 +183,10 @@ function CloseCarouselCard({
 }
 
 function CloseSectionCarousel({
+  className = '',
   onOpenProduct,
 }: {
+  className?: string;
   onOpenProduct?: (id: ProductId) => void;
 }) {
   const [slides] = useState(() => shuffleCollectionItems(COLLECTION_ITEMS, CLOSE_CAROUSEL_COUNT));
@@ -231,7 +233,7 @@ function CloseSectionCarousel({
 
   return (
     <aside
-      className="mt-10 md:mt-0 flex flex-col items-center justify-end bg-cream-plate/70 border border-canvas/[0.06] px-6 sm:px-8 lg:px-10 py-8 sm:py-10 lg:py-12"
+      className={`mt-10 md:mt-0 flex flex-col items-center justify-end bg-cream-plate/70 border border-canvas/[0.06] px-6 sm:px-8 lg:px-10 py-8 sm:py-10 lg:py-12 ${className}`}
       aria-label="Featured formulations"
       aria-live="polite"
       onMouseEnter={() => {
@@ -278,8 +280,11 @@ export function CloseSection({
 }) {
   return (
     <section className="w-full bg-cream px-5 sm:px-6 md:px-12 lg:px-14 xl:px-16 pt-10 pb-16 sm:pb-20 md:py-20 lg:py-24">
-      <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] md:items-end md:gap-12 lg:gap-16 xl:gap-20">
-        <div className="md:pb-2 lg:pb-4">
+      <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(260px,340px)_minmax(0,1fr)] lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] md:items-end md:gap-12 lg:gap-16 xl:gap-20">
+        {/* Copy stays first in the DOM — it is the primary content, it is the
+            right order stacked on mobile, and it is the order a screen reader
+            should hear. The columns are swapped visually with grid placement. */}
+        <div className="md:col-start-2 md:row-start-1 md:pb-2 lg:pb-4">
           <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-taupe-muted mb-4 md:mb-5">
             Flagship extrait
           </p>
@@ -308,7 +313,10 @@ export function CloseSection({
           </div>
         </div>
 
-        <CloseSectionCarousel onOpenProduct={onOpenProduct} />
+        <CloseSectionCarousel
+          onOpenProduct={onOpenProduct}
+          className="md:col-start-1 md:row-start-1"
+        />
       </div>
     </section>
   );
