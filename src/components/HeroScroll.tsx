@@ -16,7 +16,6 @@ import {
   restoreHomeScrollPosition,
 } from '../hooks/useLenis';
 import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
-import { BatchLedger } from './BatchLedger';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -111,7 +110,7 @@ function MobileHeroOrbit({
     if (reduced) return;
     let raf = 0;
     const step = () => {
-      angleRef.current += 0.042;
+      angleRef.current += 0.34;
       setFrame((n) => n + 1);
       raf = requestAnimationFrame(step);
     };
@@ -484,7 +483,7 @@ export function HeroScroll({
         opacity: startLanded ? 0 : 1,
         rotation: 0,
         rotateY: 0,
-        transformOrigin: '50% 90%',
+        transformOrigin: '50% 50%',
         force3D: !mobileMq.matches,
         autoRound: false, // subpixel — avoids vertical shimmer during Lenis scrub
         transformPerspective: mobileMq.matches ? 0 : 1200,
@@ -580,33 +579,8 @@ export function HeroScroll({
           duration: 1,
         });
 
-        // Ch3: return to center before rising into slot
-        tl.to(bottleAnimRef.current, {
-          x: 0,
-          y: 0,
-          scale: 1,
-          rotation: 0,
-          rotateY: 0,
-          transformOrigin: '50% 50%',
-          ease: 'none',
-          duration: 0.12,
-        });
-
-        tl.to(centerCardRef.current, { opacity: 1, duration: 0.22, ease: 'none' }, 2.06);
-        tl.fromTo(
-          leftCardRef.current,
-          { xPercent: -115, opacity: 0 },
-          { xPercent: 0, opacity: 1, duration: 0.4, ease: 'none' },
-          2.1,
-        );
-        tl.fromTo(
-          rightCardRef.current,
-          { xPercent: 115, opacity: 0 },
-          { xPercent: 0, opacity: 1, duration: 0.4, ease: 'none' },
-          2.1,
-        );
-
-        tl.call(refreshMetrics, [], 2.2);
+        // Ch3: straight from the docked lane into the slot, no detour.
+        tl.call(refreshMetrics, [], 1.95);
 
         tl.to(
           bottleAnimRef.current,
@@ -616,11 +590,24 @@ export function HeroScroll({
             scale: () => landing.scale,
             rotation: 0,
             rotateY: 0,
-            transformOrigin: '50% 50%',
-            ease: 'none',
-            duration: 0.55,
+            ease: 'power2.inOut',
+            duration: 0.9,
           },
-          2.22,
+          2.0,
+        );
+
+        tl.to(centerCardRef.current, { opacity: 1, duration: 0.28, ease: 'power1.out' }, 2.18);
+        tl.fromTo(
+          leftCardRef.current,
+          { xPercent: -115, opacity: 0 },
+          { xPercent: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
+          2.16,
+        );
+        tl.fromTo(
+          rightCardRef.current,
+          { xPercent: 115, opacity: 0 },
+          { xPercent: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
+          2.16,
         );
 
         tl.to(bottleAnimRef.current, { ease: 'none', duration: 0.45 });
@@ -854,20 +841,12 @@ export function HeroScroll({
 
           <HeroEditorial
             title="After dark."
-            body=""
-            align="left"
-            className="absolute left-5 bottom-[calc(2.75rem+env(safe-area-inset-bottom))] max-w-[15rem] md:hidden z-[25]"
-          />
-
-          <HeroEditorial
-            title="After dark."
             body="Cracked pepper up front, smoked cedar through the heart, aged oud in the dry-down. Built for presence, not compliments."
             align="right"
             className="absolute right-6 md:right-12 top-[20%] md:top-[24%] lg:top-[28%] hidden md:block"
           />
 
           <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-3 px-4">
-            <BatchLedger className="text-center" />
           </div>
         </div>
       </section>
@@ -884,21 +863,11 @@ export function HeroScroll({
         <HeroEditorial
           title="Compounded to order."
           body={`No. 03, 05, and 07, plus ${ADDITIONAL_FORMULATION_COUNT_WORD} more on the ledger. Each extrait distilled for a different hour, a different intent.`}
-          align="left"
-          className="relative z-[20] md:hidden mb-8 max-w-md"
-        />
-
-        <HeroEditorial
-          title="Compounded to order."
-          body={`No. 03, 05, and 07, plus ${ADDITIONAL_FORMULATION_COUNT_WORD} more on the ledger. Each extrait distilled for a different hour, a different intent.`}
           align="right"
           className="absolute right-6 md:right-12 top-[18%] md:top-[22%] lg:top-[26%] z-[20] hidden md:block"
         />
 
         <div className="relative z-[20] max-w-xl">
-          <p className="font-sans text-[9px] uppercase tracking-[0.28em] text-taupe-muted mb-4 md:hidden">
-            Nocturne
-          </p>
           <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] text-canvas tracking-tight leading-snug">
             Worn after dark.
           </h1>
@@ -1025,9 +994,6 @@ export function HeroScroll({
             <h2 className="font-serif text-[1.65rem] text-canvas tracking-tight leading-snug mt-2">
               Three extrait de parfums.
             </h2>
-            <p className="font-body-italic italic text-xs text-taupe-muted/90 font-light mt-2 leading-relaxed">
-              Tap to view notes. Add directly from here.
-            </p>
           </div>
 
           <div className="divide-y divide-neutral-300/70 border-y border-neutral-300/70">

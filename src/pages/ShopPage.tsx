@@ -1,12 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useShopLayoutMode } from '../hooks/useShopLayoutMode';
 import { useShopReady } from '../hooks/useShopReady';
 import { ShopGridLayout } from '../components/shop/ShopGridLayout';
-import { ShopLedgerLayout } from '../components/shop/ShopLedgerLayout';
-import { ShopGridSkeleton, ShopLedgerSkeleton } from '../components/shop/ShopSkeleton';
+import { ShopGridSkeleton } from '../components/shop/ShopSkeleton';
 
 export function ShopPage() {
-  const [mode] = useShopLayoutMode();
   const ready = useShopReady();
 
   return (
@@ -20,7 +17,7 @@ export function ShopPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            {mode === 'ledger' ? <ShopLedgerSkeleton /> : <ShopGridSkeleton />}
+            <ShopGridSkeleton />
           </motion.div>
         ) : (
           <motion.div
@@ -29,7 +26,7 @@ export function ShopPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
-            {mode === 'ledger' ? <ShopLedgerLayout /> : <ShopGridLayout />}
+            <ShopGridLayout />
           </motion.div>
         )}
       </AnimatePresence>

@@ -451,6 +451,66 @@ option {
   );
 }
 
+.footer-bottle-fly {
+  position: fixed;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 35;
+  will-change: transform, opacity;
+}
+
+.footer-bottle-fly-shadow {
+  position: fixed;
+  z-index: 34;
+  width: 9rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: rgba(13, 11, 10, 0.22);
+  filter: blur(18px);
+  opacity: 0;
+}
+
+.footer-bottle-landing {
+  /* Inert until it lands — an invisible bottle must not swallow clicks. */
+  pointer-events: none;
+}
+
+.footer-bottle-landing--settled {
+  pointer-events: auto;
+}
+
+.footer-bottle-landing--settled .footer-bottle-landing-img {
+  opacity: 1 !important;
+  transition: opacity 0.45s ease;
+}
+
+@media (max-width: 768px) {
+  /* This used to force opacity on unconditionally, which meant the bottle was
+     simply always there and could never arrive. It now waits for the footer,
+     and rises the last stretch instead of appearing. */
+  .footer-bottle-landing .footer-bottle-landing-img {
+    transform: translateY(30px);
+    transition:
+      opacity 0.75s ease,
+      transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .footer-bottle-landing--settled .footer-bottle-landing-img {
+    opacity: 0.92 !important;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .footer-bottle-landing .footer-bottle-landing-img {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* ── The Distiller ── */
 .distiller-panel {
   background: var(--color-cream-plate);

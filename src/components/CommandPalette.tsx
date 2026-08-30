@@ -46,7 +46,6 @@ export function CommandPalette() {
         to: ROUTES.cart,
       },
       { type: 'route', id: 'checkout', label: 'Checkout', to: ROUTES.checkout },
-      { type: 'route', id: 'about', label: 'About', to: ROUTES.about },
     ];
 
     const products: CommandAction[] = COLLECTION_ITEMS.map((item) => ({

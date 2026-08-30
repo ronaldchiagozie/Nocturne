@@ -18,7 +18,7 @@ function GridCardSkeleton({ index }: { index: number }) {
       style={{ animationDelay: `${index * 55}ms` }}
       aria-hidden
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-[#ebe7df]/80">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-[#ebe7df]/80">
         <Shimmer className="absolute inset-0" />
         {/* Bottle silhouette — matches real card image footprint */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -102,37 +102,5 @@ function LedgerSectionSkeleton({ index }: { index: number }) {
         </div>
       </div>
     </section>
-  );
-}
-
-export function ShopLedgerSkeleton() {
-  return (
-    <div className="relative" aria-busy="true" aria-label="Loading ledger">
-      <div className="relative mx-auto max-w-3xl lg:max-w-[42rem]">
-        <header className="px-4 sm:px-6 md:px-12 pt-10 sm:pt-12 pb-10 sm:pb-12 border-b border-canvas/10 space-y-3">
-          <Shimmer className="h-3 w-12 rounded-sm" />
-          <Shimmer className="h-10 w-[min(100%,20rem)] rounded-sm" />
-          <Shimmer className="h-4 w-full max-w-lg rounded-sm opacity-85" />
-          <Shimmer className="h-4 w-[90%] max-w-md rounded-sm opacity-70" />
-          <Shimmer className="h-3 w-36 rounded-sm opacity-60 mt-2" />
-        </header>
-
-        <LedgerSectionSkeleton index={0} />
-        <LedgerSectionSkeleton index={1} />
-      </div>
-
-      {/* Desktop stage bottle placeholder */}
-      <div
-        className="hidden lg:flex fixed right-[max(1.5rem,calc((100vw-42rem)/2-8rem))] top-1/2 -translate-y-1/2 w-[min(280px,22vw)] h-[min(420px,58vh)] items-end justify-center pointer-events-none"
-        aria-hidden
-      >
-        <div className="relative w-full h-full">
-          <Shimmer className="absolute inset-0 rounded-sm opacity-30" />
-          <div className="absolute inset-x-0 bottom-8 flex justify-center">
-            <div className="skeleton-bottle-shape w-[42%] aspect-[2/5] rounded-full opacity-15" />
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }

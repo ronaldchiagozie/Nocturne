@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useEffect, useRef, useState, type RefObject, type TouchEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
@@ -145,7 +145,10 @@ function CloseCarouselCard({
         pointerEvents: isActive ? 'auto' : 'none',
       }}
     >
-      <div className="relative w-full flex items-end justify-center min-h-[200px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[320px]">
+      <div
+        className="relative w-full flex items-end justify-center min-h-[200px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[320px]"
+        data-close-active-bottle={isActive ? 'true' : undefined}
+      >
         <img
           src={item.image}
           alt={`Nocturne No. ${item.formulationNumber} ${item.name}`}
@@ -185,9 +188,11 @@ function CloseCarouselCard({
 function CloseSectionCarousel({
   className = '',
   onOpenProduct,
+  bottleSourceRef,
 }: {
   className?: string;
   onOpenProduct?: (id: ProductId) => void;
+  bottleSourceRef?: RefObject<HTMLDivElement | null>;
 }) {
   const [slides] = useState(() => shuffleCollectionItems(COLLECTION_ITEMS, CLOSE_CAROUSEL_COUNT));
   const [activeIndex, setActiveIndex] = useState(0);
@@ -253,7 +258,10 @@ function CloseSectionCarousel({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="relative w-full min-h-[19rem] sm:min-h-[21rem] md:min-h-[22rem] lg:min-h-[24rem]">
+      <div
+        ref={bottleSourceRef}
+        className="relative w-full min-h-[19rem] sm:min-h-[21rem] md:min-h-[22rem] lg:min-h-[24rem]"
+      >
         {slides.map((item, index) => (
           <CloseCarouselCard
             key={item.variantId}
@@ -273,18 +281,20 @@ export function CloseSection({
   line,
   onOpenDistiller,
   onOpenProduct,
+  bottleSourceRef,
 }: {
   line: string;
   onOpenDistiller?: () => void;
   onOpenProduct?: (id: ProductId) => void;
+  bottleSourceRef?: RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 lg:px-14 xl:px-16 pt-10 pb-16 sm:pb-20 md:py-20 lg:py-24">
+    <section className="w-full bg-cream px-5 sm:px-6 md:px-12 lg:px-14 xl:px-16 pt-16 pb-16 sm:pt-24 sm:pb-20 md:pt-40 md:pb-28 lg:pt-52 lg:pb-32 xl:pt-60">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(260px,340px)_minmax(0,1fr)] lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] md:items-end md:gap-12 lg:gap-16 xl:gap-20">
         {/* Copy stays first in the DOM — it is the primary content, it is the
             right order stacked on mobile, and it is the order a screen reader
             should hear. The columns are swapped visually with grid placement. */}
-        <div className="md:col-start-2 md:row-start-1 md:pb-2 lg:pb-4">
+        <div className="md:col-start-1 md:row-start-1 md:pb-2 lg:pb-4">
           <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-taupe-muted mb-4 md:mb-5">
             Flagship extrait
           </p>
@@ -315,7 +325,8 @@ export function CloseSection({
 
         <CloseSectionCarousel
           onOpenProduct={onOpenProduct}
-          className="md:col-start-1 md:row-start-1"
+          bottleSourceRef={bottleSourceRef}
+          className="md:col-start-2 md:row-start-1"
         />
       </div>
     </section>

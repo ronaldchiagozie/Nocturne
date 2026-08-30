@@ -1,11 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { images } from '../assets/images';
 import { useSiteModals } from '../context/SiteModalsContext';
+import { useProductDetail } from '../context/ProductDetailContext';
+import { BOTTLE_VARIANTS } from '../data/bottleVariants';
+import type { ProductId } from '../data/products';
 import { LEGAL_LINKS, legalPath, ROUTES, type LegalSlug } from '../data/routes';
 
 const INSTAGRAM_URL = 'https://instagram.com';
 
-interface SiteFooterProps {}
+interface SiteFooterProps {
+  bottleLandingRef?: RefObject<HTMLDivElement | null>;
+}
 
 type FooterAction =
   | { type: 'route'; to: string; label: string }
@@ -13,11 +19,10 @@ type FooterAction =
   | { type: 'external'; href: string; label: string }
   | { type: 'home'; action: 'distill' | 'top'; label: string };
 
-/** OSSOU-style: About leads col 1; legal middle; meta right */
+/** Shop leads col 1; legal middle; meta right */
 const LINK_COLUMNS: { links: FooterAction[] }[] = [
   {
     links: [
-      { type: 'route', to: ROUTES.about, label: 'About' },
       { type: 'route', to: ROUTES.shop, label: 'Shop' },
       { type: 'route', to: ROUTES.cart, label: 'Cart' },
       { type: 'home', action: 'distill', label: 'The Distiller' },
@@ -97,10 +102,32 @@ function FooterLink({
   );
 }
 
-export function SiteFooter(_props: SiteFooterProps = {}) {
+export function SiteFooter({ bottleLandingRef }: SiteFooterProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { openDistiller } = useSiteModals();
+  const { openProduct } = useProductDetail();
+
+  // Which bottle is standing in the wordmark. The descent swaps this image at
+  // runtime, so track the attribute rather than assuming the default — the
+  // click has to open the formulation actually on screen.
+  const landingImgRef = useRef<HTMLImageElement>(null);
+  const [landedVariant, setLandedVariant] =
+    useState<(typeof BOTTLE_VARIANTS)[number]>(BOTTLE_VARIANTS[0]);
+
+  useEffect(() => {
+    const img = landingImgRef.current;
+    if (!img) return;
+    const sync = () => {
+      const src = img.getAttribute('src') ?? '';
+      const found = BOTTLE_VARIANTS.find((v) => src.endsWith(v.image));
+      if (found) setLandedVariant(found);
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(img, { attributes: true, attributeFilter: ['src'] });
+    return () => observer.disconnect();
+  }, []);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -219,11 +246,43 @@ export function SiteFooter(_props: SiteFooterProps = {}) {
       </div>
 
       {/* Tier 2 — full wordmark */}
-      <div className="site-footer-wordmark w-full bg-cream border-t border-canvas/[0.06]">
+      <div className="site-footer-wordmark relative w-full bg-cream border-t border-canvas/[0.06]">
         <div className="site-footer-wordmark-clip">
           <p className="site-footer-wordmark-text" aria-hidden>
             NOCTURNE
           </p>
+        </div>
+
+        {/* Outside the clip on purpose. The clip is `overflow: hidden` to crop
+            the wordmark, which also cropped the bottle; out here it can stand
+            taller than the wordmark band and break up over the footer. */}
+        <div
+          ref={bottleLandingRef}
+          className="footer-bottle-landing absolute left-1/2 bottom-[10%] z-[2] -translate-x-1/2"
+        >
+          <button
+            type="button"
+            onClick={() =>
+              openProduct(landedVariant.productId as ProductId, {
+                variantId: landedVariant.id,
+                productLabel: `No. ${landedVariant.formulationNumber}`,
+                productTitle: landedVariant.name,
+                image: landedVariant.image,
+              })
+            }
+            aria-label={`View No. ${landedVariant.formulationNumber} ${landedVariant.name}`}
+            className="block cursor-pointer"
+          >
+            <img
+              ref={landingImgRef}
+              src={images.no07}
+              alt=""
+              width={671}
+              height={1200}
+              className="footer-bottle-landing-img h-[clamp(220px,42vw,460px)] w-auto object-contain object-bottom opacity-0"
+              decoding="async"
+            />
+          </button>
         </div>
       </div>
     </footer>

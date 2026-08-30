@@ -2,7 +2,6 @@
 export const ROUTES = {
   home: '/',
   shop: '/shop',
-  about: '/about',
   cart: '/cart',
   checkout: '/checkout',
 } as const;
@@ -23,7 +22,6 @@ export function isLegalSlug(topic: string | undefined): topic is LegalSlug {
 export const SITEMAP_PATHS: readonly string[] = [
   ROUTES.home,
   ROUTES.shop,
-  ROUTES.about,
   ROUTES.cart,
   ROUTES.checkout,
   ...LEGAL_SLUGS.map((slug) => legalPath(slug)),

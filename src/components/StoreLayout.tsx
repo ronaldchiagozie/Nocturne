@@ -2,7 +2,6 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { cartTargetProps, useCartArrival } from '../context/CartFlightContext';
 import { ToastViewport } from './ToastViewport';
-import { ShopLayoutToggle } from './shop/ShopLayoutToggle';
 import { SiteFooter } from './SiteFooter';
 
 interface StoreLayoutProps {
@@ -13,7 +12,6 @@ function EditorialHeader({ cartCount }: { cartCount: number }) {
   const location = useLocation();
   const cartPulsing = useCartArrival();
   const isShop = location.pathname === '/shop';
-  const isAbout = location.pathname === '/about';
 
   const navLink = (active: boolean) =>
     `inline-flex items-center min-h-[44px] font-sans text-[11px] sm:text-xs transition-colors ${
@@ -28,9 +26,6 @@ function EditorialHeader({ cartCount }: { cartCount: number }) {
         <Link to="/shop" className={navLink(isShop)}>
           Shop
         </Link>
-        <Link to="/about" className={navLink(isAbout)}>
-          About
-        </Link>
       </nav>
 
       <Link
@@ -42,7 +37,6 @@ function EditorialHeader({ cartCount }: { cartCount: number }) {
       </Link>
 
       <nav className="flex items-center gap-3 sm:gap-6 md:gap-8 justify-self-end">
-        {isShop && <ShopLayoutToggle />}
         <Link
           to="/cart"
           {...cartTargetProps}
@@ -64,12 +58,11 @@ export function StoreLayout({ children }: StoreLayoutProps) {
   const { cartCount } = useStore();
   const cartPulsing = useCartArrival();
   const location = useLocation();
-  const isEditorial = location.pathname === '/shop' || location.pathname === '/about';
+  const isEditorial = location.pathname === '/shop';
   const isStoreRoute =
     (location.pathname.startsWith('/shop') ||
       location.pathname.startsWith('/cart') ||
-      location.pathname.startsWith('/legal') ||
-      location.pathname === '/about') &&
+      location.pathname.startsWith('/legal')) &&
     !location.pathname.startsWith('/checkout');
 
   const storeLink = (active: boolean) =>
@@ -107,9 +100,6 @@ export function StoreLayout({ children }: StoreLayoutProps) {
               <nav className="flex items-center gap-3 sm:gap-6 md:gap-8">
                 <Link to="/shop" className={storeLink(location.pathname === '/shop')}>
                   Shop
-                </Link>
-                <Link to="/about" className={storeLink(location.pathname === '/about')}>
-                  About
                 </Link>
                 <Link
                   to="/cart"
