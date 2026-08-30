@@ -55,6 +55,9 @@ function cardOverride(card: (typeof CARDS)[number]): CheckoutOverride {
 
 type HeroCard = (typeof CARDS)[number];
 
+/** How far above the slot the bottle rises before dropping into it. */
+const HERO_APPROACH_LIFT = 165;
+
 const MOBILE_ORBIT_RX_VW = 38;
 /** Symmetric vertical radius — equal arc above/below center */
 const MOBILE_ORBIT_RY_VH = 30;
@@ -579,35 +582,52 @@ export function HeroScroll({
           duration: 1,
         });
 
-        // Ch3: straight from the docked lane into the slot, no detour.
+        // Ch3, part 1: sweep back to the slot's column and rise above it. Going
+        // straight from the docked lane into the slot meant crossing the
+        // right-hand card on the way in, so the bottle arrived sideways and
+        // passed over the bottle already sitting there.
         tl.call(refreshMetrics, [], 1.95);
 
         tl.to(
           bottleAnimRef.current,
           {
             x: () => landing.x,
-            y: () => landing.y,
-            scale: () => landing.scale,
+            y: () => landing.y - HERO_APPROACH_LIFT,
+            scale: () => landing.scale * 1.16,
             rotation: 0,
             rotateY: 0,
             ease: 'power2.inOut',
-            duration: 0.9,
+            duration: 0.46,
           },
           2.0,
         );
 
-        tl.to(centerCardRef.current, { opacity: 1, duration: 0.28, ease: 'power1.out' }, 2.18);
+        // Part 2: settle straight down into the slot, so it lands from above.
+        tl.to(
+          bottleAnimRef.current,
+          {
+            y: () => landing.y,
+            scale: () => landing.scale,
+            ease: 'power2.out',
+            duration: 0.62,
+          },
+          2.46,
+        );
+
+        // The cards arrive once the bottle is back in the centre column and no
+        // longer travelling across their lanes.
+        tl.to(centerCardRef.current, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 2.36);
         tl.fromTo(
           leftCardRef.current,
           { xPercent: -115, opacity: 0 },
           { xPercent: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-          2.16,
+          2.42,
         );
         tl.fromTo(
           rightCardRef.current,
           { xPercent: 115, opacity: 0 },
           { xPercent: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-          2.16,
+          2.42,
         );
 
         tl.to(bottleAnimRef.current, { ease: 'none', duration: 0.45 });
