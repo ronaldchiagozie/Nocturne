@@ -33,7 +33,7 @@ const LEGAL: Record<
     title: 'Privacy',
     body: [
       'We collect only what is needed to fulfil your order: name, contact details, and delivery address.',
-      'We use privacy-friendly analytics (Vercel Analytics and, when enabled, Google Analytics) to understand site traffic — pages visited, approximate location, and device type. No personal profiles are sold.',
+      'We use privacy-friendly analytics (Vercel Analytics and, when enabled, Google Analytics) to understand site traffic, such as pages visited, approximate location, and device type. No personal profiles are sold.',
       'Email subscribers receive batch and restock updates. You may unsubscribe at any time.',
       'We do not sell your data. Order details are stored to fulfil your purchase. Online card payment will be added soon; until then, payment is arranged by email after you place an order.',
     ],

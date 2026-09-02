@@ -242,7 +242,7 @@ export function DistillerViewport({
                     <span />
                   </div>
                   <p className="font-body-italic italic text-sm text-taupe-muted font-light leading-relaxed">
-                    Your formulation takes shape as you answer.
+                    Three answers name one extrait.
                   </p>
                 </>
               ) : (
@@ -252,8 +252,8 @@ export function DistillerViewport({
                   </p>
                   <p className="font-body-italic italic text-sm text-taupe-muted font-light leading-relaxed">
                     {hoverOrb
-                      ? 'Previewing compound shift.'
-                      : 'Each choice shifts the compound toward your match.'}
+                      ? 'Previewing this answer.'
+                      : 'Each answer narrows the eight.'}
                   </p>
                 </>
               )}

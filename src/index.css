@@ -511,6 +511,61 @@ option {
   }
 }
 
+@keyframes home-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.home-marquee-track {
+  width: max-content;
+  animation: home-marquee 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-marquee-track {
+    animation: none;
+  }
+}
+
+/* Ingredient parallax stack */
+.ingredient-parallax-frame {
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+.ingredient-parallax-layer {
+  will-change: transform, opacity;
+  transform-origin: 50% 50%;
+}
+
+.ingredient-parallax-img {
+  backface-visibility: hidden;
+}
+
+@media (max-width: 768px) {
+  .ingredient-parallax-track {
+    height: auto;
+    min-height: 0;
+  }
+
+  .ingredient-parallax-track > div {
+    position: relative;
+    min-height: min(72vw, 420px);
+    height: auto;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .ingredient-parallax-frame {
+    aspect-ratio: 4 / 5;
+    max-height: 78dvh;
+  }
+}
+
 /* ── The Distiller ── */
 .distiller-panel {
   background: var(--color-cream-plate);
@@ -610,50 +665,76 @@ option {
   border-color: rgba(13, 11, 10, 0.12);
 }
 
-.distiller-step-rail {
+/* Distiller progress: a ruled form header, not a dot wizard. The rule draws
+   left to right as each step is answered, the same reveal the collection index
+   uses, so the two read as the same hand. */
+.distiller-rail {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: clamp(0.75rem, 3vw, 1.75rem);
 }
 
-.distiller-step-node {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+.distiller-rail-step {
+  position: relative;
   min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(13, 11, 10, 0.12);
 }
 
-.distiller-step-dot {
-  display: block;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(13, 11, 10, 0.1);
-  transition: background 0.35s ease;
+.distiller-rail-step::after {
+  content: '';
+  position: absolute;
+  inset: -1px 0 auto 0;
+  height: 1px;
+  background: var(--color-canvas);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.distiller-step-label {
+.distiller-rail-step.is-done::after,
+.distiller-rail-step.is-active::after {
+  transform: scaleX(1);
+}
+
+.distiller-rail-step.is-active::after {
+  background: var(--color-amber-accent);
+}
+
+.distiller-rail-index {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(107, 101, 92, 0.7);
+  tab-size: 2;
+}
+
+.distiller-rail-label {
   font-family: var(--font-sans);
-  font-size: 8px;
-  letter-spacing: 0.16em;
+  font-size: 9px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(107, 101, 92, 0.65);
+  color: rgba(13, 11, 10, 0.4);
   transition: color 0.35s ease;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.distiller-step-active .distiller-step-dot {
-  background: rgba(13, 11, 10, 0.45);
-}
-
-.distiller-step-active .distiller-step-label {
+.distiller-rail-step.is-active .distiller-rail-label,
+.distiller-rail-step.is-done .distiller-rail-label {
   color: var(--color-canvas);
 }
 
-.distiller-step-done .distiller-step-dot {
-  background: var(--color-canvas);
-}
-
-.distiller-step-done .distiller-step-label {
-  color: rgba(13, 11, 10, 0.55);
+@media (prefers-reduced-motion: reduce) {
+  .distiller-rail-step::after {
+    transition: none;
+  }
 }
 
 .distiller-option {

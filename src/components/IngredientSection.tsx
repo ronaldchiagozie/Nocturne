@@ -316,7 +316,7 @@ export function IngredientSection({ onCheckout }: IngredientSectionProps) {
                 className="shrink-0 mt-6 text-left group cursor-pointer focus:outline-none"
               >
                 <span className="block font-sans text-[10px] uppercase tracking-[0.25em] text-cream group-hover:text-cream/80 transition-colors">
-                  [ add to cart — batch no. 07 ]
+                  [ add to cart · batch no. 07 ]
                 </span>
                 <span className="block font-mono text-[11px] tabular-nums text-cream mt-3 group-hover:text-cream/80 transition-colors">
                   ₦180,000 / $120 →

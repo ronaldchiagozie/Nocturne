@@ -31,7 +31,7 @@ const DEFAULT_AURA: AuraConfig = {
   hex: '#D4A373',
   opacity: 0.06,
   sizePx: 110,
-  label: 'STANDBY',
+  label: 'BENCH',
 };
 
 const ANSWER_INDEX: Record<string, number> = {
@@ -99,7 +99,7 @@ export function resolveActiveAura(
 export function getCompilationLevel(answers: Partial<DistillerAnswers>, isResult: boolean): string {
   if (isResult) return '100%';
   const count = [answers.hour, answers.environment, answers.intent].filter(Boolean).length;
-  if (count === 0) return 'Calculating...';
+  if (count === 0) return '0%';
   if (count === 1) return '33%';
   if (count === 2) return '66%';
   return '100%';
@@ -121,16 +121,16 @@ export function getProfileScore(answers: Partial<DistillerAnswers>): number {
 export function getProfileScoreLabel(answers: Partial<DistillerAnswers>): string {
   const score = getProfileScore(answers);
   const filled = [answers.hour, answers.environment, answers.intent].filter(Boolean).length;
-  if (filled === 0) return 'AWAITING INPUT';
-  return `S_PROFILE: ${score}`;
+  if (filled === 0) return 'AWAITING ANSWERS';
+  return `PROFILE · ${score}`;
 }
 
 export type DistillerStep = 'intro' | 0 | 1 | 2 | 'result';
 
 export function getStationStatus(step: DistillerStep, isResult: boolean): string {
-  if (isResult) return 'COMPLETE // FORMULATION LOCKED';
-  if (step === 'intro') return 'STANDBY // PIPELINE PRIMED';
-  return 'ACTIVE // DISTILLATION PIPELINE INITIATED';
+  if (isResult) return 'FORMULATION // MATCHED';
+  if (step === 'intro') return 'BENCH // READY';
+  return 'COMPOUNDING // IN PROGRESS';
 }
 
 export function isHourOption(id: string): id is DistillerHour {

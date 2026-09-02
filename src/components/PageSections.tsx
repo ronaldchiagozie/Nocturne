@@ -21,45 +21,73 @@ interface RepeatedLinesScrollProps {
 }
 
 /**
- * Everyday^ device: identical line over three full-bleed photographs.
- * One pinned viewport. Image crossfades on scroll, text stays overlaid.
- * Never stacks image above a separate text band.
+ * Pinned parallax stack — three ingredient frames inside a 1770px rounded stage.
+ * Layers slide at different depths and crossfade as you scrub.
  */
 export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
-  const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useGSAP(
     () => {
-      if (!trackRef.current || !pinRef.current) return;
-      if (prefersReducedMotion() || shouldDisableScrollPinning()) return;
+      if (!trackRef.current || !pinRef.current || !frameRef.current) return;
 
-      const layers = imageRefs.current.filter(Boolean) as HTMLDivElement[];
+      const layers = layerRefs.current.filter(Boolean) as HTMLDivElement[];
       if (layers.length === 0) return;
 
-      gsap.set(layers, { opacity: 0 });
-      gsap.set(layers[0], { opacity: 1 });
+      if (prefersReducedMotion() || shouldDisableScrollPinning()) {
+        gsap.set(layers, { clearProps: 'all' });
+        gsap.set(layers[0], { opacity: 1 });
+        return;
+      }
+
+      gsap.set(layers, { opacity: 0, yPercent: 0, scale: 1 });
+      gsap.set(layers[0], { opacity: 1, yPercent: 0, scale: 1, zIndex: 3 });
+      gsap.set(layers[1], { opacity: 0, yPercent: 10, scale: 1.04, zIndex: 2 });
+      gsap.set(layers[2], { opacity: 0, yPercent: 18, scale: 1.08, zIndex: 1 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: trackRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0.6,
+          scrub: 1.1,
           pin: pinRef.current,
           anticipatePin: 1,
+          invalidateOnRefresh: true,
         },
       });
 
-      tl.to(layers[0], { opacity: 1, duration: 0.28, ease: 'none' }, 0);
-      tl.to(layers[0], { opacity: 0, duration: 0.12, ease: 'none' }, 0.28);
-      tl.to(layers[1], { opacity: 1, duration: 0.12, ease: 'none' }, 0.28);
+      // Layer 0 — oud: holds, lifts, fades as next slides over
+      tl.to(
+        layers[0],
+        { yPercent: -14, scale: 1.05, opacity: 0, ease: 'none', duration: 0.34 },
+        0,
+      );
 
-      tl.to(layers[1], { opacity: 1, duration: 0.28, ease: 'none' }, 0.4);
-      tl.to(layers[1], { opacity: 0, duration: 0.12, ease: 'none' }, 0.68);
-      tl.to(layers[2], { opacity: 1, duration: 0.12, ease: 'none' }, 0.68);
-      tl.to(layers[2], { opacity: 1, duration: 0.32, ease: 'none' }, 0.8);
+      // Layer 1 — citrus: rises through the stack
+      tl.fromTo(
+        layers[1],
+        { yPercent: 12, scale: 1.06, opacity: 0, zIndex: 2 },
+        { yPercent: -6, scale: 1.02, opacity: 1, zIndex: 4, ease: 'none', duration: 0.34 },
+        0.18,
+      );
+      tl.to(
+        layers[1],
+        { yPercent: -16, scale: 1.04, opacity: 0, zIndex: 2, ease: 'none', duration: 0.32 },
+        0.52,
+      );
+
+      // Layer 2 — pepper: final frame lands on top
+      tl.fromTo(
+        layers[2],
+        { yPercent: 20, scale: 1.1, opacity: 0, zIndex: 1 },
+        { yPercent: 0, scale: 1, opacity: 1, zIndex: 5, ease: 'none', duration: 0.38 },
+        0.48,
+      );
+      tl.to(layers[2], { yPercent: -4, scale: 1.02, ease: 'none', duration: 0.14 }, 0.86);
 
       return () => {
         tl.scrollTrigger?.kill();
@@ -70,38 +98,53 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   );
 
   return (
-    <section ref={trackRef} className="relative h-[250vh] w-full">
-      <div ref={pinRef} className="sticky top-0 h-[100dvh] w-full overflow-hidden">
-        {/* Full-bleed photographs, stacked, crossfade on scroll */}
-        {SLIDES.map((slide, idx) => (
-          <div
-            key={slide.image}
-            ref={(el) => {
-              imageRefs.current[idx] = el;
-            }}
-            className="absolute inset-0"
-            style={{ opacity: idx === 0 ? 1 : 0 }}
-          >
-            <img
-              src={images[slide.image]}
-              alt={slide.alt}
-              className="w-full h-full object-cover"
-            />
+    <section
+      ref={trackRef}
+      className="ingredient-parallax-track relative h-[280vh] w-full bg-cream border-t border-canvas/[0.06]"
+    >
+      <div
+        ref={pinRef}
+        className="sticky top-0 flex h-[100dvh] w-full items-center justify-center px-4 sm:px-6 md:px-10 lg:px-12"
+      >
+        <div
+          ref={frameRef}
+          className="ingredient-parallax-frame relative w-full max-w-[1770px] aspect-[16/10] sm:aspect-[16/9] overflow-hidden rounded-[1.125rem] md:rounded-[1.375rem] lg:rounded-[1.5rem] shadow-[0_32px_80px_rgba(13,11,10,0.12)]"
+        >
+          {SLIDES.map((slide, idx) => (
             <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(to top, rgba(13,11,10,0.55) 0%, transparent 45%)',
+              key={slide.image}
+              ref={(el) => {
+                layerRefs.current[idx] = el;
               }}
-            />
-          </div>
-        ))}
+              className="ingredient-parallax-layer absolute inset-0 overflow-hidden rounded-[inherit]"
+              style={{ opacity: idx === 0 ? 1 : 0 }}
+            >
+              <img
+                src={images[slide.image]}
+                alt={slide.alt}
+                className="ingredient-parallax-img h-[118%] w-full object-cover object-center will-change-transform"
+                loading={idx === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+            </div>
+          ))}
 
-        {/* Same line, quiet, overlaid, never in a separate band */}
-        <div className="absolute inset-0 z-10 flex flex-col justify-end px-6 md:px-12 pb-20 md:pb-28 pointer-events-none">
-          <p className="font-serif text-lg md:text-xl text-cream tracking-tight leading-snug max-w-md">
-            {line}
-          </p>
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[inherit] z-[6]"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(13,11,10,0.62) 0%, rgba(13,11,10,0.08) 42%, transparent 68%)',
+            }}
+          />
+
+          <div className="absolute inset-x-0 bottom-0 z-[7] px-6 sm:px-10 md:px-14 pb-8 sm:pb-10 md:pb-12 pointer-events-none">
+            <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-cream/55 mb-3 md:mb-4">
+              Raw material · {SLIDES.length} notes
+            </p>
+            <p className="font-serif text-lg sm:text-xl md:text-2xl text-cream tracking-tight leading-snug max-w-md">
+              {line}
+            </p>
+          </div>
         </div>
       </div>
     </section>

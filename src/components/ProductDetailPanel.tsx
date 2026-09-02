@@ -6,6 +6,8 @@ import { useStore } from '../context/StoreContext';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { cartTargetProps, useCartArrival } from '../context/CartFlightContext';
 import { resolveProductImage } from '../utils/productDisplay';
+import { getBottleVariant } from '../data/bottleVariants';
+import { glowRgb } from './shop/shopLedgerUtils';
 import type { CheckoutOverride } from '../types';
 
 interface ProductDetailPanelProps {
@@ -31,6 +33,7 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
     product?.title ??
     '';
   const image = override?.image ?? (productId ? resolveProductImage(productId, override) : '');
+  const variant = getBottleVariant(override?.variantId ?? product?.variantId ?? 'v01');
   const imageKey = `${productId ?? 'none'}-${override?.variantId ?? 'default'}-${image}`;
 
   return (
@@ -47,6 +50,16 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
             transition={{ duration: 0.28 }}
             onClick={onClose}
             className="absolute inset-0 bg-canvas/30 backdrop-blur-[6px] cursor-pointer"
+          />
+
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 bottom-[min(52dvh,460px)] sm:bottom-[min(50dvh,440px)]"
+            style={{
+              background: `radial-gradient(ellipse 46% 46% at 50% 62%, rgba(${glowRgb(
+                variant.glow,
+              )}, 0.24) 0%, transparent 70%)`,
+            }}
           />
 
           {/* Hero bottle — floats above sheet */}
@@ -131,9 +144,27 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
                   {product.character}
                 </p>
 
-                <p className="font-mono text-[8px] uppercase tracking-[0.12em] text-taupe-muted mt-5 sm:mt-6 leading-relaxed">
-                  {product.notes.top} · {product.notes.heart} · {product.notes.base}
-                </p>
+                <dl className="mt-6 sm:mt-7 border-t border-canvas/10">
+                  {(
+                    [
+                      ['Top', product.notes.top],
+                      ['Heart', product.notes.heart],
+                      ['Base', product.notes.base],
+                    ] as const
+                  ).map(([tier, note]) => (
+                    <div
+                      key={tier}
+                      className="flex items-baseline gap-4 sm:gap-6 py-2.5 border-b border-canvas/[0.07]"
+                    >
+                      <dt className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted/70 w-14 shrink-0">
+                        {tier}
+                      </dt>
+                      <dd className="font-sans text-[12px] sm:text-[13px] text-canvas leading-snug">
+                        {note}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
 
                 <div className="mt-6 sm:mt-8 pt-6 border-t border-canvas/10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -153,7 +184,7 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
                       type="button"
                       disabled={soldOut}
                       onClick={() => add(product.id, { override, from: bottleRef.current })}
-                      className="font-sans text-[9px] uppercase tracking-[0.24em] text-canvas hover:text-taupe-muted transition-colors cursor-pointer disabled:opacity-40 min-h-[44px] inline-flex items-center justify-center"
+                      className="font-sans text-[9px] uppercase tracking-[0.24em] text-canvas border border-canvas/25 hover:border-canvas transition-colors cursor-pointer disabled:opacity-40 min-h-[44px] px-6 py-3 rounded-full inline-flex items-center justify-center w-full sm:w-auto"
                     >
                       Add to cart
                     </button>

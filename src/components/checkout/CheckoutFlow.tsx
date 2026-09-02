@@ -616,7 +616,7 @@ export function CheckoutFlow({ onOrderCreated, onComplete }: CheckoutFlowProps) 
             Complete your order
           </h1>
           <p className="font-body-italic italic text-[0.9375rem] sm:text-lg text-taupe-muted font-light mt-3 sm:mt-4 leading-relaxed max-w-xl">
-            Review your details and place the order. Payment is arranged separately — we&apos;ll
+            Review your details and place the order. Payment is arranged separately, and we&apos;ll
             email you with next steps from the atelier.
           </p>
 

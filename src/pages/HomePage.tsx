@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { HeroScroll } from '../components/HeroScroll';
 import { CloseSection } from '../components/PageSections';
+import { HomeMiddleSections } from '../components/HomeSections';
 import { FooterBottleDescent } from '../components/FooterBottleDescent';
 import { SiteFooter } from '../components/SiteFooter';
 import { ApertureIntro } from '../components/ApertureIntro';
@@ -36,7 +37,6 @@ function markIntroSeen(): void {
   try {
     localStorage.setItem(INTRO_SEEN_KEY, '1');
   } catch {
-    /* ignore */
   }
 }
 
@@ -138,6 +138,8 @@ export function HomePage() {
         onOpenDistiller={openDistiller}
         onOpenProductDetail={openProduct}
       />
+
+      <HomeMiddleSections repeatedLine={REPEATED_LINE} onOpenDistiller={openDistiller} />
 
       <CloseSection
         line={REPEATED_LINE}

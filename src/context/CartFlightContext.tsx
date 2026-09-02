@@ -12,25 +12,13 @@ import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { prefersReducedMotion } from '../hooks/useMotionPreference';
 
-/**
- * Add-to-cart flight: a copy of the bottle arcs from wherever it was added
- * into whichever cart affordance is currently on screen, which then pulses to
- * acknowledge it.
- *
- * Landing sites opt in with the `data-cart-target` attribute rather than
- * registering through a ref, because the app has three different ones —
- * Navigation's "Cart", StoreLayout's "Bag" (shop/about) and its "Cart"
- * (cart/legal) — and which is mounted depends on the route. Querying at
- * launch time picks the visible one without any registration lifecycle.
- */
+
 
 export const CART_TARGET_ATTR = 'data-cart-target';
 
-/** Spread onto a cart affordance to make it a landing site. */
 export const cartTargetProps = { [CART_TARGET_ATTR]: '' } as const;
 
 interface FlyRequest {
-  /** Element the bottle appears to leave. No element, no flight. */
   from: HTMLElement | null;
   image: string;
 }
@@ -72,6 +60,22 @@ function isOnScreen(el: HTMLElement): boolean {
   return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
 }
 
+/** The biggest visible copy of this bottle — the one the eye is already on. */
+function findBottleOnScreen(image: string): HTMLElement | null {
+  const file = image.split('/').pop();
+  if (!file) return null;
+
+  const visible = Array.from(document.querySelectorAll<HTMLImageElement>('img')).filter((img) => {
+    if (!(img.getAttribute('src') ?? '').endsWith(file)) return false;
+    if (!isOnScreen(img)) return false;
+    const style = window.getComputedStyle(img);
+    return style.visibility !== 'hidden' && Number(style.opacity) > 0.15;
+  });
+
+  visible.sort((a, b) => b.getBoundingClientRect().height - a.getBoundingClientRect().height);
+  return visible[0] ?? null;
+}
+
 function findCartTarget(): HTMLElement | null {
   // A cart inside an open dialog wins. The page header is behind the modal
   // backdrop, and because the modal locks scrolling — which disables
@@ -105,12 +109,15 @@ export function CartFlightProvider({ children }: { children: ReactNode }) {
       return false;
     };
 
-    if (!image || !from || prefersReducedMotion()) return acknowledge();
+    if (!image || prefersReducedMotion()) return acknowledge();
+
+    const source = from ?? findBottleOnScreen(image);
+    if (!source) return acknowledge();
 
     const target = findCartTarget();
     if (!target) return acknowledge();
 
-    const src = from.getBoundingClientRect();
+    const src = source.getBoundingClientRect();
     if (src.width === 0 || src.height === 0) return acknowledge();
 
     const dst = target.getBoundingClientRect();

@@ -100,7 +100,7 @@ export function FormulaSheet({ onCheckout }: FormulaSheetProps) {
             className="group text-left cursor-pointer focus:outline-none min-h-[44px]"
           >
             <span className="block font-sans text-[10px] uppercase tracking-[0.25em] text-canvas group-hover:text-canvas/80 transition-colors duration-300">
-              [ add to cart — batch no. 07 ]
+              [ add to cart · batch no. 07 ]
             </span>
             <span className="block font-mono text-[11px] tabular-nums text-canvas group-hover:text-canvas/80 transition-colors duration-300 mt-4">
               ₦180,000 / $120 →

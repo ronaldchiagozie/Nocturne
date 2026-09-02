@@ -3,10 +3,21 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useStore } from '../context/StoreContext';
 import { useProductDetail } from '../context/ProductDetailContext';
+import { useCartFlight } from '../context/CartFlightContext';
+import type { ProductId } from '../data/products';
 import { formatNgn, formatUsd, SHIPPING_NGN, UNIT_PRICE_USD } from '../data/pricing';
 
 export function CartPage() {
-  const { cart, cartTotalNgn, updateCartQty, removeFromCart } = useStore();
+  const { cart, cartTotalNgn, updateCartQty, removeFromCart, getAvailable } = useStore();
+  const { flyToCart } = useCartFlight();
+
+  // The "+" is this page's add-to-cart, so it flies like every other one. The
+  // source is left to the flight to resolve: it finds the row's own bottle.
+  const addOne = (cartKey: string, qty: number, productId: ProductId, image: string) => {
+    if ((getAvailable(productId) ?? 0) <= 0) return;
+    updateCartQty(cartKey, qty + 1);
+    flyToCart({ from: null, image });
+  };
   const { openProduct } = useProductDetail();
   const [summaryOpen, setSummaryOpen] = useState(false);
   const bottleCount = cart.reduce((n, i) => n + i.qty, 0);
@@ -149,7 +160,9 @@ export function CartPage() {
                           <span className="cart-qty-value">{item.qty}</span>
                           <button
                             type="button"
-                            onClick={() => updateCartQty(item.cartKey, item.qty + 1)}
+                            onClick={() =>
+                              addOne(item.cartKey, item.qty, item.productId, item.image)
+                            }
                             className="cart-qty-btn"
                             aria-label="Increase quantity"
                           >
