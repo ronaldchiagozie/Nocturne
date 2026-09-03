@@ -8,7 +8,6 @@ import {
 import {
   DistillerStep,
   getAuraForOption,
-  getCompilationLevel,
   getStationStatus,
   resolveActiveAura,
 } from '../data/distillerVisuals';
@@ -131,14 +130,13 @@ export function DistillerViewport({
       <div className="distiller-chamber-vignette pointer-events-none" aria-hidden />
       <div className="distiller-chamber-grid pointer-events-none" aria-hidden />
 
-      <div className="relative z-20 flex items-center justify-between gap-4 px-5 sm:px-8 md:px-10 pt-5 sm:pt-6">
-        <p className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-taupe-muted/90 truncate">
-          {getStationStatus(step, isResult)}
-        </p>
-        <p className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.16em] text-taupe-muted tabular-nums shrink-0">
-          {getCompilationLevel(answers, isResult)}
-        </p>
-      </div>
+      {step !== 'intro' && (
+        <div className="relative z-20 flex items-center justify-between gap-4 px-5 sm:px-8 md:px-10 pt-5 sm:pt-6">
+          <p className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-taupe-muted/90 truncate">
+            {getStationStatus(step, isResult)}
+          </p>
+        </div>
+      )}
 
       <div className="relative flex flex-1 items-center justify-center px-6 sm:px-10 py-6 sm:py-8">
         {!isResult && (
@@ -230,22 +228,13 @@ export function DistillerViewport({
               transition={{ duration: 0.4 }}
               className="relative z-10 flex flex-col items-center gap-5 text-center max-w-[16rem] sm:max-w-xs px-2"
             >
-              {step === 'intro' ? (
+              {step === 'intro' ? null : (
                 <>
-                  <div className="distiller-intro-glyph" aria-hidden>
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <p className="font-body-italic italic text-sm text-taupe-muted font-light leading-relaxed">
-                    Three answers name one extrait.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-taupe-muted">
-                    {hoverOrb ? hoverOrb.label : primaryAura.label}
-                  </p>
+                  {(hoverOrb || answerCount > 0) && (
+                    <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-taupe-muted">
+                      {hoverOrb ? hoverOrb.label : primaryAura.label}
+                    </p>
+                  )}
                   <p className="font-body-italic italic text-sm text-taupe-muted font-light leading-relaxed">
                     {hoverOrb
                       ? 'Previewing this answer.'

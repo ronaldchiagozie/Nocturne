@@ -86,9 +86,6 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
               <p className="font-mono text-[9px] tracking-[0.28em] uppercase text-taupe-muted">
                 The Distiller
               </p>
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-taupe-muted/70 mt-1.5 hidden sm:block">
-                Three questions
-              </p>
             </div>
             <button
               type="button"
@@ -175,10 +172,7 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
                       transition={{ duration: 0.3 }}
                       className="max-w-lg w-full"
                     >
-                      <p className="font-mono text-[9px] tracking-[0.22em] text-taupe-muted uppercase">
-                        {String((step as number) + 1).padStart(2, '0')} / 03
-                      </p>
-                      <h2 className="font-serif text-[clamp(1.55rem,3.5vw,2.35rem)] tracking-tight leading-snug text-canvas mt-3">
+                      <h2 className="font-serif text-[clamp(1.55rem,3.5vw,2.35rem)] tracking-tight leading-snug text-canvas">
                         {currentQuestion.title}
                       </h2>
                       <p className="font-body-italic italic text-sm text-taupe-muted font-light mt-3 mb-8 sm:mb-10">

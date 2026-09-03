@@ -96,15 +96,6 @@ export function resolveActiveAura(
   return DEFAULT_AURA;
 }
 
-export function getCompilationLevel(answers: Partial<DistillerAnswers>, isResult: boolean): string {
-  if (isResult) return '100%';
-  const count = [answers.hour, answers.environment, answers.intent].filter(Boolean).length;
-  if (count === 0) return '0%';
-  if (count === 1) return '33%';
-  if (count === 2) return '66%';
-  return '100%';
-}
-
 export function getProfileScore(answers: Partial<DistillerAnswers>): number {
   const wHour = 3;
   const wEnv = 2;
@@ -127,9 +118,9 @@ export function getProfileScoreLabel(answers: Partial<DistillerAnswers>): string
 export type DistillerStep = 'intro' | 0 | 1 | 2 | 'result';
 
 export function getStationStatus(step: DistillerStep, isResult: boolean): string {
-  if (isResult) return 'FORMULATION // MATCHED';
-  if (step === 'intro') return 'BENCH // READY';
-  return 'COMPOUNDING // IN PROGRESS';
+  if (isResult) return 'FORMULATION · MATCHED';
+  if (step === 'intro') return 'BENCH · READY';
+  return 'COMPOUNDING · IN PROGRESS';
 }
 
 export function isHourOption(id: string): id is DistillerHour {

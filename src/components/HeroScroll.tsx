@@ -100,34 +100,74 @@ function MobileHeroOrbit({
   cards: HeroCard[];
   onOpenProduct?: (productId: ProductId, override?: CheckoutOverride) => void;
 }) {
+  const stepDeg = 360 / cards.length;
+  const initialWeights = cards.map((_, i) => (i === 1 ? 1 : 0));
+
   const angleRef = useRef(0);
-  const smoothWeightsRef = useRef<number[]>(cards.map((_, i) => (i === 1 ? 1 : 0)));
-  const [frame, setFrame] = useState(0);
+  const weightsRef = useRef<number[]>(initialWeights);
+  const heroRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const thumbLabelRefs = useRef<(HTMLParagraphElement | null)[]>([]);
+
+  const [featuredIndex, setFeaturedIndex] = useState(1);
+  const featuredIndexRef = useRef(1);
   const reduced = prefersReducedMotion();
+
+  const thumbTransform = (i: number, angle: number, focus: number) => {
+    const { x, y } = orbitOffset(((angle + i * stepDeg) * Math.PI) / 180);
+    const scale = Math.max(0.72, 1 - focus * 0.28);
+    return `translate(calc(-50% + ${x}vw), calc(-50% + ${y}vh)) scale(${scale})`;
+  };
 
   useEffect(() => {
     if (reduced) return;
+
     let raf = 0;
     const step = () => {
       angleRef.current += 0.34;
-      setFrame((n) => n + 1);
+      const angle = angleRef.current;
+
+      const target = focusWeights(cards.length, angle, stepDeg);
+      const smooth = target.map(
+        (weight, i) => weightsRef.current[i] + (weight - weightsRef.current[i]) * 0.07,
+      );
+      weightsRef.current = smooth;
+
+      const opacities = heroCrossfadeOpacities(smooth);
+
+      for (let i = 0; i < cards.length; i += 1) {
+        const hero = heroRefs.current[i];
+        if (hero) hero.style.opacity = String(opacities[i]);
+
+        const focus = smooth[i];
+        const thumb = thumbRefs.current[i];
+        if (thumb) {
+          const { sin } = orbitOffset(((angle + i * stepDeg) * Math.PI) / 180);
+          thumb.style.transform = thumbTransform(i, angle, focus);
+          thumb.style.opacity = String(Math.max(0.28, 0.92 - focus * 0.72));
+          thumb.style.zIndex = sin > 0.15 ? '1' : '12';
+        }
+
+        const label = thumbLabelRefs.current[i];
+        if (label) label.style.opacity = String(Math.max(0.35, 1 - focus * 0.55));
+      }
+
+      let leader = 0;
+      for (let i = 1; i < opacities.length; i += 1) {
+        if (opacities[i] > opacities[leader]) leader = i;
+      }
+      if (leader !== featuredIndexRef.current) {
+        featuredIndexRef.current = leader;
+        setFeaturedIndex(leader);
+      }
+
       raf = requestAnimationFrame(step);
     };
+
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [reduced]);
+  }, [reduced, cards, stepDeg]);
 
-  void frame;
-  const angle = angleRef.current;
-  const stepDeg = 360 / cards.length;
-  const weights = focusWeights(cards.length, angle, stepDeg);
-  const smoothWeights = weights.map(
-    (weight, i) =>
-      smoothWeightsRef.current[i] + (weight - smoothWeightsRef.current[i]) * 0.07,
-  );
-  smoothWeightsRef.current = smoothWeights;
-  const heroOpacities = heroCrossfadeOpacities(smoothWeights);
-  const featuredIndex = heroOpacities.indexOf(Math.max(...heroOpacities));
   const featured = cards[featuredIndex];
 
   return (
@@ -139,69 +179,70 @@ function MobileHeroOrbit({
         bottom: 'max(4.5rem, calc(env(safe-area-inset-bottom) + 3.25rem))',
       }}
     >
-
       <div
-        className="absolute left-1/2 top-[51%] h-0 w-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[10]"
+        className="absolute left-1/2 top-[51%] h-0 w-0 pointer-events-none z-[10]"
         aria-hidden
       >
-        {cards.map((card, i) => {
-          const theta = ((angle + i * stepDeg) * Math.PI) / 180;
-          const { x, y, sin } = orbitOffset(theta);
-          const focus = smoothWeights[i];
-          const behindHero = sin > 0.15;
-          const thumbOpacity = Math.max(0.28, 0.92 - focus * 0.72);
-          const thumbScale = Math.max(0.72, 1 - focus * 0.28);
-
-          return (
-            <button
-              key={card.label}
-              type="button"
-              onClick={() => onOpenProduct?.(card.productId, cardOverride(card))}
-              className="absolute pointer-events-auto flex flex-col items-center cursor-pointer active:scale-95"
-              style={{
-                left: `${x}vw`,
-                top: `${y}vh`,
-                transform: `translate(-50%, -50%) scale(${thumbScale})`,
-                opacity: thumbOpacity,
-                zIndex: behindHero ? 1 : 12,
+        {cards.map((card, i) => (
+          <button
+            key={card.label}
+            ref={(el) => {
+              thumbRefs.current[i] = el;
+            }}
+            type="button"
+            onClick={() => onOpenProduct?.(card.productId, cardOverride(card))}
+            className="absolute left-0 top-0 pointer-events-auto flex flex-col items-center cursor-pointer active:scale-95 will-change-transform"
+            style={{
+              transform: thumbTransform(i, 0, initialWeights[i]),
+              opacity: Math.max(0.28, 0.92 - initialWeights[i] * 0.72),
+              zIndex: 12,
+            }}
+            aria-label={`${card.label} ${card.title}`}
+          >
+            <span className="flex h-[3.25rem] w-[2.75rem] items-end justify-center rounded-sm border border-canvas/[0.08] bg-cream/60 shadow-[0_8px_24px_rgba(13,11,10,0.06)]">
+              <img
+                src={card.image}
+                alt=""
+                className="h-[2.85rem] w-auto max-w-[2.35rem] object-contain object-bottom"
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+            <p
+              ref={(el) => {
+                thumbLabelRefs.current[i] = el;
               }}
-              aria-label={`${card.label} ${card.title}`}
+              className="font-mono text-[7px] uppercase tracking-[0.14em] text-taupe-muted mt-1.5 whitespace-nowrap"
+              style={{ opacity: Math.max(0.35, 1 - initialWeights[i] * 0.55) }}
             >
-              <span className="flex h-[3.25rem] w-[2.75rem] items-end justify-center rounded-sm border border-canvas/[0.08] bg-cream/60 shadow-[0_8px_24px_rgba(13,11,10,0.06)]">
-                <img
-                  src={card.image}
-                  alt=""
-                  className="h-[2.85rem] w-auto max-w-[2.35rem] object-contain object-bottom"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </span>
-              <p
-                className="font-mono text-[7px] uppercase tracking-[0.14em] text-taupe-muted mt-1.5 whitespace-nowrap"
-                style={{ opacity: Math.max(0.35, 1 - focus * 0.55) }}
-              >
-                {card.label}
-              </p>
-            </button>
-          );
-        })}
+              {card.label}
+            </p>
+          </button>
+        ))}
       </div>
 
       <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center pointer-events-none px-6">
         <div className="relative h-[min(320px,46dvh)] w-full max-w-[72vw] flex items-end justify-center">
-          <img
-            key={featured.label}
-            src={featured.image}
-            alt={featured.imageAlt}
-            width={671}
-            height={1200}
-            className="mobile-hero-bottle-img h-[min(320px,46dvh)] w-auto max-w-[72vw] object-contain object-bottom"
-            loading="eager"
-            decoding="async"
-            fetchPriority="high"
-          />
+          {cards.map((card, i) => (
+            <img
+              key={card.label}
+              ref={(el) => {
+                heroRefs.current[i] = el;
+              }}
+              src={card.image}
+              alt={i === featuredIndex ? card.imageAlt : ''}
+              aria-hidden={i !== featuredIndex}
+              width={671}
+              height={1200}
+              className="mobile-hero-bottle-img absolute bottom-0 h-[min(320px,46dvh)] w-auto max-w-[72vw] object-contain object-bottom will-change-[opacity]"
+              style={{ opacity: initialWeights[i] }}
+              loading="eager"
+              decoding="async"
+              fetchPriority={i === 1 ? 'high' : 'low'}
+            />
+          ))}
         </div>
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted mt-3">
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted mt-3 transition-opacity duration-500">
           {featured.label} · {featured.title}
         </p>
       </div>
@@ -833,10 +874,10 @@ export function HeroScroll({
 
         <div className="absolute inset-0 z-[25] pointer-events-none select-none">
           <p className="absolute left-4 sm:left-6 md:left-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] rotate-180 hidden sm:block">
-            BATCH // 001-NG
+            BATCH · 001-NG
           </p>
           <p className="absolute right-4 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] hidden sm:block">
-            EXTRAIT DE PARFUM // 50ML
+            EXTRAIT DE PARFUM · 50ML
           </p>
 
           <HeroEditorial
@@ -856,7 +897,7 @@ export function HeroScroll({
         className="relative w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pt-12 pb-14 sm:pb-20 md:min-h-[100dvh] md:pt-0 md:pb-36"
       >
         <p className="pointer-events-none select-none absolute right-5 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 font-mono text-[9px] sm:text-[10px] tracking-widest text-neutral-400 [writing-mode:vertical-rl] z-[20] hidden sm:block">
-          EXTRAIT DE PARFUM // 50ML
+          EXTRAIT DE PARFUM · 50ML
         </p>
 
         <HeroEditorial

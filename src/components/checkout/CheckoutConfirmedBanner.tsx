@@ -67,7 +67,7 @@ export function CheckoutSecuredStamp({
     >
       <div className="checkout-stamp-mark border-[3px] sm:border-[4px] lg:border-[5px] xl:border-[6px] border-red-800/70 px-5 sm:px-8 md:px-10 lg:px-14 xl:px-16 py-4 sm:py-6 md:py-7 lg:py-9 xl:py-10 text-center">
         <p className="font-mono text-[clamp(0.65rem,2.8vw,1rem)] lg:text-[clamp(0.8rem,1.1vw,1.05rem)] uppercase tracking-[0.14em] sm:tracking-[0.18em] lg:tracking-[0.22em] text-red-800/75 leading-relaxed">
-          Order Secured // Batch Allocated
+          Order Secured · Batch Allocated
         </p>
         <p className="checkout-stamp-id checkout-stamp-id--compact font-mono uppercase tracking-[0.05em] sm:tracking-[0.08em] text-red-800/85 leading-tight mt-2.5 sm:mt-4 tabular-nums lg:hidden">
           {orderRef}

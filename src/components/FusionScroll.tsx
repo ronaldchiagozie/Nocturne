@@ -232,13 +232,13 @@ export function FusionScrollDesktop({ onCheckout }: { onCheckout?: () => void })
 
         <div className="absolute inset-0 z-10 flex items-center pointer-events-none pl-10 lg:pl-16">
           <p ref={label1Ref} className="absolute font-sans text-[11px] uppercase tracking-[0.28em] text-canvas">
-            01 // THE BASE OUD
+            01 · THE BASE OUD
           </p>
           <p ref={label2Ref} className="absolute font-sans text-[11px] uppercase tracking-[0.28em] text-canvas opacity-0">
-            02 // CRACKED PEPPER & TIMBER
+            02 · CRACKED PEPPER & TIMBER
           </p>
           <p ref={label3Ref} className="absolute font-sans text-[11px] uppercase tracking-[0.28em] text-canvas opacity-0">
-            03 // THE FUSION
+            03 · THE FUSION
           </p>
         </div>
 
