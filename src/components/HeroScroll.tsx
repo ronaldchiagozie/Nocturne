@@ -75,23 +75,6 @@ function focusWeights(cardCount: number, angleDeg: number, stepDeg: number) {
   return raw.map((value) => value / sum);
 }
 
-function heroCrossfadeOpacities(weights: number[]): number[] {
-  const ranked = weights
-    .map((weight, index) => ({ weight, index }))
-    .sort((a, b) => b.weight - a.weight);
-  const primary = ranked[0];
-  const secondary = ranked[1];
-  if (!primary) return weights.map(() => 0);
-  if (!secondary || primary.weight > 0.9) {
-    return weights.map((_, index) => (index === primary.index ? 1 : 0));
-  }
-  const blendTotal = primary.weight + secondary.weight;
-  return weights.map((_, index) => {
-    if (index === primary.index) return primary.weight / blendTotal;
-    if (index === secondary.index) return secondary.weight / blendTotal;
-    return 0;
-  });
-}
 
 function MobileHeroOrbit({
   cards,
@@ -106,6 +89,7 @@ function MobileHeroOrbit({
   const angleRef = useRef(0);
   const weightsRef = useRef<number[]>(initialWeights);
   const heroRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const shownRef = useRef(1);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const thumbLabelRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
@@ -133,11 +117,16 @@ function MobileHeroOrbit({
       );
       weightsRef.current = smooth;
 
-      const opacities = heroCrossfadeOpacities(smooth);
+      let nearest = 0;
+      for (let i = 1; i < smooth.length; i += 1) {
+        if (smooth[i] > smooth[nearest]) nearest = i;
+      }
+
+      shownRef.current = nearest;
 
       for (let i = 0; i < cards.length; i += 1) {
         const hero = heroRefs.current[i];
-        if (hero) hero.style.opacity = String(opacities[i]);
+        if (hero) hero.style.opacity = i === shownRef.current ? '1' : '0';
 
         const focus = smooth[i];
         const thumb = thumbRefs.current[i];
@@ -152,13 +141,9 @@ function MobileHeroOrbit({
         if (label) label.style.opacity = String(Math.max(0.35, 1 - focus * 0.55));
       }
 
-      let leader = 0;
-      for (let i = 1; i < opacities.length; i += 1) {
-        if (opacities[i] > opacities[leader]) leader = i;
-      }
-      if (leader !== featuredIndexRef.current) {
-        featuredIndexRef.current = leader;
-        setFeaturedIndex(leader);
+      if (shownRef.current !== featuredIndexRef.current) {
+        featuredIndexRef.current = shownRef.current;
+        setFeaturedIndex(shownRef.current);
       }
 
       raf = requestAnimationFrame(step);
@@ -234,7 +219,7 @@ function MobileHeroOrbit({
               aria-hidden={i !== featuredIndex}
               width={671}
               height={1200}
-              className="mobile-hero-bottle-img absolute bottom-0 h-[min(320px,46dvh)] w-auto max-w-[72vw] object-contain object-bottom will-change-[opacity]"
+              className="mobile-hero-bottle-img absolute bottom-0 h-[min(320px,46dvh)] w-auto max-w-[72vw] object-contain object-bottom"
               style={{ opacity: initialWeights[i] }}
               loading="eager"
               decoding="async"
@@ -242,7 +227,7 @@ function MobileHeroOrbit({
             />
           ))}
         </div>
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted mt-3 transition-opacity duration-500">
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-taupe-muted mt-3">
           {featured.label} · {featured.title}
         </p>
       </div>
