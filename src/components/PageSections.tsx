@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images, type ImageKey } from '../assets/images';
 import { COLLECTION_ITEMS, type CollectionItem } from '../data/collection';
 import type { ProductId } from '../data/products';
-import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
+import { prefersReducedMotion } from '../hooks/useMotionPreference';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,59 +33,61 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
       const layers = layerRefs.current.filter(Boolean) as HTMLDivElement[];
       if (layers.length === 0) return;
 
-      if (prefersReducedMotion() || shouldDisableScrollPinning()) {
+      if (prefersReducedMotion()) {
         gsap.set(layers, { clearProps: 'all' });
         gsap.set(layers[0], { opacity: 1 });
         return;
       }
 
-      gsap.set(layers, { opacity: 0, yPercent: 0, scale: 1 });
-      gsap.set(layers[0], { opacity: 1, yPercent: 0, scale: 1, zIndex: 3 });
-      gsap.set(layers[1], { opacity: 0, yPercent: 10, scale: 1.04, zIndex: 2 });
-      gsap.set(layers[2], { opacity: 0, yPercent: 18, scale: 1.08, zIndex: 1 });
+      const buildTimeline = () => {
+        gsap.set(layers, { opacity: 0, yPercent: 0, scale: 1 });
+        gsap.set(layers[0], { opacity: 1, yPercent: 0, scale: 1, zIndex: 3 });
+        gsap.set(layers[1], { opacity: 0, yPercent: 10, scale: 1.04, zIndex: 2 });
+        gsap.set(layers[2], { opacity: 0, yPercent: 18, scale: 1.08, zIndex: 1 });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: trackRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 1.1,
-          pin: pinRef.current,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: trackRef.current,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1.1,
+            invalidateOnRefresh: true,
+          },
+        });
 
-      tl.to(
-        layers[0],
-        { yPercent: -14, scale: 1.05, opacity: 0, ease: 'none', duration: 0.34 },
-        0,
-      );
+        tl.to(
+          layers[0],
+          { yPercent: -14, scale: 1.05, opacity: 0, ease: 'none', duration: 0.34 },
+          0,
+        );
 
-      tl.fromTo(
-        layers[1],
-        { yPercent: 12, scale: 1.06, opacity: 0, zIndex: 2 },
-        { yPercent: -6, scale: 1.02, opacity: 1, zIndex: 4, ease: 'none', duration: 0.34 },
-        0.18,
-      );
-      tl.to(
-        layers[1],
-        { yPercent: -16, scale: 1.04, opacity: 0, zIndex: 2, ease: 'none', duration: 0.32 },
-        0.52,
-      );
+        tl.fromTo(
+          layers[1],
+          { yPercent: 12, scale: 1.06, opacity: 0, zIndex: 2 },
+          { yPercent: -6, scale: 1.02, opacity: 1, zIndex: 4, ease: 'none', duration: 0.34 },
+          0.18,
+        );
+        tl.to(
+          layers[1],
+          { yPercent: -16, scale: 1.04, opacity: 0, zIndex: 2, ease: 'none', duration: 0.32 },
+          0.52,
+        );
 
-      tl.fromTo(
-        layers[2],
-        { yPercent: 20, scale: 1.1, opacity: 0, zIndex: 1 },
-        { yPercent: 0, scale: 1, opacity: 1, zIndex: 5, ease: 'none', duration: 0.38 },
-        0.48,
-      );
-      tl.to(layers[2], { yPercent: -4, scale: 1.02, ease: 'none', duration: 0.14 }, 0.86);
+        tl.fromTo(
+          layers[2],
+          { yPercent: 20, scale: 1.1, opacity: 0, zIndex: 1 },
+          { yPercent: 0, scale: 1, opacity: 1, zIndex: 5, ease: 'none', duration: 0.38 },
+          0.48,
+        );
+        tl.to(layers[2], { yPercent: -4, scale: 1.02, ease: 'none', duration: 0.14 }, 0.86);
 
-      return () => {
-        tl.scrollTrigger?.kill();
-        tl.kill();
+        return () => {
+          tl.scrollTrigger?.kill();
+          tl.kill();
+        };
       };
+
+      return buildTimeline();
     },
     { scope: trackRef },
   );
@@ -93,7 +95,7 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   return (
     <section
       ref={trackRef}
-      className="ingredient-parallax-track relative h-[280vh] w-full bg-cream border-t border-canvas/[0.06]"
+      className="ingredient-parallax-track relative h-[360vh] w-full bg-cream border-t border-canvas/[0.06]"
     >
       <div
         ref={pinRef}

@@ -3,7 +3,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { images } from '../assets/images';
-import { prefersReducedMotion, shouldDisableScrollPinning } from '../hooks/useMotionPreference';
+import { prefersReducedMotion } from '../hooks/useMotionPreference';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -135,6 +135,7 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
   const copyBRef = useRef<HTMLParagraphElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<HTMLDivElement>(null);
+  const settledRef = useRef(false);
 
   useGSAP(
     () => {
@@ -150,26 +151,10 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
         return;
       }
 
-      if (shouldDisableScrollPinning()) {
-        const arrival = new IntersectionObserver(
-          (entries) => {
-            if (entries.some((entry) => entry.isIntersecting)) {
-              landing.classList.add('footer-bottle-landing--settled');
-              arrival.disconnect();
-            }
-          },
-          { rootMargin: '0px 0px -15% 0px' },
-        );
-        arrival.observe(landing);
-        return () => arrival.disconnect();
-      }
-
       const closeSection = source.closest('section');
       if (!closeSection) return;
 
-      const mm = gsap.matchMedia();
-
-      mm.add('(min-width: 769px)', () => {
+      const buildDescent = () => {
         let lockedStart: Point | null = null;
 
         const syncFlyImage = () => {
@@ -181,6 +166,7 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
 
         const reset = () => {
           lockedStart = null;
+          settledRef.current = false;
           hideFly(fly, shadowRef.current);
           source.style.opacity = '';
           landing.classList.remove('footer-bottle-landing--settled');
@@ -199,18 +185,22 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
             hideFly(fly, shadowRef.current);
             source.style.opacity = '0';
             landing.classList.add('footer-bottle-landing--settled');
+            settledRef.current = true;
 
             const landingImg = landing.querySelector('img');
             if (landingImg && flyImgRef.current) landingImg.src = flyImgRef.current.src;
           },
           onEnterBack: () => {
-            landing.classList.remove('footer-bottle-landing--settled');
             source.style.opacity = '1';
           },
           onLeaveBack: reset,
           onUpdate: (self) => {
             if (!self.isActive) {
               hideFly(fly, shadowRef.current);
+              const landed = self.progress > 0.5;
+              settledRef.current = landed;
+              landing.classList.toggle('footer-bottle-landing--settled', landed);
+              source.style.opacity = landed ? '0' : '1';
               return;
             }
 
@@ -232,7 +222,7 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
 
             const { point, rotateY } = pointAtProgress(start, mid, end, p);
             const opacity =
-              p < 0.03 ? p / 0.03 : p > 0.95 ? Math.max(0, 1 - (p - 0.95) / 0.035) : 1;
+              p < 0.03 ? p / 0.03 : p > 0.9 ? Math.max(0, 1 - (p - 0.9) / 0.05) : 1;
 
             applyFixedBottle(fly, point, opacity, rotateY);
             source.style.opacity = p < 0.08 ? String(Math.max(0, 1 - p / 0.08)) : '0';
@@ -271,7 +261,10 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
               });
             }
 
-            landing.classList.toggle('footer-bottle-landing--settled', p > 0.95);
+            if (p > 0.95 !== settledRef.current) {
+              settledRef.current = p > 0.95;
+              landing.classList.toggle('footer-bottle-landing--settled', settledRef.current);
+            }
             if (p > 0.95 && flyImgRef.current) {
               const landingImg = landing.querySelector('img');
               if (landingImg && landingImg.src !== flyImgRef.current.src) {
@@ -285,15 +278,15 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
           st.kill();
           reset();
         };
-      });
+      };
 
-      return () => mm.revert();
+      return buildDescent();
     },
     { scope: scopeRef, dependencies: [sourceRef, landingRef] },
   );
 
   return (
-    <div ref={scopeRef} className="footer-bottle-descent-scope hidden md:contents">
+    <div ref={scopeRef} className="footer-bottle-descent-scope contents">
       <div ref={flyRef} className="footer-bottle-fly" aria-hidden>
         <img
           ref={flyImgRef}
@@ -307,7 +300,7 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
       </div>
       <div ref={shadowRef} className="footer-bottle-fly-shadow" aria-hidden />
 
-      <div className="footer-bottle-descent-copy pointer-events-none hidden md:block fixed inset-0 z-[30]">
+      <div className="footer-bottle-descent-copy pointer-events-none fixed inset-0 z-[30]">
         <div
           ref={lineRef}
           className="absolute left-[9%] lg:left-[12%] top-[47%] h-px w-[min(20rem,26vw)] origin-left bg-canvas/[0.09]"

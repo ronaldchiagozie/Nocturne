@@ -489,22 +489,9 @@ option {
 }
 
 @media (max-width: 768px) {
-  .ingredient-parallax-track {
-    height: auto;
-    min-height: 0;
-  }
-
-  .ingredient-parallax-track > div {
-    position: relative;
-    min-height: min(72vw, 420px);
-    height: auto;
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
-  }
-
   .ingredient-parallax-frame {
     aspect-ratio: 4 / 5;
-    max-height: 78dvh;
+    max-height: 74dvh;
   }
 }
 

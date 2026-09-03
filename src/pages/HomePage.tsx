@@ -148,7 +148,7 @@ export function HomePage() {
         bottleSourceRef={closeBottleSourceRef}
       />
 
-      <div className="hidden md:block h-[68vh] lg:h-[76vh] bg-cream" aria-hidden />
+      <div className="h-[52vh] md:h-[68vh] lg:h-[76vh] bg-cream" aria-hidden />
 
       <SiteFooter bottleLandingRef={footerBottleLandingRef} />
 
