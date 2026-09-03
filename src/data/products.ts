@@ -7,7 +7,6 @@ export interface ScentMetric {
   max: string;
 }
 
-/** Bold readout aligned to indicator position on the min→max scale */
 export function getMetricDisplayLabel(metric: ScentMetric): string {
   const value = Math.min(10, Math.max(0, metric.value));
   const t = value / 10;

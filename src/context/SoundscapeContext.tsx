@@ -10,9 +10,8 @@ import {
 import { createSoundscapeEngine } from '../lib/soundscape';
 
 interface SoundscapeContextValue {
-  /** Soundscape has been activated this session */
   isActive: boolean;
-  /** Currently audible (active and not muted) */
+
   isAudible: boolean;
   activate: () => Promise<void>;
   mute: () => void;

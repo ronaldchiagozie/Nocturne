@@ -20,7 +20,7 @@ function GridCardSkeleton({ index }: { index: number }) {
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-[#ebe7df]/80">
         <Shimmer className="absolute inset-0" />
-        {/* Bottle silhouette — matches real card image footprint */}
+
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="skeleton-bottle-shape w-[28%] max-w-[5.5rem] aspect-[2/5] rounded-full opacity-[0.14]" />
         </div>

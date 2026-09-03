@@ -34,7 +34,6 @@ function loadLedger(): LedgerState {
       }
     }
   } catch {
-    /* ignore */
   }
 
   return {
@@ -47,7 +46,6 @@ function saveLedger(state: LedgerState) {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    /* ignore */
   }
 }
 

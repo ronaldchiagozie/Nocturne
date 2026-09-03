@@ -33,7 +33,7 @@ export interface SimulatedOrder {
   productLabel: string;
   productTitle: string;
   variantId: BottleVariantId;
-  /** Set when matched via The Distiller, e.g. "No. 17 Violet Noir" */
+
   formulationLabel?: string;
   personalization: PersonalizationConfig;
   qty: number;

@@ -56,7 +56,6 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   }
 }
 
-/** Resets the error boundary when the route changes so one crash does not lock the whole app. */
 export function ErrorBoundary({ children }: ErrorBoundaryProps) {
   const location = useLocation();
   return <ErrorBoundaryInner key={location.pathname}>{children}</ErrorBoundaryInner>;

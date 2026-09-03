@@ -32,7 +32,6 @@ function getScrollY(): number {
   return window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
 }
 
-/** Lenis-aware scroll position — use instead of window.scrollY for GSAP sync. */
 export function readScrollY(): number {
   return getScrollY();
 }
@@ -63,7 +62,6 @@ function lockBodyScroll() {
   body.style.width = '100%';
   body.style.overscrollBehavior = 'none';
 
-  // iOS: block background rubber-band unless the touch is inside a modal scroller
   touchMoveBlock = (e: TouchEvent) => {
     if (allowModalTouch(e.target)) return;
     e.preventDefault();
@@ -132,7 +130,7 @@ function initNativeScroll() {
     ignoreMobileResize: true,
     autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
   });
-  // Avoid normalizeScroll. It fights sticky/pin and causes card jitter on iOS
+
   ScrollTrigger.normalizeScroll(false);
   ScrollTrigger.defaults({ pinType: 'fixed' });
   ScrollTrigger.refresh();
@@ -145,7 +143,6 @@ function teardownNativeScroll() {
   nativeScroll = false;
 }
 
-/** Init Lenis + ScrollTrigger sync (desktop). Native scroll on touch. Avoids pin jitter. */
 export function initLenisScroll() {
   if (lenis || nativeScroll) return lenis;
 
@@ -207,7 +204,6 @@ export function initLenisScroll() {
   return lenis;
 }
 
-/** Pause background scroll while modals are open. Ref-counted so stacked modals stay locked. */
 export function setScrollLocked(locked: boolean) {
   if (locked) {
     scrollLockCount += 1;
@@ -227,7 +223,6 @@ export function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/** Instant scroll — use on route changes so the new page starts at the top. */
 export function scrollToTopImmediate() {
   if (lenis) {
     lenis.scrollTo(0, { immediate: true });
@@ -247,7 +242,6 @@ try {
     if (Number.isFinite(bootY) && bootY > 0) lastHomeScrollY = bootY;
   }
 } catch {
-  /* ignore */
 }
 
 function persistHomeScrollY(y: number) {
@@ -256,7 +250,6 @@ function persistHomeScrollY(y: number) {
   try {
     sessionStorage.setItem(HOME_SCROLL_KEY, String(Math.round(y)));
   } catch {
-    /* ignore */
   }
 }
 
@@ -269,7 +262,6 @@ export function saveHomeScrollPosition() {
   return lastHomeScrollY;
 }
 
-/** Call right before leaving home — never overwrite a good saved Y with 0. */
 export function captureHomeScrollBeforeLeave() {
   const y = getScrollY();
   if (y > 0) {
@@ -289,12 +281,10 @@ export function restoreHomeScrollPosition(): number {
       }
     }
   } catch {
-    /* ignore */
   }
   return lastHomeScrollY;
 }
 
-/** Call when navigating back to home — do not consume until scroll is applied. */
 export function markHomeScrollRestore() {
   homeRestorePending = true;
 }
@@ -307,7 +297,6 @@ export function clearHomeScrollRestorePending() {
   homeRestorePending = false;
 }
 
-/** Retry until GSAP/Lenis finish layout — fixes hero always jumping to top. */
 export function applyPendingHomeScrollRestore(onSettled?: () => void): () => void {
   if (!homeRestorePending) return () => {};
 
@@ -392,7 +381,6 @@ export function destroyLenisScroll() {
   ScrollTrigger.clearScrollMemory();
 }
 
-/** Ensure Lenis is running on pages that need smooth scroll. Do not destroy on unmount — main.tsx owns lifecycle. */
 export function useLenis() {
   useEffect(() => {
     initLenisScroll();
@@ -400,7 +388,6 @@ export function useLenis() {
   }, []);
 }
 
-/** Throttled video seek. Avoids frame-by-frame decode jitter */
 export function seekVideo(video: HTMLVideoElement, time: number) {
   const duration = video.duration;
   if (!duration || !Number.isFinite(duration)) return;
@@ -413,7 +400,6 @@ export function seekVideo(video: HTMLVideoElement, time: number) {
       video.fastSeek(target);
       return;
     } catch {
-      /* fall through */
     }
   }
   video.currentTime = target;

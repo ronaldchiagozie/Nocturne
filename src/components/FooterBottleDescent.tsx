@@ -15,8 +15,7 @@ interface FooterBottleDescentProps {
 type Point = { x: number; y: number; scale: number; rotation: number };
 
 const BASE_BOTTLE_HEIGHT = 380;
-/** Scaling pivots on the bottle's base, not its middle, so it stands rather
- *  than swells in place. Keep it in sync with transformOrigin below. */
+
 const BOTTLE_ORIGIN_Y = 0.92;
 
 function getActiveBottleImg(source: HTMLElement): HTMLImageElement | null {
@@ -58,10 +57,6 @@ function applyFixedBottle(
   opacity: number,
   rotateY = 0,
 ) {
-  // The element is anchored by its centre but scaled about its base, which
-  // drags the visual centre off the anchor by this much. Without the
-  // correction the bottle never quite reaches the landing, and the handoff
-  // crossfades two copies a few dozen pixels apart.
   const originShift = (BOTTLE_ORIGIN_Y - 0.5) * BASE_BOTTLE_HEIGHT * (point.scale - 1);
 
   gsap.set(el, {
@@ -156,10 +151,6 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
       }
 
       if (shouldDisableScrollPinning()) {
-        // Mobile has no scrubbed descent — pinning and scrubbing fight touch
-        // scrolling. The bottle rises into the wordmark as the footer comes
-        // into view instead: one observer, no scroll hijacking, and the footer
-        // stops being a dead end on small screens.
         const arrival = new IntersectionObserver(
           (entries) => {
             if (entries.some((entry) => entry.isIntersecting)) {
@@ -208,8 +199,7 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
             hideFly(fly, shadowRef.current);
             source.style.opacity = '0';
             landing.classList.add('footer-bottle-landing--settled');
-            // Inherit the bottle that actually flew, not whichever one the
-            // carousel happens to be showing by now.
+
             const landingImg = landing.querySelector('img');
             if (landingImg && flyImgRef.current) landingImg.src = flyImgRef.current.src;
           },
@@ -226,9 +216,6 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
 
             const p = self.progress;
 
-            // Lock the bottle's identity at launch alongside its geometry. The
-            // carousel keeps rotating underneath, and re-reading it every frame
-            // made the bottle change variant mid-descent.
             if (lockedStart === null || p < 0.02) {
               lockedStart = measureViewport(source);
               syncFlyImage();
@@ -320,7 +307,6 @@ export function FooterBottleDescent({ sourceRef, landingRef }: FooterBottleDesce
       </div>
       <div ref={shadowRef} className="footer-bottle-fly-shadow" aria-hidden />
 
-      {/* Ambient copy — fixed, driven by the same scroll scrub */}
       <div className="footer-bottle-descent-copy pointer-events-none hidden md:block fixed inset-0 z-[30]">
         <div
           ref={lineRef}

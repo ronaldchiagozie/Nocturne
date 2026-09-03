@@ -12,11 +12,9 @@ export interface StoreMeta {
   totalSoldThisCycle: number;
 }
 
-/** Africa/Lagos — UTC+1, no DST */
 const LAGOS_OFFSET_MS = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Start of the current calendar day in Lagos, as UTC epoch ms */
 export function getLagosDayStart(now: number = Date.now()): number {
   const lagosNow = now + LAGOS_OFFSET_MS;
   const lagosMidnightUtc = Math.floor(lagosNow / MS_PER_DAY) * MS_PER_DAY;

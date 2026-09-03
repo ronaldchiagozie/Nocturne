@@ -8,7 +8,6 @@ import {
   restoreHomeScrollPosition,
 } from '../hooks/useLenis';
 
-/** Scroll handling on route changes — restores home scroll position when returning. */
 export function ScrollToTop() {
   const { pathname } = useLocation();
   const prevPathRef = useRef<string | null>(null);

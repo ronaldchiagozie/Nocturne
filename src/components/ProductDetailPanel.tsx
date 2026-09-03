@@ -40,7 +40,7 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
     <AnimatePresence>
       {product && (
         <div className="fixed inset-0 z-[215]" data-lenis-prevent role="dialog" aria-label={`${label} ${title}`}>
-          {/* Page overlay */}
+
           <motion.button
             type="button"
             aria-label="Close product details"
@@ -62,10 +62,6 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
             }}
           />
 
-          {/* Hero bottle — floats above sheet */}
-          {/* Tween, not spring: springs overshoot, and the bottle should land and
-              stay landed. Same curve as the sheet below, so the two read as one
-              gesture rather than two competing bounces. */}
           <motion.div
             initial={{ opacity: 0, y: 28, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -86,10 +82,6 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
             />
           </motion.div>
 
-          {/* Cart and close share the top bar. The bottle flies to this cart
-              rather than the page header's: the backdrop covers that one, and
-              because the modal locks scrolling — which disables `position:
-              sticky` — it can be scrolled off-screen entirely. */}
           <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-[222] flex items-center gap-6 sm:gap-7">
             <Link
               to="/cart"
@@ -117,7 +109,6 @@ export function ProductDetailPanel({ productId, override, onClose }: ProductDeta
             </button>
           </div>
 
-          {/* Detail sheet */}
           <motion.aside
             initial={{ y: '100%' }}
             animate={{ y: 0 }}

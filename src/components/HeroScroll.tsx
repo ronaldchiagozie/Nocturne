@@ -22,13 +22,12 @@ gsap.registerPlugin(ScrollTrigger);
 interface HeroScrollProps {
   onOpenDistiller?: () => void;
   onOpenProductDetail?: (productId: ProductId, override?: CheckoutOverride) => void;
-  /** Wait until intro / scroll lock clears before pinning — avoids bad pin math while body is fixed */
+
   scrollReady?: boolean;
 }
 
 const CARD_ORDER: ProductId[] = ['no03', 'no07', 'no05'];
 
-/** Flagship trio — same three on desktop and mobile home */
 const CARDS = CARD_ORDER.map((id) => {
   const product = PRODUCTS[id];
   return {
@@ -55,11 +54,10 @@ function cardOverride(card: (typeof CARDS)[number]): CheckoutOverride {
 
 type HeroCard = (typeof CARDS)[number];
 
-/** How far above the slot the bottle rises before dropping into it. */
 const HERO_APPROACH_LIFT = 165;
 
 const MOBILE_ORBIT_RX_VW = 38;
-/** Symmetric vertical radius — equal arc above/below center */
+
 const MOBILE_ORBIT_RY_VH = 30;
 
 function orbitOffset(thetaRad: number) {
@@ -77,7 +75,6 @@ function focusWeights(cardCount: number, angleDeg: number, stepDeg: number) {
   return raw.map((value) => value / sum);
 }
 
-/** At most two layers — prevents ghosty triple-stack blur on the hero bottle. */
 function heroCrossfadeOpacities(weights: number[]): number[] {
   const ranked = weights
     .map((weight, index) => ({ weight, index }))
@@ -96,7 +93,6 @@ function heroCrossfadeOpacities(weights: number[]): number[] {
   });
 }
 
-/** Slow orbit of thumbnail bottles; closest to center crossfades into the hero. */
 function MobileHeroOrbit({
   cards,
   onOpenProduct,
@@ -143,7 +139,7 @@ function MobileHeroOrbit({
         bottom: 'max(4.5rem, calc(env(safe-area-inset-bottom) + 3.25rem))',
       }}
     >
-      {/* Thumbnails orbit on a centered ellipse */}
+
       <div
         className="absolute left-1/2 top-[51%] h-0 w-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[10]"
         aria-hidden
@@ -191,7 +187,6 @@ function MobileHeroOrbit({
         })}
       </div>
 
-      {/* Center hero — one bottle at a time for sharp rendering */}
       <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center pointer-events-none px-6">
         <div className="relative h-[min(320px,46dvh)] w-full max-w-[72vw] flex items-end justify-center">
           <img
@@ -428,7 +423,6 @@ export function HeroScroll({
         const vh = window.innerHeight;
         const pad = vw >= 768 ? 24 : 16;
 
-        // offsetTop within the sticky flex container, stable, no getBoundingClientRect during scroll
         const slotCenterX = grid.offsetLeft + slot.offsetLeft + slot.offsetWidth / 2;
         const slotCenterY = grid.offsetTop + slot.offsetTop + slot.offsetHeight / 2;
 
@@ -457,7 +451,6 @@ export function HeroScroll({
 
       const mobileMq = window.matchMedia('(max-width: 768px)');
 
-      /** Never use visibility:hidden on the pin — it sticks and kills the scrub animation. */
       const ensurePinVisible = () => {
         if (bottleRef.current) bottleRef.current.style.visibility = 'visible';
       };
@@ -488,7 +481,7 @@ export function HeroScroll({
         rotateY: 0,
         transformOrigin: '50% 50%',
         force3D: !mobileMq.matches,
-        autoRound: false, // subpixel — avoids vertical shimmer during Lenis scrub
+        autoRound: false,
         transformPerspective: mobileMq.matches ? 0 : 1200,
       });
 
@@ -514,7 +507,6 @@ export function HeroScroll({
           gsap.set(centerBottleImgRef.current, { opacity: 0 });
         }
       } else {
-        // Mobile: cards always visible. No landing choreography
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
           opacity: 1,
           clearProps: 'xPercent',
@@ -555,7 +547,6 @@ export function HeroScroll({
           },
         });
 
-        // Ch1: hero hold, slight turn at end
         tl.to(bottleAnimRef.current, {
           x: 0,
           y: 0,
@@ -571,7 +562,6 @@ export function HeroScroll({
           duration: 0.2,
         });
 
-        // Ch2: dock right lane + rotate
         tl.to(bottleAnimRef.current, {
           x: driftX,
           y: 0,
@@ -582,10 +572,6 @@ export function HeroScroll({
           duration: 1,
         });
 
-        // Ch3, part 1: sweep back to the slot's column and rise above it. Going
-        // straight from the docked lane into the slot meant crossing the
-        // right-hand card on the way in, so the bottle arrived sideways and
-        // passed over the bottle already sitting there.
         tl.call(refreshMetrics, [], 1.95);
 
         tl.to(
@@ -602,7 +588,6 @@ export function HeroScroll({
           2.0,
         );
 
-        // Part 2: settle straight down into the slot, so it lands from above.
         tl.to(
           bottleAnimRef.current,
           {
@@ -614,8 +599,6 @@ export function HeroScroll({
           2.46,
         );
 
-        // The cards arrive once the bottle is back in the centre column and no
-        // longer travelling across their lanes.
         tl.to(centerCardRef.current, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 2.36);
         tl.fromTo(
           leftCardRef.current,
@@ -709,7 +692,6 @@ export function HeroScroll({
       window.addEventListener('nocturne-hero-ready', onHeroReady);
 
       mm.add('(max-width: 768px)', () => {
-        // Mobile: static in-flow bottle — GSAP fixed-pin breaks visibility on iOS Safari.
         gsap.set([leftCardRef.current, rightCardRef.current, centerCardRef.current], {
           opacity: 1,
           clearProps: 'xPercent',
@@ -819,14 +801,12 @@ export function HeroScroll({
         </div>
       </div>
 
-      {/* Chapter 1: hero — shorter runway on mobile */}
       <section
         data-hero-chapter="1"
         className="relative min-h-[100dvh] md:min-h-[100dvh] w-full bg-cream-plate"
       >
         <div className="absolute inset-0 z-0 overflow-hidden bg-cream-plate" />
 
-        {/* Mobile: static hero bottle — pinned GSAP layer is desktop-only */}
         <MobileHeroOrbit cards={CARDS} onOpenProduct={onOpenProductDetail} />
 
         <p
@@ -871,7 +851,6 @@ export function HeroScroll({
         </div>
       </section>
 
-      {/* Chapter 2: worn after dark copy */}
       <section
         data-hero-chapter="2"
         className="relative w-full bg-cream-plate flex flex-col justify-end px-5 sm:px-6 md:px-12 pt-12 pb-14 sm:pb-20 md:min-h-[100dvh] md:pt-0 md:pb-36"
@@ -897,12 +876,11 @@ export function HeroScroll({
         </div>
       </section>
 
-      {/* Chapter 3: desktop: sticky 3-col landing · mobile: normal scroll (no sticky) */}
       <section
         data-hero-chapter="3"
         className="relative w-full bg-cream-plate md:min-h-[200vh]"
       >
-        {/* Desktop sticky choreography. Never paint on mobile */}
+
         <div className="max-md:hidden sticky top-0 flex h-screen w-full flex-col items-center justify-center px-8 lg:px-12">
           <div
             ref={cardsGridRef}
@@ -1005,7 +983,6 @@ export function HeroScroll({
           )}
         </div>
 
-        {/* Mobile: three-bottle ledger list */}
         <div className="md:hidden relative z-20 w-full px-5 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))]">
           <div className="mb-6">
             <p className="font-sans text-[9px] uppercase tracking-[0.28em] text-taupe-muted">

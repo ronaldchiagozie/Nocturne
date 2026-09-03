@@ -1,7 +1,3 @@
-/**
- * Procedural Nocturne soundscape: low sub-bass pad, soft timber crackle, mist hiss.
- * No external audio asset required; starts only after a user gesture.
- */
 
 type SoundscapeEngine = {
   start: () => Promise<void>;
@@ -32,7 +28,6 @@ export function createSoundscapeEngine(): SoundscapeEngine {
       try {
         n.disconnect();
       } catch {
-        /* ignore */
       }
     });
     nodes = [];
@@ -74,7 +69,6 @@ export function createSoundscapeEngine(): SoundscapeEngine {
           filter.disconnect();
           gain.disconnect();
         } catch {
-          /* ignore */
         }
       };
 
@@ -96,7 +90,6 @@ export function createSoundscapeEngine(): SoundscapeEngine {
       master.gain.value = 0;
       master.connect(ctx.destination);
 
-      // Sub-bass cinematic pad
       const oscA = ctx.createOscillator();
       oscA.type = 'sine';
       oscA.frequency.value = 46;
@@ -116,7 +109,6 @@ export function createSoundscapeEngine(): SoundscapeEngine {
       oscA.start();
       oscB.start();
 
-      // Soft timber crackle (filtered noise bed)
       const crackle = ctx.createBufferSource();
       crackle.buffer = createNoiseBuffer(ctx, 3);
       crackle.loop = true;

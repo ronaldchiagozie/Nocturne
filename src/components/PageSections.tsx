@@ -20,10 +20,6 @@ interface RepeatedLinesScrollProps {
   line: string;
 }
 
-/**
- * Pinned parallax stack — three ingredient frames inside a 1770px rounded stage.
- * Layers slide at different depths and crossfade as you scrub.
- */
 export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
@@ -60,14 +56,12 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
         },
       });
 
-      // Layer 0 — oud: holds, lifts, fades as next slides over
       tl.to(
         layers[0],
         { yPercent: -14, scale: 1.05, opacity: 0, ease: 'none', duration: 0.34 },
         0,
       );
 
-      // Layer 1 — citrus: rises through the stack
       tl.fromTo(
         layers[1],
         { yPercent: 12, scale: 1.06, opacity: 0, zIndex: 2 },
@@ -80,7 +74,6 @@ export function RepeatedLinesScroll({ line }: RepeatedLinesScrollProps) {
         0.52,
       );
 
-      // Layer 2 — pepper: final frame lands on top
       tl.fromTo(
         layers[2],
         { yPercent: 20, scale: 1.1, opacity: 0, zIndex: 1 },
@@ -334,9 +327,7 @@ export function CloseSection({
   return (
     <section className="w-full bg-cream px-5 sm:px-6 md:px-12 lg:px-14 xl:px-16 pt-16 pb-16 sm:pt-24 sm:pb-20 md:pt-40 md:pb-28 lg:pt-52 lg:pb-32 xl:pt-60">
       <div className="mx-auto max-w-6xl md:grid md:grid-cols-[minmax(260px,340px)_minmax(0,1fr)] lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] md:items-end md:gap-12 lg:gap-16 xl:gap-20">
-        {/* Copy stays first in the DOM — it is the primary content, it is the
-            right order stacked on mobile, and it is the order a screen reader
-            should hear. The columns are swapped visually with grid placement. */}
+
         <div className="md:col-start-1 md:row-start-1 md:pb-2 lg:pb-4">
           <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-taupe-muted mb-4 md:mb-5">
             Flagship extrait

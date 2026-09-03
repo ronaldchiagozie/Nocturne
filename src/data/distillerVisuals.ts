@@ -105,7 +105,6 @@ export function getCompilationLevel(answers: Partial<DistillerAnswers>, isResult
   return '100%';
 }
 
-/** S_profile = w_hour·H + w_env·E + w_intent·I */
 export function getProfileScore(answers: Partial<DistillerAnswers>): number {
   const wHour = 3;
   const wEnv = 2;

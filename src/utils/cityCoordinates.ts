@@ -11,7 +11,6 @@ const CITY_COORDINATES: Record<string, string> = {
 const DEFAULT_COORDINATES = '6.4281° N, 3.4219° E';
 const DEFAULT_DESTINATION = 'LEKKI, LAGOS';
 
-/** Match typed city against known global coordinates */
 export function resolveCoordinates(cityInput: string): string {
   const normalized = cityInput.trim().toLowerCase();
   if (!normalized) return DEFAULT_COORDINATES;

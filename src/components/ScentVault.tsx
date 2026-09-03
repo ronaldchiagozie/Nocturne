@@ -134,7 +134,6 @@ interface VaultTabProps {
   onOpen: () => void;
 }
 
-/** Quiet bottom tab. Visible when the user has placed orders */
 export function VaultTab({ count, isHidden, onOpen }: VaultTabProps) {
   if (count === 0 || isHidden) return null;
 

@@ -148,19 +148,10 @@ export function HomePage() {
         bottleSourceRef={closeBottleSourceRef}
       />
 
-      {/* Runway for the descent. The bottle leaves the flagship card at the top
-          of this stretch and is still travelling at the bottom of it, which is
-          what gives the two ambient lines room to read. Sits after the section
-          rather than inside it so it lengthens the scrub without also pushing
-          the trigger's start point down. Desktop only — the descent is too. */}
       <div className="hidden md:block h-[68vh] lg:h-[76vh] bg-cream" aria-hidden />
 
       <SiteFooter bottleLandingRef={footerBottleLandingRef} />
 
-      {/* After the footer on purpose: React attaches refs and runs layout
-          effects in tree order, so mounted before it this never saw
-          landingRef.current and silently skipped building its ScrollTrigger.
-          It renders only fixed-position layers, so document order is free. */}
       <FooterBottleDescent
         sourceRef={closeBottleSourceRef}
         landingRef={footerBottleLandingRef}

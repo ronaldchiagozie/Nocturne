@@ -25,7 +25,7 @@ interface LedgerStat {
   label: string;
   value: number;
   suffix: string;
-  /** Shown instead of a counted figure, for stats that are not a number. */
+
   text?: string;
 }
 
@@ -212,13 +212,6 @@ interface HomeMiddleSectionsProps {
   onOpenDistiller?: () => void;
 }
 
-/**
- * Rich middle content between hero and close.
- *
- * The collection section that used to sit between the process grid and the
- * ledger is the one thing not restored: it listed every formulation, which is
- * what /shop is for, and the closing section already features the flagship.
- */
 export function HomeMiddleSections({ repeatedLine, onOpenDistiller }: HomeMiddleSectionsProps) {
   return (
     <>

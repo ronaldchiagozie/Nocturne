@@ -198,7 +198,6 @@ function addSessionOrderId(id: string) {
   try {
     localStorage.setItem(SESSION_ORDER_IDS_KEY, JSON.stringify([id, ...ids]));
   } catch {
-    /* ignore */
   }
 }
 
@@ -225,7 +224,6 @@ function saveLocalOrder(order: StoreOrder) {
   try {
     localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify([order, ...existing]));
   } catch {
-    /* ignore */
   }
 }
 

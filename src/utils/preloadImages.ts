@@ -1,4 +1,4 @@
-/** Above-the-fold hero bottles. Preload before scroll animation needs them */
+
 const CRITICAL_IMAGES = [
   '/bottle-07-nocturne.png',
   '/bottle-05-pepper-cedar.png',
@@ -17,7 +17,6 @@ export function preloadCriticalImages(): void {
   });
 }
 
-/** Resolve when every URL has loaded (or failed; never block the app) */
 export function preloadImages(urls: string[]): Promise<void> {
   const unique = [...new Set(urls)].filter(Boolean);
   if (unique.length === 0) return Promise.resolve();

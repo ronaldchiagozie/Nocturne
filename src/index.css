@@ -1,23 +1,5 @@
 @import "tailwindcss";
 
-/* ═══════════════════════════════════════════════════════════════════════
-   NOCTURNE TYPE SYSTEM
-
-   UI, labels, buttons ....  Switzer         Fontshare — ITF Free Font License
-   Ledger, batch data .....  IBM Plex Mono   SIL OFL 1.1
-   Display headings .......  Fraunces        SIL OFL 1.1
-   Editorial italic .......  Spectral        SIL OFL 1.1
-
-   All four are cleared for commercial web use and self-hosted from
-   /public/fonts — no third-party font CDN is contacted at runtime.
-
-   Canela and GT Sectra are NOT loaded. The files still sitting in
-   assets/fonts are a Canela TRIAL and GT Sectra desktop .ttf; neither
-   license permits web embedding. See LICENSED SERIFS at the end of this
-   block to switch back once webfont licenses are purchased.
-   ═══════════════════════════════════════════════════════════════════════ */
-
-/* ── UI sans: Switzer ── */
 @font-face {
   font-family: "Switzer";
   src: url("/fonts/Switzer-Regular.woff2") format("woff2");
@@ -40,7 +22,6 @@
   font-display: swap;
 }
 
-/* ── Ledger mono: IBM Plex Mono ── */
 @font-face {
   font-family: "IBM Plex Mono";
   src: url("/fonts/IBMPlexMono-Regular.woff2") format("woff2");
@@ -56,7 +37,6 @@
   font-display: swap;
 }
 
-/* ── Display serif: Fraunces (variable, 300–700) ── */
 @font-face {
   font-family: "Fraunces";
   src: url("/fonts/Fraunces-Variable.woff2") format("woff2");
@@ -65,7 +45,6 @@
   font-display: swap;
 }
 
-/* ── Editorial serif: Spectral ── */
 @font-face {
   font-family: "Spectral";
   src: url("/fonts/Spectral-Light.woff2") format("woff2");
@@ -95,21 +74,6 @@
   font-display: swap;
 }
 
-/* ═══ LICENSED SERIFS (inactive) ═══════════════════════════════════════
-   Canela (Commercial Type) and GT Sectra Fine (Grilli Type) are the
-   originally-specified serifs. To switch back after buying webfont
-   licenses:
-
-     1. Put the licensed .woff2 files in public/fonts/
-     2. Uncomment the two @font-face groups in this file's git history
-        (commit "Replace system fonts…"), pointing src at those files
-     3. In @theme below, restore:
-          --font-serif:       "Canela", "Georgia", serif;
-          --font-body-italic: "GT Sectra", "Georgia", serif;
-     4. Delete the .font-serif font-variation-settings rule below —
-        opsz/SOFT/WONK are Fraunces axes and mean nothing to Canela
-   ═══════════════════════════════════════════════════════════════════ */
-
 @theme {
   --font-serif: "Fraunces", "Georgia", serif;
   --font-body-italic: "Spectral", "Georgia", serif;
@@ -123,10 +87,6 @@
   --color-taupe-muted: #6b655c;
 }
 
-/* Fraunces defaults to its "wonky" display instance (WONK 1, opsz 9), which
-   reads playful rather than composed. Pin it to the high-contrast cut with
-   crisp serifs and no swash forms. wght is deliberately left out so
-   Tailwind's font-weight utilities still drive the weight axis. */
 .font-serif {
   font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
 }
@@ -167,7 +127,6 @@ body {
   touch-action: manipulation;
 }
 
-/* Body lock while modals/drawers are open — stops background scroll on iOS */
 html.scroll-locked {
   overflow: hidden;
   overscroll-behavior: none;
@@ -179,7 +138,6 @@ html.scroll-locked body {
   touch-action: none;
 }
 
-/* Modal / drawer inner scrollers only */
 .modal-scroll {
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -188,11 +146,9 @@ html.scroll-locked body {
 }
 
 .safe-pt {
-  /* Only inset when the device reports a notch — never force a 1rem gap on scroll */
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Hide scroll-story bottle when product sheet is open — avoids No. 07 bleed-through */
 html.product-detail-open [data-hero-object],
 html.product-detail-open [data-mobile-hero-bottle],
 html.product-detail-open .hero-bottle-pin {
@@ -202,7 +158,6 @@ html.product-detail-open .hero-bottle-pin {
   pointer-events: none !important;
 }
 
-/* Route-back: let GSAP sync opacity — do not force-hide the pin or the scrub breaks */
 html.hero-restore-pending .hero-bottle-pin,
 html.hero-restore-pending [data-hero-object] {
   pointer-events: none !important;
@@ -233,7 +188,6 @@ html.hero-restore-pending [data-hero-object] {
     -webkit-transform: translateZ(0);
   }
 
-  /* Mobile orbit hero — crisp PNG, no GPU ghosting */
   [data-mobile-hero-bottle] .mobile-hero-bottle-img {
     backface-visibility: visible;
     -webkit-backface-visibility: visible;
@@ -241,7 +195,6 @@ html.hero-restore-pending [data-hero-object] {
     filter: none;
   }
 
-  /* Cards scroll in normal flow. No compositor thrash */
   .hero-cards-grid {
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
@@ -262,7 +215,6 @@ html.hero-restore-pending [data-hero-object] {
   }
 }
 
-/* GPU layer for pinned scroll sections */
 video,
 .hero-bottle-image {
   backface-visibility: hidden;
@@ -283,7 +235,6 @@ video,
   color: var(--color-cream);
 }
 
-/* Shop sort — pill toggles (replaces native dark select on mobile) */
 .shop-sort-pills {
   display: inline-flex;
   flex-wrap: wrap;
@@ -321,7 +272,6 @@ video,
   color: var(--color-cream);
 }
 
-/* Fallback if any native selects remain */
 select,
 option {
   color-scheme: light;
@@ -329,7 +279,6 @@ option {
   color: var(--color-canvas);
 }
 
-/* ── Scent Vault ── */
 .vault-panel {
   background: linear-gradient(180deg, #14110f 0%, #0a0908 100%);
   border-top: 1px solid rgba(236, 230, 216, 0.08);
@@ -374,12 +323,10 @@ option {
   background: rgba(13, 11, 10, 0.92);
 }
 
-/* ── Batch scarcity ledger ── */
 .batch-ledger {
   letter-spacing: 0.14em;
 }
 
-/* ── Site footer (OSSOU-style) ── */
 .site-footer {
   position: relative;
 }
@@ -474,7 +421,6 @@ option {
 }
 
 .footer-bottle-landing {
-  /* Inert until it lands — an invisible bottle must not swallow clicks. */
   pointer-events: none;
 }
 
@@ -488,9 +434,6 @@ option {
 }
 
 @media (max-width: 768px) {
-  /* This used to force opacity on unconditionally, which meant the bottle was
-     simply always there and could never arrive. It now waits for the footer,
-     and rises the last stretch instead of appearing. */
   .footer-bottle-landing .footer-bottle-landing-img {
     transform: translateY(30px);
     transition:
@@ -531,7 +474,6 @@ option {
   }
 }
 
-/* Ingredient parallax stack */
 .ingredient-parallax-frame {
   isolation: isolate;
   transform: translateZ(0);
@@ -566,7 +508,6 @@ option {
   }
 }
 
-/* ── The Distiller ── */
 .distiller-panel {
   background: var(--color-cream-plate);
 }
@@ -665,9 +606,6 @@ option {
   border-color: rgba(13, 11, 10, 0.12);
 }
 
-/* Distiller progress: a ruled form header, not a dot wizard. The rule draws
-   left to right as each step is answered, the same reveal the collection index
-   uses, so the two read as the same hand. */
 .distiller-rail {
   display: grid;
   grid-auto-flow: column;
@@ -853,7 +791,6 @@ option {
   }
 }
 
-/* ── Apothecary spec sheet ── */
 .spec-sheet-bottle {
   filter: drop-shadow(0 20px 40px rgba(13, 11, 10, 0.18));
 }
@@ -862,7 +799,6 @@ option {
   box-shadow: 0 0 0 1px rgba(13, 11, 10, 0.08);
 }
 
-/* ── Checkout & store ── */
 .checkout-bottle-hero {
   filter: drop-shadow(0 20px 40px rgba(13, 11, 10, 0.2));
 }
@@ -1097,19 +1033,13 @@ option {
     min-height: calc(100dvh - 8.5rem);
   }
 
-  /* `align-self: start` is what keeps the stamp on the first screen. Stretched
-     to the row, it centred against the details column's full content height,
-     which put it below the fold as soon as an order ran past one screen. Now it
-     centres inside the first screenful and scrolls away with the page. */
   .checkout-confirmation-stamp {
     align-self: start;
     min-height: calc(100dvh - 8.5rem);
-    /* The SECURED watermark is deliberately wider than its column. */
+
     overflow: hidden;
   }
 
-  /* The document itself is held still. The stage below is the one and only
-     scroll container, so the details are the only thing that ever moves. */
   .checkout-confirmation {
     height: 100dvh;
     overflow: hidden;
@@ -1121,9 +1051,6 @@ option {
     overscroll-behavior: contain;
   }
 
-  /* Sticky inside that container rather than a second scroll container of its
-     own. That is what lets a wheel or a drag over the stamp scroll the details
-     beside it — as its own scroller the stamp would be a dead zone. */
   .checkout-confirmation-stamp {
     position: sticky;
     top: 0;
@@ -1133,7 +1060,6 @@ option {
     overflow: hidden;
   }
 
-  /* Flows at its natural height inside the stage; the stage scrolls it. */
   .checkout-confirmation-aside {
     min-height: 0;
     overflow: visible;
@@ -1150,7 +1076,6 @@ option {
     margin-inline: auto;
   }
 
-  /* Banner plus header measure ~188px through the lg range. */
   .checkout-confirmation-stamp {
     min-height: calc(100dvh - 11.75rem);
   }
@@ -1189,7 +1114,6 @@ option {
   }
 }
 
-/* ── Checkout split (delivery / payment) ── */
 .checkout-split--wide {
   width: 100%;
 }
@@ -1250,7 +1174,6 @@ option {
   caret-color: #8a5a2e;
 }
 
-/* ── Checkout stepper ── */
 .checkout-stepper {
   position: relative;
   width: 100%;
@@ -1408,7 +1331,6 @@ option {
   color: var(--color-taupe-muted);
 }
 
-/* ── Checkout split layout ── */
 .checkout-label {
   display: block;
   font-family: var(--font-sans);
@@ -1491,7 +1413,6 @@ option {
   transform: scale(0.98);
 }
 
-/* ── Cart page ── */
 .cart-qty {
   border: 1px solid color-mix(in srgb, var(--color-canvas) 12%, transparent);
   border-radius: 999px;
@@ -1568,7 +1489,6 @@ option {
   }
 }
 
-/* Mobile checkout — pinned chrome + parallax form sheet */
 .checkout-mobile-shell {
   display: flex;
   flex-direction: column;
@@ -1727,12 +1647,10 @@ option {
   justify-content: center;
 }
 
-/* ── Nav drawer ── */
 .nav-drawer {
   box-shadow: -16px 0 48px color-mix(in srgb, var(--color-canvas) 8%, transparent);
 }
 
-/* ── Shop skeleton loaders ── */
 .skeleton-shimmer {
   position: relative;
   overflow: hidden;
@@ -1795,10 +1713,6 @@ option {
   }
 }
 
-/* ── Add-to-cart receive pulse ───────────────────────────────────────────
-   Plays on whichever cart affordance a flying bottle just landed in. The
-   flight itself lives in CartFlightContext; this is only the acknowledgement.
-   ───────────────────────────────────────────────────────────────────── */
 @keyframes cart-receive {
   0% {
     transform: scale(1);
@@ -1830,7 +1744,6 @@ option {
   animation: cart-receive 0.52s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* The count flashes to the brand accent, then eases back when the class drops. */
 .cart-count {
   transition: color 0.45s ease;
 }

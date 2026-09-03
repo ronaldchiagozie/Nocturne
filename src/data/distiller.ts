@@ -92,7 +92,6 @@ const INTENT_LABELS: Record<DistillerIntent, string> = {
   elusive: 'Elusive',
 };
 
-/** S_profile = w1·Hour + w2·Environment + w3·Intent → maps to 1 of 8 variants */
 export const VARIANT_SUMMARIES: Record<BottleVariantId, string> = {
   v01: 'Flagship amber extrait. Warm, dark, worn after hours.',
   v03: 'Ruby spice and cedar. Heat up front, timber underneath.',

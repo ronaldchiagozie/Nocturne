@@ -23,7 +23,6 @@ export function computeCheckoutTotals(items: CartItem[], couponDiscountNgn = 0) 
   return { subtotalNgn, shippingNgn, totalNgn };
 }
 
-/** Server-side-style validation before Firestore checkout — rejects tampered prices or totals. */
 export function validateCheckoutInput(
   input: CheckoutSubmitInput,
 ): { ok: true } | { ok: false; reason: string } {

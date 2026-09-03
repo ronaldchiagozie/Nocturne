@@ -92,7 +92,6 @@ export function trackEvent(
   });
 }
 
-/** Fired when an order is successfully placed. */
 export function trackPurchase(input: {
   orderId: string;
   valueNgn: number;

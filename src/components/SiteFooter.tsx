@@ -19,7 +19,6 @@ type FooterAction =
   | { type: 'external'; href: string; label: string }
   | { type: 'home'; action: 'distill' | 'top'; label: string };
 
-/** Shop leads col 1; legal middle; meta right */
 const LINK_COLUMNS: { links: FooterAction[] }[] = [
   {
     links: [
@@ -108,9 +107,6 @@ export function SiteFooter({ bottleLandingRef }: SiteFooterProps = {}) {
   const { openDistiller } = useSiteModals();
   const { openProduct } = useProductDetail();
 
-  // Which bottle is standing in the wordmark. The descent swaps this image at
-  // runtime, so track the attribute rather than assuming the default — the
-  // click has to open the formulation actually on screen.
   const landingImgRef = useRef<HTMLImageElement>(null);
   const [landedVariant, setLandedVariant] =
     useState<(typeof BOTTLE_VARIANTS)[number]>(BOTTLE_VARIANTS[0]);
@@ -160,7 +156,7 @@ export function SiteFooter({ bottleLandingRef }: SiteFooterProps = {}) {
           : ''
       }`}
     >
-      {/* Tier 1 — subscribe + link columns */}
+
       <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-10 sm:pt-16 md:pt-24 lg:pt-28 pb-10 sm:pb-16 md:pb-24 lg:pb-28">
         <div className="flex flex-col gap-10 sm:gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16 xl:gap-24">
           <div className="w-full lg:max-w-[22rem] xl:max-w-[24rem] shrink-0">
@@ -245,7 +241,6 @@ export function SiteFooter({ bottleLandingRef }: SiteFooterProps = {}) {
         </div>
       </div>
 
-      {/* Tier 2 — full wordmark */}
       <div className="site-footer-wordmark relative w-full bg-cream border-t border-canvas/[0.06]">
         <div className="site-footer-wordmark-clip">
           <p className="site-footer-wordmark-text" aria-hidden>
@@ -253,9 +248,6 @@ export function SiteFooter({ bottleLandingRef }: SiteFooterProps = {}) {
           </p>
         </div>
 
-        {/* Outside the clip on purpose. The clip is `overflow: hidden` to crop
-            the wordmark, which also cropped the bottle; out here it can stand
-            taller than the wordmark band and break up over the footer. */}
         <div
           ref={bottleLandingRef}
           className="footer-bottle-landing absolute left-1/2 bottom-[10%] z-[2] -translate-x-1/2"

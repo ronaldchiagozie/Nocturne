@@ -14,7 +14,6 @@ function stockSnapshot(inventory: Record<ProductId, { stock: number }>) {
   );
 }
 
-/** Fires subtle scarcity toasts when live batch stock drops — replaces inline ledger on mobile. */
 export function BatchLedgerToasts() {
   const { inventory, meta, storeReady } = useStore();
   const { showToast } = useToast();

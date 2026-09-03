@@ -100,7 +100,7 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
           </div>
 
           <div className="flex flex-1 min-h-0 flex-col lg:flex-row w-full">
-            {/* Chamber — first on mobile for immediate visual */}
+
             <div className="order-1 lg:order-2 lg:w-[58%] min-h-[min(42dvh,360px)] lg:min-h-0 flex flex-col flex-1 lg:flex-none border-b lg:border-b-0 lg:border-l border-canvas/[0.08]">
               <DistillerViewport
                 step={step}
@@ -110,7 +110,6 @@ export function Distiller({ isOpen, onClose, onViewSpec }: DistillerProps) {
               />
             </div>
 
-            {/* Questions */}
             <div className="order-2 lg:order-1 lg:w-[42%] flex flex-col min-h-0 min-w-0 bg-cream-plate">
               <div
                 className="modal-scroll flex-1 min-h-0 px-4 sm:px-6 md:px-10 lg:px-12 py-7 sm:py-9 md:py-11 lg:py-12 flex flex-col justify-center"

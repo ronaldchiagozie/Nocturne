@@ -1,4 +1,4 @@
-/** Eight color-shift bottles. Image paths match formulation number + name */
+
 export const BOTTLE_VARIANTS = [
   {
     id: 'v01',
@@ -72,7 +72,6 @@ export function getBottleVariant(id: BottleVariantId) {
   return BOTTLE_VARIANTS.find((v) => v.id === id) ?? BOTTLE_VARIANTS[0];
 }
 
-/** Stable fallback for legacy orders missing variant metadata */
 export function resolveVariantForOrder(orderId: string, productId?: string): BottleVariantId {
   if (productId === 'no03') return 'v04';
   if (productId === 'no05') return 'v03';

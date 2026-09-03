@@ -1,4 +1,4 @@
-/** Viewport height that respects mobile browser chrome (iOS Safari). */
+
 export function getViewportHeight(): number {
   if (typeof window === 'undefined') return 800;
   return window.visualViewport?.height ?? window.innerHeight;

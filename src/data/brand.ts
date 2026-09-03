@@ -1,6 +1,5 @@
 import { BOTTLE_VARIANTS } from './bottleVariants';
 
-/** Single source of truth for catalogue size — used in copy, meta, and JSON-LD */
 export const FORMULATION_COUNT = BOTTLE_VARIANTS.length;
 
 const COUNT_WORDS: Record<number, string> = {
@@ -19,7 +18,6 @@ const COUNT_WORDS: Record<number, string> = {
 export const FORMULATION_COUNT_WORD =
   COUNT_WORDS[FORMULATION_COUNT] ?? String(FORMULATION_COUNT);
 
-/** Flagship hero cards (No. 03, 05, 07) */
 export const FLAGSHIP_FORMULATION_COUNT = 3;
 
 export const ADDITIONAL_FORMULATION_COUNT =

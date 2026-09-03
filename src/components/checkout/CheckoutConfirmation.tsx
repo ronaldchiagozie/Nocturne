@@ -142,9 +142,6 @@ export function CheckoutConfirmation({
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
   const allocationDate = new Date(order.createdAt).toLocaleDateString('en-GB').replace(/\//g, '.');
 
-  // From md up the stage is its own scroll container and the document is held
-  // still, so Lenis has to hand the wheel over or nothing moves at all. Below
-  // md the document scrolls normally and this attribute would freeze it.
   const [splitLayout, setSplitLayout] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
   );

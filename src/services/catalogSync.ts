@@ -4,7 +4,6 @@ import { PRODUCTS, type ProductId } from '../data/products';
 import { UNIT_PRICE_NGN } from '../data/pricing';
 import { getDb, getFirebaseInitError, isFirebaseConfigured } from '../lib/firebase';
 
-/** Bump when local catalog changes to re-push metadata to Firestore */
 const CATALOG_VERSION = 1;
 
 function canUseFirebase(): boolean {

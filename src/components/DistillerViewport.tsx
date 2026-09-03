@@ -131,7 +131,6 @@ export function DistillerViewport({
       <div className="distiller-chamber-vignette pointer-events-none" aria-hidden />
       <div className="distiller-chamber-grid pointer-events-none" aria-hidden />
 
-      {/* Status rail */}
       <div className="relative z-20 flex items-center justify-between gap-4 px-5 sm:px-8 md:px-10 pt-5 sm:pt-6">
         <p className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-taupe-muted/90 truncate">
           {getStationStatus(step, isResult)}
@@ -141,7 +140,6 @@ export function DistillerViewport({
         </p>
       </div>
 
-      {/* Visual core */}
       <div className="relative flex flex-1 items-center justify-center px-6 sm:px-10 py-6 sm:py-8">
         {!isResult && (
           <DistillerRings
@@ -151,7 +149,6 @@ export function DistillerViewport({
           />
         )}
 
-        {/* Answered parameter orbs */}
         {!reducedMotion &&
           answeredOrbs.map((orb) => (
             <motion.div
@@ -171,7 +168,6 @@ export function DistillerViewport({
             />
           ))}
 
-        {/* Hover / primary aura */}
         {!reducedMotion && (
           <motion.div
             className="distiller-orb distiller-orb-primary pointer-events-none absolute rounded-full"
@@ -262,7 +258,6 @@ export function DistillerViewport({
         </AnimatePresence>
       </div>
 
-      {/* Parameter ledger */}
       <div className="relative z-20 border-t border-canvas/[0.08] px-5 sm:px-8 md:px-10 py-4 sm:py-5">
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {DISTILLER_QUESTIONS.map((question, index) => {

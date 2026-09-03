@@ -35,11 +35,7 @@ interface StoreContextValue {
   meta: StoreMeta | null;
   storeReady: boolean;
   getStock: (productId: ProductId) => ProductStock | null;
-  /**
-   * Today's stock less whatever this shopper is already holding, so the count
-   * on screen falls as they add. Real inventory is untouched — it only moves
-   * at purchase.
-   */
+
   getAvailable: (productId: ProductId) => number | null;
   isInStock: (productId: ProductId, qty?: number) => boolean;
   addToCart: (input: AddToCartInput) => { ok: true } | { ok: false; reason: string };
@@ -103,7 +99,6 @@ function saveCart(cart: CartItem[]) {
   try {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   } catch {
-    /* ignore */
   }
 }
 
@@ -160,7 +155,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [inventory],
   );
 
-  /** Units of a product held in the cart, summed across bottle variants. */
   const heldInCart = useCallback(
     (productId: ProductId) =>
       cart.reduce((n, c) => (c.productId === productId ? n + c.qty : n), 0),

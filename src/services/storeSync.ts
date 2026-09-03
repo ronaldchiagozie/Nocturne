@@ -21,7 +21,7 @@ export {
 
 const PHANTOM_MIN_MS = 2 * 60 * 1000;
 const PHANTOM_MAX_MS = 5 * 60 * 1000;
-/** Phantom sales never drain a SKU below this floor */
+
 const PHANTOM_STOCK_FLOOR = 7;
 
 const DEFAULT_STOCK: Record<ProductId, { max: number }> = {
@@ -79,7 +79,6 @@ function maybeRefreshCycle(meta: StoreMeta, inventory: Record<ProductId, Product
   };
 }
 
-/** When batch caps change in code, realign Firebase/local inventory once */
 function syncInventoryCaps(inventory: Record<ProductId, ProductStock>) {
   for (const id of Object.keys(PRODUCTS) as ProductId[]) {
     const cap = DEFAULT_STOCK[id].max;
@@ -134,7 +133,6 @@ function loadLocal(): StoreSnapshot {
       return snap;
     }
   } catch {
-    /* ignore */
   }
 
   const snap: StoreSnapshot = {
@@ -150,7 +148,6 @@ function saveLocal(snap: StoreSnapshot) {
   try {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(snap));
   } catch {
-    /* ignore */
   }
 }
 
@@ -397,4 +394,3 @@ export async function purchaseFromStore(
     return { ok: false, reason: message };
   }
 }
-

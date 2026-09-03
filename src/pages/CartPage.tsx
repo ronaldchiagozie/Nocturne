@@ -11,8 +11,6 @@ export function CartPage() {
   const { cart, cartTotalNgn, updateCartQty, removeFromCart, getAvailable } = useStore();
   const { flyToCart } = useCartFlight();
 
-  // The "+" is this page's add-to-cart, so it flies like every other one. The
-  // source is left to the flight to resolve: it finds the row's own bottle.
   const addOne = (cartKey: string, qty: number, productId: ProductId, image: string) => {
     if ((getAvailable(productId) ?? 0) <= 0) return;
     updateCartQty(cartKey, qty + 1);

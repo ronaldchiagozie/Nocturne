@@ -2,7 +2,6 @@ import { getProduct, DEFAULT_PRODUCT_ID, ProductId, PRODUCTS } from './products'
 import { resolveVariantForOrder, BottleVariantId } from './bottleVariants';
 import { SimulatedOrder } from '../types';
 
-/** Normalize legacy localStorage orders that predate vault metadata */
 export function normalizeOrder(raw: Record<string, unknown>): SimulatedOrder | null {
   if (typeof raw.id !== 'string') return null;
 

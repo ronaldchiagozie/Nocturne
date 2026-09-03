@@ -2,7 +2,6 @@ import { getBottleVariant } from '../data/bottleVariants';
 import { getProduct, type ProductId } from '../data/products';
 import type { CheckoutOverride } from '../types';
 
-/** Bottle art for product detail, cart, and panels — always variant-accurate */
 export function resolveProductImage(
   productId: ProductId,
   override?: CheckoutOverride,

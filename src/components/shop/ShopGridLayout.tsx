@@ -33,12 +33,10 @@ function CollectionCard({
   onOpen: (variantId: BottleVariantId) => void;
 }) {
   const { getAvailable } = useStore();
-  // Memoised: as a fresh array each render it re-fired the reveal effect below,
-  // which rescheduled its timers and made the interchange loop forever.
+
   const siblings = useMemo(() => variantsForProduct(item.productId), [item.productId]);
   const { ref, seen } = useInViewOnce<HTMLDivElement>();
 
-  // Which formulation this card is currently showing. The dots below switch it.
   const [activeId, setActiveId] = useState<BottleVariantId>(item.variantId);
   const [claimed, setClaimed] = useState(false);
   const active = getBottleVariant(activeId);
@@ -47,12 +45,6 @@ function CollectionCard({
   const soldOut = available === 0;
   const tickDelay = (index % 6) * 70;
 
-  /**
-   * On reveal, a card holding more than one formulation shows the other one
-   * briefly and comes back. It ripples across the row rather than firing at
-   * once, and it stops the moment the viewer takes the dots themselves — the
-   * point is to reveal that the bottle has more inside it, not to fidget.
-   */
   useEffect(() => {
     if (!seen || claimed || siblings.length < 2 || prefersReducedMotion()) return;
     const other = siblings.find((s) => s.id !== item.variantId);
@@ -76,8 +68,7 @@ function CollectionCard({
         className="w-full text-left cursor-pointer disabled:cursor-not-allowed active:scale-[0.98] transition-transform duration-200"
       >
         <div className="relative aspect-[3/4] bg-[#ebe7df] overflow-hidden">
-          {/* Each formulation carries its own glow colour, so the case is lit by
-              the bottle standing in it rather than being a flat grey box. */}
+
           <div
             aria-hidden
             className={`absolute inset-0 transition-opacity duration-[900ms] ease-out ${
@@ -90,17 +81,13 @@ function CollectionCard({
             }}
           />
 
-          {/* The bottle rises to stand rather than fading in — it was never
-              absent, it just hadn't come to rest. */}
           <div
             className={`absolute inset-0 flex items-end justify-center pb-[5%] transition-transform duration-[900ms] ease-out ${
               seen ? 'translate-y-0' : 'translate-y-[22px]'
             }`}
           >
             {siblings.map((sibling) => (
-              // Every formulation is photographed in the same glass, so the
-              // switch is opacity only. Nothing moves, nothing scales: it reads
-              // as the same bottle being re-filled, not as two images swapping.
+
               <img
                 key={sibling.id}
                 src={sibling.image}
@@ -206,8 +193,6 @@ export function ShopGridLayout() {
     return list;
   }, [sort]);
 
-  // Opens the formulation the card is currently showing, not the one it
-  // started on — the dots change which bottle you are looking at.
   const openVariant = (variantId: BottleVariantId) => {
     const variant = getBottleVariant(variantId);
     openProduct(variant.productId as ProductId, {
@@ -220,7 +205,7 @@ export function ShopGridLayout() {
 
   return (
     <div className="w-full">
-      {/* Toolbar — OSSOU: title left, meta right */}
+
       <div className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pt-6 sm:pt-10 pb-5 md:pb-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -257,7 +242,6 @@ export function ShopGridLayout() {
         </div>
       </div>
 
-      {/* Product grid */}
       <section className="px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 pb-14 md:pb-20">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3.5 sm:gap-x-5 md:gap-x-6 gap-y-8 sm:gap-y-12 md:gap-y-14">
           {items.map((item, index) => (

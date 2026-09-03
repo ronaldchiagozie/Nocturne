@@ -12,8 +12,6 @@ import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { prefersReducedMotion } from '../hooks/useMotionPreference';
 
-
-
 export const CART_TARGET_ATTR = 'data-cart-target';
 
 export const cartTargetProps = { [CART_TARGET_ATTR]: '' } as const;
@@ -39,20 +37,17 @@ interface Flight {
 }
 
 interface CartFlightValue {
-  /** Returns true if a bottle actually took off, false if it fell back to a
-   *  bare acknowledgement (no source, no visible cart, reduced motion). */
   flyToCart: (req: FlyRequest) => boolean;
-  /** Bumped every time a bottle lands. Cart affordances watch this to pulse. */
+
   arrivals: number;
 }
 
 const CartFlightContext = createContext<CartFlightValue | null>(null);
 
-/** Size the bottle shrinks to on its longest edge, in px. */
 const LANDING_SIZE = 26;
 const FLIGHT_SECONDS = 0.78;
 const PULSE_MS = 560;
-/** How early the cart reacts, so the pulse overlaps the bottle's last frames. */
+
 const PULSE_LEAD_MS = 130;
 
 function isOnScreen(el: HTMLElement): boolean {
@@ -60,7 +55,6 @@ function isOnScreen(el: HTMLElement): boolean {
   return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
 }
 
-/** The biggest visible copy of this bottle — the one the eye is already on. */
 function findBottleOnScreen(image: string): HTMLElement | null {
   const file = image.split('/').pop();
   if (!file) return null;
@@ -77,9 +71,6 @@ function findBottleOnScreen(image: string): HTMLElement | null {
 }
 
 function findCartTarget(): HTMLElement | null {
-  // A cart inside an open dialog wins. The page header is behind the modal
-  // backdrop, and because the modal locks scrolling — which disables
-  // `position: sticky` — it can be scrolled off-screen entirely.
   const inDialog = Array.from(
     document.querySelectorAll<HTMLElement>(`[role="dialog"] [${CART_TARGET_ATTR}]`),
   );
@@ -102,8 +93,6 @@ export function CartFlightProvider({ children }: { children: ReactNode }) {
   );
 
   const flyToCart = useCallback(({ from, image }: FlyRequest): boolean => {
-    // Every early return still bumps `arrivals` — the cart should acknowledge
-    // the item even when we can't draw the journey.
     const acknowledge = () => {
       setArrivals((n) => n + 1);
       return false;
@@ -128,12 +117,8 @@ export function CartFlightProvider({ children }: { children: ReactNode }) {
 
     const endScale = LANDING_SIZE / Math.max(src.width, src.height);
 
-    // A shallow lift so the path reads as an arc rather than a straight slide.
-    // Kept low on purpose: a tall arc sends the bottle up through the header
-    // before it lands, which reads as hitting the ceiling.
     const lift = Math.min(Math.hypot(dx, dy) * 0.12, 56);
-    // Hard ceiling at the higher of the two endpoints — the bottle must never
-    // climb above the cart it is heading for.
+
     const midY = Math.max(dy * 0.5 - lift, Math.min(0, dy));
 
     const id = nextId.current++;
@@ -150,8 +135,7 @@ export function CartFlightProvider({ children }: { children: ReactNode }) {
         dy,
         midX: dx * 0.5,
         midY,
-        // Four fifths of the shrink is done by the apex, so the bottle is
-        // visibly getting smaller while it is still large enough to track.
+
         midScale: 1 + (endScale - 1) * 0.8,
         endScale,
       },
@@ -168,7 +152,6 @@ export function CartFlightProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
-  /** Arrival is announced on a lead timer, so this only clears the clone. */
   const land = useCallback((id: number) => {
     setFlights((prev) => prev.filter((f) => f.id !== id));
   }, []);
@@ -180,7 +163,7 @@ export function CartFlightProvider({ children }: { children: ReactNode }) {
       {children}
       {typeof document !== 'undefined' &&
         createPortal(
-          // Above the product modal (z-222), below toasts (z-300).
+
           <div
             data-cart-flight
             className="pointer-events-none fixed inset-0 z-[250] overflow-hidden"
@@ -222,11 +205,6 @@ export function useCartFlight() {
   return ctx;
 }
 
-/**
- * True for one beat after a bottle lands. Cart affordances spread
- * `{...cartTargetProps}` to mark themselves as a landing site, and use this to
- * play the receive pulse.
- */
 export function useCartArrival(): boolean {
   const { arrivals } = useCartFlight();
   const [pulsing, setPulsing] = useState(false);
